@@ -27,3 +27,4 @@ seshat
 *.pgm
 *.inkml
 *.dot
+/build
