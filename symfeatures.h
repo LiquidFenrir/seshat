@@ -26,23 +26,24 @@ class DataSequence;
 #include <istream>
 #include <fstream>
 #include <vector>
+#include <memory>
 #include <string>
 #include "online.h"
 #include "featureson.h"
 #include "sample.h"
+#include "vectorimage.h"
 
 class SymFeatures{
-  static const int  ON_FEAT = 7;
-  static const int OFF_FEAT = 9;
+  static inline constexpr int  ON_FEAT = 7;
+  static inline constexpr int OFF_FEAT = 9;
   double means_on[ON_FEAT], means_off[OFF_FEAT];
   double  stds_on[ON_FEAT],  stds_off[OFF_FEAT];
   
 public:
-  SymFeatures(char *mav_on, char *mav_off);
-  ~SymFeatures();
+  SymFeatures(const char *mav_on, const char *mav_off);
 
-  DataSequence *getOnline(Sample *M, SegmentHyp *SegHyp);
-  DataSequence *getOfflineFKI(int **img, int H, int W);
+  std::unique_ptr<DataSequence> getOnline(Sample *M, SegmentHyp *SegHyp);
+  std::unique_ptr<DataSequence> getOfflineFKI(VectorImage& img, int H, int W);
 };
 
 #endif

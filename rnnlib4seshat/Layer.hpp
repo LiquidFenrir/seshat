@@ -40,8 +40,6 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #ifndef _INCLUDED_Layer_h
 #define _INCLUDED_Layer_h
 
-#include <boost/assign/list_of.hpp>
-
 #include <string>
 #include <vector>
 

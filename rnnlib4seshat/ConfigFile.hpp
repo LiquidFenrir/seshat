@@ -111,7 +111,7 @@ struct ConfigFile {
     MSSCI it = params.find(name);
     if (it != params.end()) {
       LOOP(const string& row, split<string>(it->second, delim1)) {
-        array += split_with_repeat<T>(row, delim2);
+        array.push_back(split_with_repeat<T>(row, delim2));
       }
       used.insert(name);
     }
@@ -131,7 +131,7 @@ struct ConfigFile {
     Vector<string> unused;
     LOOP(const PSS& p, params) {
       if (!in(used, p.first)) {
-        unused += p.first;
+        unused.push_back(p.first);
       }
     }
     if (unused.size()) {

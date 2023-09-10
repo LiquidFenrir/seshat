@@ -42,7 +42,7 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 #include "Layer.hpp"
 
-template <class F> struct NeuronLayer: public FlatLayer
+template <class F> struct NeuronLayer : public FlatLayer
 {
   NeuronLayer(const string& name, size_t numDims, size_t size, WeightContainer *weight, DataExportHandler *deh):
     FlatLayer(name, numDims, size, weight, deh)
@@ -70,7 +70,7 @@ template <class F> struct NeuronLayer: public FlatLayer
 	{
 		LOOP(TDDD t, zip(this->inputErrors[coords], this->outputActivations[coords], this->outputErrors[coords]))
 		{
-			t.get<0>() = F::deriv(t.get<1>()) * t.get<2>();
+			std::get<0>(t) = F::deriv(std::get<1>(t)) * std::get<2>(t);
 		}
 	}
 };

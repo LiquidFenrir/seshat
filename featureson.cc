@@ -37,164 +37,174 @@ covered by the following copyright and permission notice:
 */
 #include "featureson.h"
 
-//frame methods
-int frame::get_fr_dim() {
+// frame methods
+frame::frame(PointR pt)
+    : x{pt.x}, y{pt.y}, dx{0}, dy{0}, ax{0}, ay{0}, k{0}
+{
+}
+
+int frame::get_fr_dim()
+{
   return 7;
 }
 
+// sentenceF methods
 
-//sentenceF methods
-sentenceF::sentenceF(): n_frames(0), frames(NULL) {};
+void sentenceF::calculate_features(const sentence &S)
+{
+  {
+    const vector<PointR> pointsN = [&S, this]()
+    {
+      // Aspect normalization
+      vector<Point> points;
 
-sentenceF::~sentenceF() {
-  delete [] frames;
-}
+      for (const auto &s_stroke : S.strokes)
+      {
+        if (!s_stroke.pen_down)
+          continue;
 
-void sentenceF::calculate_features(sentence &S) {
-    vector<Point> points;
+        points.insert(points.end(), s_stroke.points.begin(), s_stroke.points.end());
+        points.back().setpu();
+      }
 
-    for (int s=0; s<S.n_strokes; s++)
-      if (S.strokes[s].pen_down) 
-	for (int p=0;p<S.strokes[s].n_points;p++) {
-	  Point pt=S.strokes[s].points[p];
-	  // Set the last point of each stroke --> point_pu=1
-	  if (p == (S.strokes[s].n_points-1)) pt.setpu();
-	  points.push_back(pt);
-	}
-    
-    
-    // Aspect normalization
-    vector<PointR> pointsN=normalizaAspect(points);
-    points.clear();
-
-    n_frames=pointsN.size();
-
-    frames = new frame[n_frames];
+      return normalizaAspect(points);
+    }();
 
     // Normalizaed "x" and "y" as first features
-    for (int i=0; i<n_frames; i++) {
-      frames[i].x=pointsN[i].x;
-      frames[i].y=pointsN[i].y;
-    }
+    frames.reserve(pointsN.size());
+    std::copy(pointsN.begin(), pointsN.end(), std::back_inserter(frames));
 
     // Derivatives
     calculate_derivatives(pointsN);
-    
-    // kurvature
-    calculate_kurvature();
-    
-    pointsN.clear();
+  }
+
+  // kurvature
+  calculate_kurvature();
 }
 
-
-//sentenceF Private methods
+// sentenceF Private methods
 
 // Signal normalization
-vector<PointR> sentenceF::normalizaAspect(vector<Point> & puntos) {
-  double ymax=-100000, xmax=-100000, ymin=100000, xmin=100000;
-  
+vector<PointR> sentenceF::normalizaAspect(const vector<Point> &puntos)
+{
+  double ymax = -100000, xmax = -100000, ymin = 100000, xmin = 100000;
+
   // Calculate x,y max and min
-  for (int i=0; i<puntos.size(); i++) {
-    if (puntos[i].y<ymin) ymin=puntos[i].y;
-    if (puntos[i].y>ymax) ymax=puntos[i].y;
-    if (puntos[i].x<xmin) xmin=puntos[i].x;
-    if (puntos[i].x>xmax) xmax=puntos[i].x;
+  for (const auto &pt : puntos)
+  {
+    if (pt.y < ymin)
+      ymin = pt.y;
+    if (pt.y > ymax)
+      ymax = pt.y;
+    if (pt.x < xmin)
+      xmin = pt.x;
+    if (pt.x > xmax)
+      xmax = pt.x;
   }
   // Prevent the ymin=ymax case (e.g. for "-" and ".")
-  if (ymin < (ymax+.5) && ymin > (ymax-.5)) ymax=ymin+1;
+  if (ymin < (ymax + .5) && ymin > (ymax - .5))
+    ymax = ymin + 1;
 
   vector<PointR> trazoNorm;
-  for (int i = 0; i < puntos.size(); i++) {
-    const float TAM=100; 
-    
-    PointR p(TAM * ((puntos[i].x - xmin)/(ymax - ymin)),TAM * (puntos[i].y - ymin)/(ymax - ymin));
-    
+  trazoNorm.reserve(puntos.size());
+
+  for (const auto &pt : puntos)
+  {
+    const float TAM = 100;
+
+    auto &p = trazoNorm.emplace_back(TAM * ((pt.x - xmin) / (ymax - ymin)), TAM * (pt.y - ymin) / (ymax - ymin));
+
     // Set in 'p' the attribute of last point of the stroke
-    if (puntos[i].getpu()) p.setpu();
-    trazoNorm.push_back(p);
+    if (pt.getpu())
+      p.setpu();
   }
+
   return trazoNorm;
 }
 
-
 // HTK style derivatives
-void sentenceF::calculate_derivatives(vector<PointR> & points, bool norm) {
-  unsigned int sigma=0;
-  const int tamW=2;
+void sentenceF::calculate_derivatives(const vector<PointR> &points, bool norm)
+{
+  constexpr int tamW = 2;
+  unsigned int sigma = 0;
+
   // Denominator calculation
-  for (int i=1; i<=tamW; i++) sigma+=i*i;
-  sigma=2*sigma;
+  for (int i = 1; i <= tamW; i++)
+    sigma += i * i;
+  sigma = 2 * sigma;
 
   // First derivative
-  for (int i=0; i<points.size(); i++) {
-    frames[i].dx=0;
-    frames[i].dy=0;
-    for (int c=1; c<=tamW; c++) {
-      double context_ant_x,context_ant_y,context_post_x,context_post_y;
-      if (i-c<0) {
-	context_ant_x=points[0].x;
-	context_ant_y=points[0].y;
-      } else {
-	context_ant_x=points[i-c].x;
-	context_ant_y=points[i-c].y;
-      }  
-      if (i+c>=points.size()) {
-	context_post_x=points[points.size()-1].x;
-	context_post_y=points[points.size()-1].y;
-      } else {
-	context_post_x=points[i+c].x;
-	context_post_y=points[i+c].y;
-      }
-      frames[i].dx+=c*(context_post_x-context_ant_x)/sigma;
-      frames[i].dy+=c*(context_post_y-context_ant_y)/sigma;
+  for (int i = 0; i < points.size(); i++)
+  {
+    frames[i].dx = 0;
+    frames[i].dy = 0;
+
+    for (int c = 1; c <= tamW; c++)
+    {
+      const int ant_idx = std::max<int>(i - c, 0);
+      const double context_ant_x = points[ant_idx].x;
+      const double context_ant_y = points[ant_idx].y;
+
+      const int post_idx = std::min<int>(i + c, points.size() - 1);
+      const double context_post_x = points[post_idx].x;
+      const double context_post_y = points[post_idx].y;
+
+      frames[i].dx += c * (context_post_x - context_ant_x) / sigma;
+      frames[i].dy += c * (context_post_y - context_ant_y) / sigma;
 
       // ---------------------------------------------------
-      if (norm) {
-	double module=sqrt(frames[i].dx*frames[i].dx+frames[i].dy*frames[i].dy);
-	if (module>0) {
-	  frames[i].dx /= module;
-	  frames[i].dy /= module;
-	}
+      if (norm)
+      {
+        const double module = sqrt(frames[i].dx * frames[i].dx + frames[i].dy * frames[i].dy);
+        if (module > 0)
+        {
+          frames[i].dx /= module;
+          frames[i].dy /= module;
+        }
       }
       // ---------------------------------------------------
     }
-    if (fabs(frames[i].dx)<FLT_MIN) frames[i].dx=0.0;
-    if (fabs(frames[i].dy)<FLT_MIN) frames[i].dy=0.0;
+
+    if (fabs(frames[i].dx) < FLT_MIN)
+      frames[i].dx = 0.0;
+    if (fabs(frames[i].dy) < FLT_MIN)
+      frames[i].dy = 0.0;
   }
-  
+
   // Second derivative
-  for (int i=0; i<points.size(); i++) {
-    double context_ant_dx,context_ant_dy,context_post_dx,context_post_dy;
-    frames[i].ax=0;
-    frames[i].ay=0;
-    for (int c=1; c<=tamW; c++) {
-      if (i-c<0){
-	context_ant_dx=frames[0].dx;
-	context_ant_dy=frames[0].dy;
-      } else {
-	context_ant_dx=frames[i-c].dx;
-	context_ant_dy=frames[i-c].dy;
-      }
-      if (i+c>=points.size()) {
-	context_post_dx=frames[points.size()-1].dx;
-	context_post_dy=frames[points.size()-1].dy;
-      } else {
-	context_post_dx=frames[i+c].dx;
-	context_post_dy=frames[i+c].dy;
-      }
-      frames[i].ax+=c*(context_post_dx-context_ant_dx)/sigma;
-      frames[i].ay+=c*(context_post_dy-context_ant_dy)/sigma;
+  for (int i = 0; i < points.size(); i++)
+  {
+    double context_ant_dx, context_ant_dy, context_post_dx, context_post_dy;
+    frames[i].ax = 0;
+    frames[i].ay = 0;
+    for (int c = 1; c <= tamW; c++)
+    {
+      const int ant_idx = std::max<int>(i - c, 0);
+      const double context_ant_dx = frames[ant_idx].dx;
+      const double context_ant_dy = frames[ant_idx].dy;
+
+      const int post_idx = std::min<int>(i + c, points.size() - 1);
+      const double context_post_dx = frames[post_idx].dx;
+      const double context_post_dy = frames[post_idx].dy;
+
+      frames[i].ax += c * (context_post_dx - context_ant_dx) / sigma;
+      frames[i].ay += c * (context_post_dy - context_ant_dy) / sigma;
     }
-    if (fabs(frames[i].ax)<FLT_MIN) frames[i].ax=0.0;
-    if (fabs(frames[i].ay)<FLT_MIN) frames[i].ay=0.0;
+
+    if (fabs(frames[i].ax) < FLT_MIN)
+      frames[i].ax = 0.0;
+    if (fabs(frames[i].ay) < FLT_MIN)
+      frames[i].ay = 0.0;
   }
 }
 
-
-void sentenceF::calculate_kurvature() {
-  for (int i=0; i<n_frames; i++) {
-    double norma=sqrt(frames[i].dx*frames[i].dx+frames[i].dy*frames[i].dy);
-    if (norma==0) norma=1;
-    frames[i].k=(frames[i].dx*frames[i].ay-frames[i].ax*frames[i].dy)/(norma*norma*norma);
+void sentenceF::calculate_kurvature()
+{
+  for (auto &curframe : frames)
+  {
+    const double norma = sqrt(curframe.dx * curframe.dx + curframe.dy * curframe.dy);
+    curframe.k = curframe.dx * curframe.ay - curframe.ax * curframe.dy;
+    if (norma != 0)
+      curframe.k /= norma * norma * norma;
   }
 }

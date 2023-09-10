@@ -45,7 +45,7 @@ struct Hypothesis{
   ProductionT *pt;
 
   //INKML_id for terminal symbols in order to create the InkML output
-  string inkml_id;
+  // string inkml_id;
   //Auxiliar var to retrieve the used production in the special SSE treatment
   ProductionB *prod_sse;
 

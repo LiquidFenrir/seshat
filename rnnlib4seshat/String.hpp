@@ -20,6 +20,7 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 #include "Helpers.hpp"
 #include "Container.hpp"
+#include <cctype>
 
 static string ordinal(size_t n) {
   string s = str(n);
@@ -44,10 +45,12 @@ static void trim(string& str) {
     str = str.substr(startpos, endpos-startpos + 1);
   }
 }
-static const string lower(const string& s) {
-  static string l;
-  l = s;
-  algorithm::to_lower(l);
+static string lower(const string& s) {
+  string l = s;
+  for(auto& c : l)
+  {
+    l = std::tolower(c);
+  }
   return l;
 }
 static bool in(const string& str, const string& search) {
@@ -75,7 +78,7 @@ template<class T> static Vector<T> split(
   ss << original;
   string s;
   while (delim == ' ' ? ss >> s : getline(ss, s, delim)) {
-    vect += read<T>(s);
+    vect.push_back(read<T>(s));
     if (vect.size() == maxSplits-1) {
       delim = '\0';
     }
@@ -87,21 +90,23 @@ template<class T> static Vector<T> split_with_repeat(
   Vector<T> vect;
   LOOP(const string& s1, split<string>(original, delim)) {
     vector<string> v = split<string>(s1, repeater);
-    size_t numRepeats = (v.size() == 1 ? 1 : natural(v[1]));
+    size_t numRepeats = (v.size() == 1 ? 1 : std::stoi(v[1]));
     T val = read<T>(v[0]);
-    vect += val, repeat(numRepeats-1, val);
+    vect.insert(vect.end(), numRepeats, val);
   }
   return vect;
 }
-template<class T, class R >static string join(
-    const R& r, const string joinStr = "") {
-  typename range_iterator<R>::type b = boost::begin(r);
-  string s = str(*b);
-  ++b;
-  for (; b != end(r); ++b) {
-    s += joinStr + str(*b);
+template<class T, class R > static string join(const R& r, const string joinStr = "") {
+  string out;
+  bool first = true;
+  LOOP(const auto& b, r) {
+    if(first)
+      first = false;
+    else
+      out += joinStr;
+    out += b;
   }
-  return s;
+  return out;
 }
 
 template<class T> string left_pad(const T& val, int width, char fill = '0') {

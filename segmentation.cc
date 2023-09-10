@@ -49,21 +49,21 @@ float SegmentationModelGMM::prob(CellCYK *cd, Sample *m) {
 
   //For every stroke
   for(int i=0; i<Nstrokes; i++) {
-    Stroke *Si = m->getStroke( strokes_list[i] );
+    Stroke &Si = m->getStroke( strokes_list[i] );
 
-    float size_i = max(Si->rs - Si->rx, Si->rt - Si->ry);
+    float size_i = max(Si.rs - Si.rx, Si.rt - Si.ry);
     avgsize += size_i;
 
     for(int j=i+1; j<Nstrokes; j++) {
-      Stroke *Sj = m->getStroke( strokes_list[j] );
+      Stroke &Sj = m->getStroke( strokes_list[j] );
 
       //distance between stroke Si and Sj
-      mind  += Si->min_dist( Sj );
+      mind  += Si.min_dist( &Sj );
 
-      dist  += abs( (Si->rs + Si->rx)/2.0 - (Sj->rs + Sj->rx)/2.0 );
-      sigma += abs( (Si->rt + Si->ry)/2.0 - (Sj->rt + Sj->ry)/2.0 );
+      dist  += abs( (Si.rs + Si.rx)/2.0 - (Sj.rs + Sj.rx)/2.0 );
+      sigma += abs( (Si.rt + Si.ry)/2.0 - (Sj.rt + Sj.ry)/2.0 );
       
-      float size_j = max( Sj->rt - Sj->ry, Sj->rs - Sj->rx);
+      float size_j = max( Sj.rt - Sj.ry, Sj.rs - Sj.rx);
       delta += abs( size_i - size_j );
 
       nps++;

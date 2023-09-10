@@ -21,25 +21,11 @@
 
 #define SIZE 1024
 
-gParser::gParser(Grammar *gram, FILE *fd, char *path) {
+gParser::gParser(Grammar *gram, FILE *fd)
+{
   g = gram;
 
-  int n = strlen(path);
-
-  if( n > 0 ) {
-    pre = new char[n+1];
-    strcpy(pre, path);
-  }
-  else {
-    pre = new char[1];
-    pre[0] = 0;
-  }
-
   parse( fd );
-}
-
-gParser::~gParser() {
-  delete[] pre;
 }
 
 bool gParser::isFillChar(char c) {
@@ -101,12 +87,6 @@ bool gParser::nextLine(FILE *fd, char *lin) {
   }while( lin[0]=='#' || strlen(lin)<=1 );
 
   return true;
-}
-
-void gParser::solvePath(char *in, char *out) {
-  strcpy(out, pre); //Copy prefix
-  strcat(out, in);  //Add the remainding path
-  out[strlen(out)-1] = 0; //Remove the final '\n'
 }
 
 void gParser::parse(FILE *fd) {

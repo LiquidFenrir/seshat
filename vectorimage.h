@@ -35,62 +35,17 @@ covered by the following copyright and permission notice:
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef FEATURES_H
-#define FEATURES_H
+#ifndef VECTORIMAGE_H
+#define VECTORIMAGE_H
 
-#include <math.h>
-#include <iostream>
-#include <iomanip>
 #include <vector>
-#include <limits.h>
-#include <float.h>
-#include "online.h"
 
-#define MAXNUMHATS 200
-#define OFFSET_INS 20
-
-using namespace std;
-
-class frame {
-  public:
-    double x,y,dx,dy,ax,ay,k;
-    frame(PointR pt);
-
-    void print(ostream & fd);
-    int get_fr_dim();
-
-    double getFea(int i)
-    {
-      switch (i)
-      {
-      case 0: return x;
-      case 1: return y;
-      case 2: return dx;
-      case 3: return dy;
-      case 4: return ax;
-      case 5: return ay;
-      case 6: return k;
-      default:
-        fprintf(stderr, "Error: getFea(%d)\n", i);
-        exit(-1);
-      }
-    }
+template<typename T>
+struct VectorImageT {
+  std::vector<T> img;
+  int width, height;
 };
-
-class sentenceF {
-  public:
-    std::vector<frame> frames;
-
-    bool data_plot(ostream & fd);
-    bool print(ostream & fd);
-
-    void calculate_features(const sentence &s);
-
-  private:
-    vector<PointR> normalizaAspect(const vector<Point> & puntos);
-    void calculate_derivatives(const vector<PointR> & points, bool norm=true);
-    void calculate_kurvature();
-};
-
+using VectorImage = VectorImageT<int>;
+using VectorImagef = VectorImageT<float>;
 
 #endif

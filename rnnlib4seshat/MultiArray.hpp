@@ -22,17 +22,13 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #include <numeric>
 #include <vector>
 #include <algorithm>
-#include <boost/array.hpp>
-#include <boost/assign/std/vector.hpp>
-#include <boost/optional.hpp>
-#include <boost/range.hpp>
-#include <boost/assign/list_of.hpp>
+#include <array>
+#include <optional>
+#include <ranges>
 #include "Helpers.hpp"
 #include "Container.hpp"
 
 using namespace std;
-using namespace boost;
-using namespace boost::assign;
 
 template <class T> struct MultiArray {
   //data
@@ -41,15 +37,14 @@ template <class T> struct MultiArray {
   vector<size_t> strides;
 
   //functions
-  MultiArray() { }
+  MultiArray() = default;
   MultiArray(const vector<size_t>& s) {
     reshape(s);
   }
   MultiArray(const vector<size_t>& s, const T& fillval) {
     reshape(s, fillval);
   }
-  virtual ~MultiArray() {
-  }
+  virtual ~MultiArray() = default;
   virtual size_t size() const {
     return data.size();
   }
@@ -94,12 +89,12 @@ template <class T> struct MultiArray {
     return true;
   }
   T& get(const vector<int>& coords) {
-    check(boost::size(coords) == shape.size(), "get(" + str(coords) +
+    check(std::size(coords) == shape.size(), "get(" + str(coords) +
           ") called with shape " + str(shape));
     return *((*this)[coords].begin());
   }
   const T& get(const vector<int>& coords) const {
-    check(boost::size(coords) == shape.size(), "get(" + str(coords) +
+    check(std::size(coords) == shape.size(), "get(" + str(coords) +
           ") called with shape " + str(shape));
     return (*this)[coords].front();
   }

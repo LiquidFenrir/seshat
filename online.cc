@@ -36,102 +36,92 @@ covered by the following copyright and permission notice:
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "online.h"
-
-
-// Aux functions
-
-inline int MAX(int a, int b) {
-  if (a>=b) return a;
-  else return b;		    
-}
-
-inline int MIN(int a, int b) {
-  if (a<=b) return a;
-  else return b;		    
-}
+#include <algorithm>
+#include <ranges>
 
 //
 // "stroke" methods
 //
 
-stroke::stroke(int n_p, bool pen_d, bool is_ht): n_points(n_p), pen_down(pen_d), is_hat(is_ht) {}
-
-
-int stroke::F_XMIN() {
-  int xmin=INT_MAX;
-  for (int p=0; p<n_points; p++)
-    if (xmin>points[p].x) xmin=points[p].x;
-  return xmin;
+stroke::stroke(int n_p, bool pen_d, bool is_ht) : n_points(n_p), pen_down(pen_d), is_hat(is_ht)
+{
+  points.reserve(n_points);
 }
 
-int stroke::F_XMAX() {
-  int xmax=INT_MIN;
-  for (int p=0; p<n_points; p++)
-    if (xmax<points[p].x) xmax=points[p].x;
-  return xmax;
+int stroke::F_XMIN()
+{
+  return points.empty() ? (INT_MAX) : (*std::ranges::min_element(points, {}, &Point::x));
 }
 
-int stroke::F_XMED() {
-  int xmed=0;
-  for (int p=0; p<n_points; p++) xmed+=points[p].x;
-  return xmed/n_points;
+int stroke::F_XMAX()
+{
+  return points.empty() ? (INT_MIN) : (*std::ranges::max_element(points, {}, &Point::x));
 }
 
-
-
+int stroke::F_XMED()
+{
+  return std::accumulate(points.begin(), points.end(), 0, [](const auto& pt, int val) {
+    return pt.x + val;
+  }) / n_points;
+}
 
 //
 // "sentence" methods
 //
 
-sentence::sentence(int n_s): n_strokes(n_s) {}
+sentence::sentence(int n_s) : n_strokes(n_s)
+{
+  strokes.reserve(n_strokes);
+}
 
 // Remove repeated points
-sentence * sentence::anula_rep_points() {
-  sentence * sent_norep=new sentence(n_strokes);
-  for (int s=0; s<n_strokes; s++) {
-    stroke stroke_norep;
-    vector<Point> puntos=strokes[s].points;
-    int np=strokes[s].n_points;
-    for (int p=0; p<np; p++) {
-      if (p<(np-1) && puntos[p]==puntos[p+1]) continue;
-      Point point(puntos[p].x,puntos[p].y);
-      stroke_norep.points.push_back(point);
+sentence sentence::no_repeats() const
+{
+  sentence sent_norep(n_strokes);
+
+  for (const auto& curstroke : strokes)
+  {
+    auto& stroke_norep = sent_norep.strokes.emplace_back();
+    for(const auto& pt : curstroke.points)
+    {
+      if (stroke_norep.points.empty() || pt != stroke_norep.points.back())
+      {
+        stroke_norep.points.push_back(pt);
+        stroke_norep.points.back().resetpu();
+      }
     }
-    stroke_norep.pen_down=strokes[s].pen_down;
-    stroke_norep.n_points=stroke_norep.points.size();
-    (*sent_norep).strokes.push_back(stroke_norep);
+
+    stroke_norep.pen_down = curstroke.pen_down;
+    stroke_norep.n_points = stroke_norep.points.size();
   }
+
   return sent_norep;
 }
 
 // Smoothing: median filter
-sentence * sentence::suaviza_traza(int cont_size) {
-  int sum_x,sum_y;
-  sentence * sentNorm=new sentence(n_strokes);
-  for (int i=0; i<n_strokes; i++) {
-    stroke strokeNorm;
-    vector<Point> puntos=strokes[i].points;
-    int np=strokes[i].n_points;
-    for (int p=0; p<np; p++){
-      sum_x=sum_y=0;
-      for (int c=p-cont_size; c<=p+cont_size; c++)
-	if (c<0) {
-	  sum_x+=puntos[0].x;
-	  sum_y+=puntos[0].y;
-	} else if (c>=np) {
-	  sum_x+=puntos[np-1].x;
-	  sum_y+=puntos[np-1].y;
-	} else {
-	  sum_x+=puntos[c].x;
-	  sum_y+=puntos[c].y;
-	}
-      Point point(int(sum_x/(cont_size*2+1)),int(sum_y/(cont_size*2+1)));
-      strokeNorm.points.push_back(point);
+sentence sentence::smoothed(int cont_size) const
+{
+  sentence sentNorm(n_strokes);
+
+  int sum_x, sum_y;
+  for (const auto& curstroke : strokes)
+  {
+    auto& strokeNorm = sentNorm.strokes.emplace_back();
+    const std::vector<Point>& puntos = curstroke.points;
+    int np = curstroke.n_points;
+    for (int p = 0; p < np; p++)
+    {
+      sum_x = 0;
+      sum_y = 0;
+      for (int c = p - cont_size; c <= p + cont_size; c++)
+      {
+        const int pt_idx = std::clamp(c, 0, np);
+        sum_x += puntos[pt_idx].x;
+        sum_y += puntos[pt_idx].y;
+      }
+
+      strokeNorm.points.emplace_back(int(sum_x / (cont_size * 2 + 1)), int(sum_y / (cont_size * 2 + 1)));
     }
-    strokeNorm.pen_down=strokes[i].pen_down;
-    strokeNorm.n_points=strokeNorm.points.size();
-    (*sentNorm).strokes.push_back(strokeNorm);
   }
   return sentNorm;
 }

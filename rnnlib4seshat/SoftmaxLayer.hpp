@@ -40,7 +40,6 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #ifndef _INCLUDED_SoftmaxLayer_h  
 #define _INCLUDED_SoftmaxLayer_h  
 
-#include <boost/algorithm/minmax_element.hpp>
 #include "NetworkOutput.hpp"
 #include "Log.hpp"
 #include "Layer.hpp"
@@ -80,12 +79,12 @@ struct SoftmaxLayer: public FlatLayer{
 		real_t offset = pair_mean(minmax(this->inputActivations[coords]));
 		LOOP(TDL t, zip(this->inputActivations[coords], unnormedLogActs))
 		{
-			t.get<1>() = Log<real_t>(t.get<0>() - offset, true);
+			std::get<1>(t) = Log<real_t>(std::get<0>(t) - offset, true);
 		}
 
 		//apply exponential
 		View<real_t> unnormedActs = unnormedActivations[coords];
-		transform(unnormedLogActs, unnormedActs, mem_fun_ref(&Log<real_t>::exp));
+		transform(unnormedLogActs, unnormedActs, std::mem_fn(&Log<real_t>::exp));
 		
 		//normalise
 		real_t Z = sum(unnormedActs);
@@ -99,7 +98,7 @@ struct SoftmaxLayer: public FlatLayer{
 		real_t Z = inner_product(outActs, outErrs);
 		LOOP(TDDD t, zip(this->inputErrors[coords], outActs, outErrs))
 		{
-			t.get<0>() = t.get<1>() * (t.get<2>() - Z);
+			std::get<0>(t) = std::get<1>(t) * (std::get<2>(t) - Z);
 		}
 	}
 };

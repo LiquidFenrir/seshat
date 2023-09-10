@@ -54,7 +54,7 @@ template <class R> void perturb_weights(R& weights, real_t stdDev, bool additive
 }
 template <class R> void perturb_weights(R& weights, R& stdDevs, bool additive)
 {
-	assert(boost::size(weights) == boost::size(stdDevs));
+	assert(std::size(weights) == std::size(stdDevs));
 	LOOP(int i, indices(weights))
 	{
 		perturb_weight(weights[i], stdDevs[i], additive);

@@ -21,33 +21,30 @@
 class gParser;
 
 #include <cstdio>
+#include <vector>
 #include <string>
 #include <map>
-#include <list>
 #include <unordered_set>
 #include "production.h"
 #include "gparser.h"
 #include "symrec.h"
 
-using namespace std;
-
 struct Grammar
 {
-  map<string, int> noTerminales;
-  list<int> initsyms;
-  bool *esInit;
+  std::map<std::string, int> noTerminales;
+  std::vector<int> initsyms;
+  std::unique_ptr<bool[]> esInit;
   SymRec *sym_rec;
-  unordered_set<string> operatorSet = {"-", "+", "\\pm", "\\times", "\\div", "\\cdot", "=", "\\neq", "\\leq", "\\lt", "\\gt", "\\geq",
+  std::unordered_set<std::string> operatorSet = {"-", "+", "\\pm", "\\times", "\\div", "\\cdot", "=", "\\neq", "\\leq", "\\lt", "\\gt", "\\geq",
                                        "\\in", "\\rightarrow", "COMMA", "\\forall", "\\exists", "\\int", "\\sum", "\\log", "\\lim",
                                        "\\sin", "\\cos", "\\tan", "\\lbrace", "\\lbracket", "\\lpar", "\\rbrace", "\\rbracket", "\\rpar",
                                        "\\prime", "\\vee", "\\wedge", "\\equiv", "\\cup"};
 
-  list<ProductionB *> prodsH, prodsSup, prodsSub;
-  list<ProductionB *> prodsV, prodsVe, prodsIns, prodsMrt, prodsSSE;
-  list<ProductionT *> prodTerms;
+  std::vector<std::unique_ptr<ProductionB>> prodsH, prodsSup, prodsSub;
+  std::vector<std::unique_ptr<ProductionB>> prodsV, prodsVe, prodsIns, prodsMrt, prodsSSE;
+  std::vector<std::unique_ptr<ProductionT>> prodTerms;
 
   Grammar(char *conf, SymRec *SR);
-  ~Grammar();
 
   const char *key2str(int k);
   void addInitSym(char *str);

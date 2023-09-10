@@ -27,19 +27,18 @@ using namespace std;
 
 struct Punto{
   float x,y;
-
+  
   Punto(float vx, float vy) {
     x = vx;
     y = vy;
   }
 
-  Punto() {}
+  Punto() = default;
 };
 
 
 class Stroke{
-  Punto *pseq;
-  int NP;
+  std::vector<Punto> pseq;
   int id; //InkML information
 
  public:
@@ -50,13 +49,12 @@ class Stroke{
   Stroke(int np);
   Stroke(int np, FILE *fd);
   Stroke(FILE *fd);
-  Stroke(char *str, int inkml_id);
   ~Stroke();
 
   void set(int idx, Punto *p);
   Punto *get(int idx);
-  int getNpuntos();
-  int getId();
+  const Punto *get(int idx) const;
+  int getNpuntos() const;
   void print();
 
   float min_dist(Stroke *st);

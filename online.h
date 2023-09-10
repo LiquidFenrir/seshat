@@ -38,15 +38,10 @@ covered by the following copyright and permission notice:
 #ifndef ONLINE_H
 #define ONLINE_H
 
-#include <math.h>
-#include <values.h>
-#include <iostream>
-#include <string>
+#include <cmath>
+#include <climits>
+#include <cfloat>
 #include <vector>
-#include <stdio.h>
-#include <stdlib.h>
-
-using namespace std;
 
 //Real point
 class PointR {
@@ -58,8 +53,9 @@ class PointR {
   
  PointR(float _x, float _y): x(_x), y(_y), point_pu(false) {}
   PointR & operator= (const PointR & p) {
-    x=p.x; y=p.y;
-      point_pu=p.point_pu;
+    x=p.x;
+    y=p.y;
+    point_pu=p.point_pu;
     return *this;
   }
   bool operator ==(const PointR & p) const {
@@ -69,9 +65,12 @@ class PointR {
     return p.x!=x || p.y!=y;
   }
   void setpu() {
-    point_pu=1;
+    point_pu=true;
   }
-  bool getpu() {
+  void resetpu() {
+    point_pu=false;
+  }
+  bool getpu() const {
     return point_pu;
   }
 };
@@ -87,7 +86,8 @@ class Point {
   
  Point(int _x, int _y): x(_x), y(_y), point_pu(false) {}
   Point & operator= (const Point & p) {
-    x=p.x; y=p.y;
+    x=p.x;
+    y=p.y;
     point_pu=p.point_pu;
     return *this;
   }
@@ -98,9 +98,12 @@ class Point {
     return p.x!=x || p.y!=y;
   }
   void setpu() {
-    point_pu=1;
+    point_pu = true;
   }
-  bool getpu() {
+  void resetpu() {
+    point_pu = false;
+  }
+  bool getpu() const {
     return point_pu;
   }
 };
@@ -111,7 +114,7 @@ class stroke {
   int n_points;
   bool pen_down;
   bool is_hat;
-  vector<Point> points;
+  std::vector<Point> points;
   
   stroke(int n_p=0, bool pen_d=0, bool is_ht=0);
   
@@ -122,14 +125,14 @@ class stroke {
 
 
 class sentence {
- public:
+public:
   int n_strokes;
-  vector<stroke> strokes;
-  
+  std::vector<stroke> strokes;
+
   sentence(int n_s);
-  
-  sentence * anula_rep_points();
-  sentence * suaviza_traza(int cont_size=2);
+
+  sentence no_repeats() const;
+  sentence smoothed(int cont_size=2) const;
 };
 
 

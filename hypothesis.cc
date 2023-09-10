@@ -27,7 +27,7 @@ Hypothesis::Hypothesis(int c, double p, CellCYK *cd, int nt) {
   lcen = rcen = 0;
   parent = cd;
   ntid = nt;
-  inkml_id = "none";
+  // inkml_id = "none";
 }
 
 void Hypothesis::copy(Hypothesis *H) {
@@ -42,7 +42,7 @@ void Hypothesis::copy(Hypothesis *H) {
   rcen = H->rcen;
   parent = H->parent;
   ntid = H->ntid;
-  inkml_id = H->inkml_id;
+  // inkml_id = H->inkml_id;
 }
 
 Hypothesis::~Hypothesis() {

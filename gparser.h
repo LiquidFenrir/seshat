@@ -22,19 +22,18 @@ struct Grammar;
 
 #include <cstdio>
 #include <cstdlib>
+#include <string>
 #include "grammar.h"
 
 class gParser{
   Grammar *g;
-  char *pre;
 
   bool isFillChar(char c);
   int  split(char *str,char ***res);
   bool nextLine(FILE *fd, char *lin);
-  void solvePath(char *in, char *out);
+
 public:
-  gParser(Grammar *gram, FILE *fd, char *path);
-  ~gParser();
+  gParser(Grammar *gram, FILE *fd);
 
   void parse(FILE *fd);
 };

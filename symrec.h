@@ -27,6 +27,8 @@ class SymFeatures;
 #include <cstring>
 #include <map>
 #include <vector>
+#include <span>
+#include <utility>
 #include "rnnlib4seshat/DataSequence.hpp"
 #include "rnnlib4seshat/NetcdfDataset.hpp"
 #include "rnnlib4seshat/Mdrnn.hpp"
@@ -50,17 +52,17 @@ class SymRec{
   float RNNalpha;
   
   //Symbol classes and types information
-  int *type;
+  std::vector<int> type;
   map<string,int> cl2key;
-  string *key2cl;
+  std::vector<string> key2cl;
   
   int C; //Number of classes
   
-  int  classify(Sample *M, SegmentHyp *SegHyp, const int NB, int *vclase, float *vpr, int *as, int *ds);
-  void BLSTMclassification( Mdrnn *net, DataSequence *seq, pair<float,int> *claspr, const int NB );
+  int  classify(Sample& M, SegmentHyp& SegHyp, const int NB, int *vclase, float *vpr, int *as, int *ds);
+  void BLSTMclassification( Mdrnn *net, const DataSequence& seq, std::span<pair<float, int>>);
   
  public:
-  SymRec(char *path);
+  SymRec(const char *path);
   ~SymRec();
   
   char *strClase(int c);
@@ -69,8 +71,8 @@ class SymRec{
   int   getNClases();
   int   symType(int k);
   
-  int clasificar(Sample *M, int ncomp,     const int NB, int *vclase, float *vpr, int *as, int *ds);
-  int clasificar(Sample *M, list<int> *LT, const int NB, int *vclase, float *vpr, int *as, int *ds);
+  int clasificar(Sample& M, int ncomp,     const int NB, int *vclase, float *vpr, int *as, int *ds);
+  int clasificar(Sample& M, std::span<const int> LT, const int NB, int *vclase, float *vpr, int *as, int *ds);
 };
 
 

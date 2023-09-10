@@ -45,8 +45,6 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #include <string>
 #include <numeric>
 #include <map>
-//#include <netcdfcpp.h>
-#include <boost/algorithm/string/replace.hpp>
 #include "DataSequence.hpp"
 #include "Helpers.hpp"
 

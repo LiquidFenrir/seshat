@@ -116,29 +116,29 @@ static void outer_a_squared(
 }
 
 template<class R> static void outer(const R& a, real_t *M, const R&b) {
-  outer(boost::begin(a), boost::end(a), M, boost::begin(b), boost::end(b));
+  outer(std::begin(a), std::end(a), M, std::begin(b), std::end(b));
 }
 
 template<class R> static void dot(const R& a, const real_t *M, const R& b) {
-  dot(boost::begin(a), boost::end(a), M, boost::begin(b), boost::end(b));
+  dot(std::begin(a), std::end(a), M, std::begin(b), std::end(b));
 }
 
 template<class R> static void dot_transpose(
     const R& a, const real_t *M, const R& b) {
   dot_transpose(
-      boost::begin(a), boost::end(a), M, boost::begin(b), boost::end(b));
+      std::begin(a), std::end(a), M, std::begin(b), std::end(b));
 }
 
 template<class R> static void outer_a_squared(
     const R& a, real_t *M, const R&b) {
   outer_a_squared(
-      boost::begin(a), boost::end(a), M, boost::begin(b), boost::end(b));
+      std::begin(a), std::end(a), M, std::begin(b), std::end(b));
 }
 
 template<class R> static void dot_transpose_m_squared(
     const R& a, const real_t *M, const R& b) {
   dot_transpose_m_squared(
-      boost::begin(a), boost::end(a), M, boost::begin(b), boost::end(b));
+      std::begin(a), std::end(a), M, std::begin(b), std::end(b));
 }
 
 static real_t& elt(View<real_t> M, int x, int y, int width) {

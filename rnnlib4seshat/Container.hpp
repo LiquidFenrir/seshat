@@ -40,12 +40,16 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #ifndef _INCLUDED_Container_h
 #define _INCLUDED_Container_h
 
+#include "Helpers.hpp"
+#include <span>
+#include <vector>
+
 template<class T> struct Vector;
 
-template<class T> struct View: public sub_range<pair <T*, T*> > {
-  View(pair<T*, T*>& p): sub_range<pair <T*, T*> >(p) {}
-  View(T* first = 0, T* second = 0):
-      sub_range<pair <T*, T*> >(make_pair(first, second)) {}
+template<class T> struct View : public std::span<T> {
+  View(const pair<T*, T*>& p) : std::span<T>(p.first, p.second) {}
+  View(T* first, T* second) : std::span<T>(first, second) {}
+  View() : std::span<T>() {}
   View slice(int first = 0, int last = numeric_limits<int>::max()) {
     first = bound(first, 0, (int)this->size());
     if (last < 0) {
@@ -57,6 +61,25 @@ template<class T> struct View: public sub_range<pair <T*, T*> > {
   View slice(pair<int, int>& r) {
     return slice(r.first, r.second);
   }
+
+  auto begin() const noexcept
+  {
+    return std::to_address(std::span<T>::begin());
+  }
+  auto cbegin() const noexcept
+  {
+    return std::to_address(std::span<T>::cbegin());
+  }
+
+  auto end() const noexcept
+  {
+    return std::to_address(std::span<T>::end());
+  }
+  auto cend() const noexcept
+  {
+    return std::to_address(std::span<T>::cend());
+  }
+
   const View slice(int first = 0, int last = numeric_limits<int>::max()) const {
     return slice(first, last);
   }
@@ -74,11 +97,12 @@ template<class T> struct View: public sub_range<pair <T*, T*> > {
     return (*this)[i];
   }
   template<class R> const View<T>& operator =(const R& r) const {
-    check(boost::size(r) == this->size(), "can't assign range " + str(r) +
+    check(std::size(r) == this->size(), "can't assign range " + str(r) +
           " to view " + str(*this));
     copy(r, *this);
     return *this;
   }
+  /*
   template<class T2> Vector<T2> to() const {
     Vector<T2> v;
     LOOP(const T& t, *this) {
@@ -86,9 +110,10 @@ template<class T> struct View: public sub_range<pair <T*, T*> > {
     }
     return v;
   }
+  */
 };
 
-template<class T> struct Vector: public vector<T> {
+template<class T> struct Vector : public std::vector<T> {
   Vector() { }
   Vector(const vector<T>& v): vector<T>(v) {}
   Vector(const View<const T>& v) {
@@ -132,8 +157,8 @@ template<class T> struct Vector: public vector<T> {
   }
   template<class R> Vector<T>& extend(const R& r) {
     size_t oldSize = this->size();
-    grow(boost::size(r));
-    copy(boost::begin(r), boost::end(r), this->begin() + oldSize);
+    grow(std::size(r));
+    std::ranges::copy(make_subrange_for(r), this->begin() + oldSize);
     return *this;
   }
   Vector<T> replicate(size_t times) const {
@@ -144,7 +169,7 @@ template<class T> struct Vector: public vector<T> {
     return v;
   }
   template<class R> Vector<T>& operator =(const R& r) {
-    vector<T>::resize(boost::size(r));
+    vector<T>::resize(std::size(r));
     copy(r, *this);
     return *this;
   }
@@ -174,7 +199,7 @@ template<class T> struct Set: public set<T> {
     return this->extend(r);
   }
   template<class R> Set<T>& extend(const R& r) {
-    LOOP(const typename boost::range_value<R>::type& val, r) {
+    LOOP(const auto& val, r) {
       (*this) += val;
     }
     return *this;

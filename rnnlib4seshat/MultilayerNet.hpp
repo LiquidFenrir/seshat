@@ -42,7 +42,6 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 #include "Mdrnn.hpp"
 #include "ClassificationLayer.hpp"
-#include "TranscriptionLayer.hpp"
 
 struct MultilayerNet: public Mdrnn {
   //functions
@@ -63,23 +62,29 @@ struct MultilayerNet: public Mdrnn {
     Vector<bool> recurrent =
         conf.get_list<bool>("recurrent", true, hiddenSizes.size());
     Layer* input = this->get_input_layer();
-    LOOP(int i, indices(hiddenSizes)) {
+    vector<Layer*> blocks;
+    LOOP(int i, indices(hiddenSizes))
+    {
       string level_suffix = int_to_sortable_string(i, hiddenSizes.size());
       this->add_hidden_level(
           hiddenTypes.at(i), hiddenSizes.at(i), recurrent.at(i),
           "hidden_" + level_suffix);
       this->connect_to_hidden_level(input, i);
-      vector<Layer*> blocks;
-      if (i < hiddenBlocks.size()) {
-        LOOP(Layer* l, hiddenLevels[i]) {
-          blocks += this->add_layer(new BlockLayer(l, hiddenBlocks.at(i), wc, deh));
+      
+      blocks.clear();
+      if (i < hiddenBlocks.size())
+      {
+        LOOP(Layer* l, hiddenLevels[i])
+        {
+          blocks.push_back(this->add_layer(new BlockLayer(l, hiddenBlocks.at(i), wc, deh)));
         }
       }
-      vector<Layer*>& topLayers = blocks.size() ? blocks : hiddenLevels[i];
+
+      vector<Layer*>& topLayers = blocks.empty() ? hiddenLevels[i] : blocks;
       if (i < subsampleSizes.size()) {
         input = this->add_layer(
             subsampleType, "subsample_" + level_suffix, subsampleSizes.at(i),
-            empty_list_of<int>().repeat(this->num_seq_dims(), 1),
+            std::vector<int>(this->num_seq_dims(), 1),
             subsampleBias, false);
         LOOP(Layer* l, topLayers) {
           this->connect_layers(l, input);
@@ -115,15 +120,6 @@ struct MultilayerNet: public Mdrnn {
     if (in(task, "classification")) {
       output = add_output_layer(make_classification_layer(
 	  out, outputName, outSeqDims, data.targetLabels, wc, deh));
-    } else if (task == "transcription") {
-      check(this->num_seq_dims(), "cannot perform transcription wth 0D net");
-      output = add_output_layer(new TranscriptionLayer(
-          out, outputName, data.targetLabels, wc, deh, conf.get<bool>(
-              "confusionMatrix", false)));
-      if (this->num_seq_dims() > 1) {
-        output = this->collapse_layer(
-            hiddenLayers.back(), output, list_of(true));
-      }
     } else {
       check(false, "unknown task '" + task + "'");
     }

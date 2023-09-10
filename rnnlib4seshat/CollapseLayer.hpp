@@ -49,7 +49,7 @@ struct CollapseLayer: public Layer
 	vector<size_t> outSeqShape;
 	
 	//functions
-  CollapseLayer(Layer* src, Layer* des, WeightContainer *weight, DataExportHandler *deh, const vector<bool>& activDims = empty_list_of<bool>()):
+  CollapseLayer(Layer* src, Layer* des, WeightContainer *weight, DataExportHandler *deh, const vector<bool>& activDims = {}):
     Layer(des->name + "_collapse", des->directions, des->input_size(), des->input_size(), weight, deh, src),
 		activeDims(activDims)
 	{
@@ -67,7 +67,7 @@ struct CollapseLayer: public Layer
 		{
 			if (activeDims[i])
 			{
-				outSeqShape += source->output_seq_shape()[i];
+				outSeqShape.push_back(source->output_seq_shape()[i]);
 			}
 		}
 		assert(outSeqShape.size() == num_seq_dims());
@@ -78,12 +78,13 @@ struct CollapseLayer: public Layer
 	vector<int> get_out_coords(const vector<int>& inCoords)
 	{
 		vector<int> outCoords;
+		outCoords.reserve(num_seq_dims());
 		assert(inCoords.size() == activeDims.size());
 		for (int i = 0; i < inCoords.size(); ++i)
 		{
 			if (activeDims[i])
 			{
-				outCoords += inCoords[i];
+				outCoords.push_back(inCoords[i]);
 			}
 		}
 		assert(outCoords.size() == num_seq_dims());

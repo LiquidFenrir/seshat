@@ -18,7 +18,7 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #ifndef _INCLUDED_ActivationFunctions_h
 #define _INCLUDED_ActivationFunctions_h
 
-#include <boost/array.hpp>
+#include <array>
 #include <numeric>
 #include <limits>
 #include "Log.hpp"

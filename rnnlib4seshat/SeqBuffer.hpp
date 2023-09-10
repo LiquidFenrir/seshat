@@ -31,9 +31,9 @@ template <class R> struct CoordIterator {
 
   // functions
   CoordIterator(
-      const R& sh, const vector<int>& dirs = empty_list_of<int>(),
+      const R& sh, const vector<int>& dirs = {},
       bool reverse = false):
-      shape(sh), directions(dirs), pt(boost::size(shape)), end(false) {
+      shape(sh), directions(dirs), pt(std::size(shape)), end(false) {
     directions.resize(shape.size(), 1);
     if (reverse) {
       range_multiply_val(directions, -1);
@@ -96,7 +96,7 @@ template <class T> struct SeqBuffer: public MultiArray<T> {
 
   // functions
   explicit SeqBuffer(size_t dep = 0): depth(dep) {
-    reshape(empty_list_of<size_t>());
+    reshape(std::vector<size_t>{});
   }
 
   SeqBuffer(const vector<size_t>& shape, size_t dep): depth(dep) {
@@ -146,19 +146,19 @@ template <class T> struct SeqBuffer: public MultiArray<T> {
     return View<const T>();
   }
 
-  const View<T> front(const vector<int>& dirs = empty_list_of<int>()) {
+  const View<T> front(const vector<int>& dirs = {}) {
     return (*this)[*begin(dirs)];
   }
 
-  const View<T> back(const vector<int>& dirs = empty_list_of<int>()) {
+  const View<T> back(const vector<int>& dirs = {}) {
     return (*this)[*rbegin(dirs)];
   }
 
-  SeqIterator begin(const vector<int>& dirs = empty_list_of<int>()) const {
+  SeqIterator begin(const vector<int>& dirs = {}) const {
     return SeqIterator(seq_shape(), dirs);
   }
 
-  SeqIterator rbegin(const vector<int>& dirs = empty_list_of<int>()) const {
+  SeqIterator rbegin(const vector<int>& dirs = {}) const {
     return SeqIterator(seq_shape(), dirs, true);
   }
 
@@ -174,7 +174,7 @@ template <class T> struct SeqBuffer: public MultiArray<T> {
     seqMean.resize(depth);
     fill(seqMean, 0);
     int seqSize = seq_size();
-    LOOP(int i, span(seqSize)) {
+    LOOP(int i, iota_range(seqSize)) {
       range_plus_equals(seqMean, (*this)[i]);
     }
     range_divide_val(seqMean, seqSize);
@@ -202,7 +202,7 @@ template <class T> struct SeqBuffer: public MultiArray<T> {
       // check(!in(newSeqShape, 0), "reshape called with shape " +
       //       str(newSeqShape) + ", all dimensions must be >0");
       this->shape = newSeqShape;
-      this->shape += depth;
+      this->shape.push_back(depth);
       this->resize_data();
     }
   }
@@ -225,8 +225,8 @@ template <class T> struct SeqBuffer: public MultiArray<T> {
 
   void print(ostream& out) const {
     //out << "DIMENSIONS: " << seq_shape() << endl;
-    LOOP(int j, span(this->shape.back())) {
-      LOOP(int i, span(seq_size())) {
+    LOOP(int j, iota_range(this->shape.back())) {
+      LOOP(int i, iota_range(seq_size())) {
         out << (*this)[i][j] << " ";
       }
       out << endl;

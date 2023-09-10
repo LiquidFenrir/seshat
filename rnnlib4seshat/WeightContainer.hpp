@@ -45,21 +45,21 @@ the following copyright and permission notice:
 #include <algorithm>
 #include <functional>
 #include <math.h>
-#include <boost/tuple/tuple.hpp>
+#include <tuple>
 #include "Random.hpp"
 #include "DataExporter.hpp"
 
 using namespace std;
 
-typedef multimap<string, boost::tuple<string, string, int, int> >::iterator WC_CONN_IT; 
-typedef pair<string, boost::tuple<string, string, int, int> > WC_CONN_PAIR;
+typedef multimap<string, std::tuple<string, string, int, int> >::iterator WC_CONN_IT; 
+typedef pair<string, std::tuple<string, string, int, int> > WC_CONN_PAIR;
 
 struct WeightContainer: public DataExporter
 {
   //data
   Vector<real_t> weights;
   Vector<real_t> derivatives;
-  multimap<string, boost::tuple<string, string, int, int> > connections;
+  multimap<string, std::tuple<string, string, int, int> > connections;
 	
   //functions
   WeightContainer(DataExportHandler *deh):
@@ -68,7 +68,7 @@ struct WeightContainer: public DataExporter
   }
 
   void link_layers(const string& fromName, const string& toName, const string& connName = "", int paramBegin = 0, int paramEnd = 0) {
-    connections.insert(make_pair(toName, boost::make_tuple(fromName, connName, paramBegin, paramEnd)));
+    connections.insert(make_pair(toName, std::make_tuple(fromName, connName, paramBegin, paramEnd)));
   }
   
   pair<size_t, size_t> new_parameters(size_t numParams, const string& fromName, const string& toName, const string& connName) {
@@ -112,11 +112,11 @@ struct WeightContainer: public DataExporter
   {
     LOOP(const WC_CONN_PAIR& p, connections)
       {
-	VDI begin = container.begin() + p.second.get<2>();
-	VDI end = container.begin() + p.second.get<3>();
+	VDI begin = container.begin() + std::get<2>(p.second);
+	VDI end = container.begin() + std::get<3>(p.second);
 	if (begin != end)
 	  {
-	    save_range(make_pair(begin, end), p.second.get<1>() + "_" + nam);
+	    save_range(make_pair(begin, end), std::get<1>(p.second) + "_" + nam);
 	  }
       }
   }

@@ -61,7 +61,7 @@ struct FullConnection: public Connection
         WeightContainer *wc;
 
 	//functions
-  FullConnection(Layer* f, Layer* t, WeightContainer *weight, const vector<int>& d = empty_list_of<int>(), FullConnection* s = 0):
+  FullConnection(Layer* f, Layer* t, WeightContainer *weight, const vector<int>& d = {}, FullConnection* s = 0):
 		Connection(make_name(f, t, d), f, t),
 		source(s)
 		//paramRange(source ? source->paramRange : wc->new_parameters(this->from->output_size() * this->to->input_size(), this->from->name, this->to->name, name))     
@@ -92,7 +92,7 @@ struct FullConnection: public Connection
 	{
 		static string name;
 		name = f->name + "_to_" + t->name;
-		if (find_if(d.begin(), d.end(), std::bind2nd(not_equal_to<int>(), 0)) != d.end())
+		if (find_if(d.begin(), d.end(), std::bind(not_equal_to<int>(), std::placeholders::_1, 0)) != d.end())
 		{
 			stringstream temp;
 			temp << "_delay_";

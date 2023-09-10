@@ -22,27 +22,27 @@
 #include <list>
 #include "cellcyk.h"
 
-class LogSpace{
+class LogSpace {
   int N;
   int RX, RY;
-  CellCYK **data;
+  std::unique_ptr<CellCYK *[]> data;
 
   void quicksort(CellCYK **vec, int ini, int fin);
   int  partition(CellCYK **vec, int ini, int fin);
-  void bsearch(int sx, int sy, int ss, int st, list<CellCYK*> *set);
-  void bsearchStv(int sx, int sy, int ss, int st, list<CellCYK*> *set, bool U_V, CellCYK *cd);
-  void bsearchHBP(int sx, int sy, int ss, int st, list<CellCYK*> *set, CellCYK *cd);
+  void bsearch(int sx, int sy, int ss, int st, std::list<CellCYK*> *set);
+  void bsearchStv(int sx, int sy, int ss, int st, std::list<CellCYK*> *set, bool U_V, CellCYK *cd);
+  void bsearchHBP(int sx, int sy, int ss, int st, std::list<CellCYK*> *set, CellCYK *cd);
 
  public:
   LogSpace(CellCYK *c, int nr, int dx, int dy);
   ~LogSpace();
 
-  void getH(CellCYK *c, list<CellCYK*> *set);
-  void getV(CellCYK *c, list<CellCYK*> *set);
-  void getU(CellCYK *c, list<CellCYK*> *set);
-  void getI(CellCYK *c, list<CellCYK*> *set);
-  void getM(CellCYK *c, list<CellCYK*> *set);
-  void getS(CellCYK *c, list<CellCYK*> *set);
+  void getH(CellCYK *c, std::list<CellCYK*> *set);
+  void getV(CellCYK *c, std::list<CellCYK*> *set);
+  void getU(CellCYK *c, std::list<CellCYK*> *set);
+  void getI(CellCYK *c, std::list<CellCYK*> *set);
+  void getM(CellCYK *c, std::list<CellCYK*> *set);
+  void getS(CellCYK *c, std::list<CellCYK*> *set);
 };
 
 #endif

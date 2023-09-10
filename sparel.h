@@ -33,15 +33,14 @@ class SpaRel{
 
  private:
   GMM *model;
-  Sample *mue;
+  Sample &mue;
   float probs[NRELS];
 
   double compute_prob(Hypothesis *h1, Hypothesis *h2, int k);
   void smooth(float *post);
 
  public:
-  SpaRel(GMM *gmm, Sample *m);
-  ~SpaRel();
+  SpaRel(GMM *gmm, Sample &m);
 
   void getFeas(Hypothesis *a, Hypothesis *b, float *sample, int ry);
 

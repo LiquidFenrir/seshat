@@ -40,9 +40,6 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #ifndef _INCLUDED_DataExporter_h
 #define _INCLUDED_DataExporter_h
 
-#include <boost/concept/requires.hpp>
-#include <boost/range/concepts.hpp>
-
 #include <map>
 #include <string>
 #include <utility>
@@ -61,7 +58,7 @@ struct Val {
   virtual bool load(istream& in, ostream& out = cout) {
     return false;
   }
-  virtual ~Val(){}
+  virtual ~Val() = default;
 };
 
 static ostream& operator <<(ostream& out, const Val& v) {
@@ -82,13 +79,13 @@ template <typename R> struct RangeVal: public Val {
   explicit RangeVal(const R& r) : range(r) {}
 
   void print(ostream& out) const {
-    out << boost::size(range) << " ";
+    out << std::size(range) << " ";
     print_range(out, range);
   }
 
   bool load(istream& in, ostream& out = cout) {
     int size;
-    if (in >> size && size == boost::size(range)) {
+    if (in >> size && size == std::size(range)) {
       if (!(in >> range)) {
         out << "ERROR unable to read from stream" << endl;
         return false;
@@ -96,7 +93,7 @@ template <typename R> struct RangeVal: public Val {
       return true;
     } else {
       out << "ERROR saved size " << size << " != current size "
-          << boost::size(range) << endl;
+          << std::size(range) << endl;
       return false;
     }
   }

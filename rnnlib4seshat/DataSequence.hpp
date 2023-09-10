@@ -44,26 +44,26 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #include <iostream>
 #include <iterator>
 #include <string>
-#include <boost/bimap.hpp>
 #include "Helpers.hpp"
 #include "SeqBuffer.hpp"
 
 template<class R> static string label_seq_to_str(const R& labelSeq, const vector<string>& alphabet, const string& delim = " ")
 {
 	stringstream ss;
-	for (typename range_const_iterator<R>::type it = boost::begin(labelSeq); it != boost::end(labelSeq); ++it)
-	{
-		if (in_range(alphabet,*it))
+	bool first = true;
+	LOOP(const auto& it, labelSeq) {
+		if(first)
+			first = false;
+		else
+			ss << delim;
+
+		if (in_range(alphabet, it))
 		{
-			ss << alphabet[*it];
+			ss << alphabet[it];
 		}
 		else
 		{
 			ss << "<NULL>";
-		}
-		if (it != --boost::end(labelSeq))
-		{
-			ss << delim;
 		}
 	}
 	return ss.str();
@@ -81,7 +81,7 @@ static vector<int> str_to_label_seq(const string& labelSeqString, const vector<s
 		int i = index(alphabet, lab);
 		if (i != alphabet.size())
 		{
-			v += i;
+			v.push_back(i);
 		}
 	}
 	return v;
@@ -153,6 +153,6 @@ static ostream& operator <<(ostream& out, const DataSequence& seq)
 {
 	seq.print(out);
 	return out;
-	}
+}
 
 #endif

@@ -108,7 +108,7 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
     }
 
     //initialise the state delays
-    LOOP(int i, span(this->num_seq_dims())) {
+    LOOP(int i, iota_range(this->num_seq_dims())) {
       stateDelays[i].resize(this->num_seq_dims(), 0);
       stateDelays[i][i] = -directions[i];
     }
@@ -143,7 +143,7 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
     real_t* stateBegin = states[coords].begin();
     real_t* preGateStateBegin = preGateStates[coords].begin();
     real_t* preOutGateActBegin = preOutGateActs[coords].begin();
-    LOOP(int d, span(this->num_seq_dims())) {
+    LOOP(int d, iota_range(this->num_seq_dims())) {
       oldStates[d] = states.at(range_plus(
           delayedCoords, coords, stateDelays[d]));
     }
@@ -154,7 +154,7 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
     int cellStart = 0;
     int cellEnd = cellsPerBlock;
     real_t* fgActEnd = fgActBegin + this->num_seq_dims();
-    LOOP(int b, span(numBlocks)) {
+    LOOP(int b, iota_range(numBlocks)) {
 #ifdef PEEPS
       View<real_t> fgActs(fgActBegin, fgActEnd);
       //input gate
@@ -173,7 +173,7 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
 
       //forget gates
       //extra inputs from peepholes (from old states)
-      LOOP(int d, span(this->num_seq_dims())) {
+      LOOP(int d, iota_range(this->num_seq_dims())) {
 #ifdef PEEPS
         const View<real_t>& os = oldStates[d];
         if (os.begin()) {
@@ -193,9 +193,9 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
       inActIt += cellsPerBlock;
 
       //cell states
-      LOOP(int c, span(cellStart, cellEnd)) {
+      LOOP(int c, iota_range(cellStart, cellEnd)) {
         real_t state = inGateAct * preGateStateBegin[c];
-        LOOP(int d, span(this->num_seq_dims())) {
+        LOOP(int d, iota_range(this->num_seq_dims())) {
           const View<real_t>& os = oldStates[d];
           if (os.begin()) {
             state += fgActs[d] * os[c];
@@ -220,7 +220,7 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
       //output activations
       transform(
           preOutGateActBegin + cellStart, preOutGateActBegin + cellEnd,
-          actBegin + cellStart, bind2nd(multiplies<real_t>(), outGateAct));
+          actBegin + cellStart, std::bind(multiplies<real_t>(), std::placeholders::_1, outGateAct));
       cellStart = cellEnd;
       cellEnd += cellsPerBlock;
       fgActBegin = fgActEnd;
@@ -244,7 +244,7 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
     const real_t* peepWtIt =
         wc->get_weights(peepRange).begin();
 #endif
-    LOOP(int d, span(this->num_seq_dims())) {
+    LOOP(int d, iota_range(this->num_seq_dims())) {
       oldStates[d] = states.at(range_plus(
           delayedCoords, coords, stateDelays[d]));
       range_minus(delayedCoords, coords, stateDelays[d]);
@@ -256,7 +256,7 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
     int cellEnd = cellsPerBlock;
     int fgStart = 0;
     int gateStart = 0;
-    LOOP(int b, span(numBlocks)) {
+    LOOP(int b, iota_range(numBlocks)) {
       real_t inGateAct = inGateActBegin[b];
       real_t outGateAct = outGateActBegin[b];
 
@@ -267,7 +267,7 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
               outputErrorBegin + cellStart, 0.0);
 
       //cell pds (dE/dState)
-      LOOP(int c, span(cellStart, cellEnd)) {
+      LOOP(int c, iota_range(cellStart, cellEnd)) {
         real_t deriv =
             CO::deriv(preOutGateActBegin[c]) * outGateAct * outputErrorBegin[c];
 #ifdef PEEPS
@@ -276,7 +276,7 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
         real_t ogPeepWt = peepWtIt[peepsPerBlock - cellsPerBlock + cOffset];
         deriv += outGateError * ogPeepWt;
 #endif
-        LOOP(int d, span(this->num_seq_dims())) {
+        LOOP(int d, iota_range(this->num_seq_dims())) {
 #ifdef PEEPS
           real_t fgPeepWt = peepWtIt[cOffset + (cellsPerBlock * (d + 1))];
 #endif
@@ -300,7 +300,7 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
       ++errorIt;
 
       //forget gate error
-      LOOP(int d, span(this->num_seq_dims())) {
+      LOOP(int d, iota_range(this->num_seq_dims())) {
         const View<real_t>& os = oldStates[d];
         if (os.begin()) {
           *errorIt = G::deriv(forgetGateActBegin[fgStart + d]) *
@@ -314,7 +314,7 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
       }
 
       //cell errors
-      LOOP(int c, span(cellStart, cellEnd)) {
+      LOOP(int c, iota_range(cellStart, cellEnd)) {
         *errorIt =
             inGateAct * CI::deriv(preGateStateBegin[c]) * cellErrorBegin[c];
         ++errorIt;
@@ -341,31 +341,31 @@ template <class CI, class CO, class G> struct LstmLayer: public Layer {
     const real_t* stateBegin = states[coords].begin();
     const real_t* errorBegin = this->inputErrors[coords].begin();
     real_t* pdIt = wc->get_derivs(peepRange).begin();
-    LOOP(int d, span(this->num_seq_dims())) {
+    LOOP(int d, iota_range(this->num_seq_dims())) {
       oldStates[d] = states.at(range_plus(
           delayedCoords, coords, stateDelays[d]));
     }
-    LOOP(int b, span(numBlocks)) {
+    LOOP(int b, iota_range(numBlocks)) {
       int cellStart = b * cellsPerBlock;
       int cellEnd = cellStart + cellsPerBlock;
       int errorOffset = b * unitsPerBlock;
       real_t inGateError = errorBegin[errorOffset];
-      LOOP(int d, span(this->num_seq_dims())) {
+      LOOP(int d, iota_range(this->num_seq_dims())) {
         const View<real_t>& os = oldStates[d];
         if (os.begin()) {
-          LOOP(int c, span(cellStart, cellEnd))
+          LOOP(int c, iota_range(cellStart, cellEnd))
           {
             pdIt[c - cellStart] += inGateError * os[c];
           }
           real_t forgGateError = errorBegin[errorOffset + d + 1];
-          LOOP(int c, span(cellStart, cellEnd)) {
+          LOOP(int c, iota_range(cellStart, cellEnd)) {
             pdIt[(c - cellStart) + ((d + 1) * cellsPerBlock)] +=
                 forgGateError * os[c];
           }
         }
       }
       real_t outGateError = errorBegin[errorOffset + unitsPerBlock - 1];
-      LOOP(int c, span(cellStart, cellEnd)) {
+      LOOP(int c, iota_range(cellStart, cellEnd)) {
         pdIt[(c - cellStart) + peepsPerBlock - cellsPerBlock] +=
             outGateError * stateBegin[c];
       }

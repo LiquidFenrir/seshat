@@ -18,29 +18,27 @@
 #include "stroke.h"
 #include <cfloat>
 #include <cmath>
+#include <algorithm>
+#include <utility>
 
 bool esNum(char c){
   return (c >= '0' && c <= '9') || c=='-' || c=='.';
 }
 
 Stroke::Stroke(int np) {
-  NP = np;
-  pseq = new Punto[NP];
+  pseq.resize(np, Punto(-1,-1));
 
   cx = cy = 0;
   rx = ry =  INT_MAX;
   rs = rt = -INT_MAX;
-  for(int i=0; i<NP; i++)
-    pseq[i].x = pseq[i].y = -1;
 }
 
 Stroke::Stroke(int np, FILE *fd) {
-  NP = np;
-  pseq = new Punto[NP];
+  pseq.resize(np);
 
   rx = ry =  INT_MAX;
   rs = rt = -INT_MAX;
-  for(int i=0; i<NP; i++) {
+  for(int i=0; i<(int)pseq.size(); i++) {
     fscanf(fd, "%f %f", &pseq[i].x, &pseq[i].y);
     if( pseq[i].x < rx ) rx = pseq[i].x;
     if( pseq[i].y < ry ) ry = pseq[i].y;
@@ -49,64 +47,7 @@ Stroke::Stroke(int np, FILE *fd) {
   }
 }
 
-
-Stroke::Stroke(char *str, int inkml_id) {
-  char aux[512];
-  int iaux;
-
-  id = inkml_id;
-  
-  vector<Punto*> data;
-
-  //Remove broken lines
-  for(int i=0; str[i]; i++)
-    if( str[i] == '\n' ) {
-      for(int j=i; str[j]; j++)
-	str[j] = str[j+1];
-    }
-
-  for(int i=0; str[i]; i++) {
-
-    while( str[i] && !esNum(str[i]) ) i++;
-    
-    if( !str[i] ) break;
-
-    float px=0, py=0;
-
-    for(iaux=0; str[i] && esNum(str[i]); iaux++, i++)
-      aux[iaux] = str[i];
-    aux[iaux] = 0;
-
-    if( !str[i] ) break;
-
-    px=atof(aux);
-
-    while( str[i] && !esNum(str[i]) ) i++;
-    
-    if( !str[i] ) break;
-
-    for(iaux=0; str[i] && esNum(str[i]); iaux++, i++)
-      aux[iaux] = str[i];
-    aux[iaux] = 0;
-
-    py=atof(aux);
-
-    while( str[i] && str[i] != ',' ) i++;
-    i--;
-
-    data.push_back(new Punto(px,py));
-  }
-  
-  NP = (int)data.size();
-  pseq = new Punto[NP];
-  for(int i=0; i<NP; i++) {
-    set(i, data[i]);
-    delete data[i];
-  }
-}
-
 Stroke::~Stroke() {
-  delete[] pseq;
 }
 
 void Stroke::set(int idx, Punto *p) {
@@ -123,24 +64,24 @@ Punto *Stroke::get(int idx) {
   return &pseq[idx];
 }
 
-int Stroke::getNpuntos() {
-  return NP;
+const Punto *Stroke::get(int idx) const {
+  return &pseq[idx];
 }
 
-int Stroke::getId() {
-  return id;
+int Stroke::getNpuntos() const {
+  return (int)pseq.size();
 }
 
 void Stroke::print() {
-  printf("STROKE - %d points\n", NP);
-  for(int i=0; i<NP; i++)
+  printf("STROKE - %d points\n", (int)pseq.size());
+  for(int i=0; i<(int)pseq.size(); i++)
     printf(" (%g,%g)", pseq[i].x, pseq[i].y);
   printf("\n");
 }
 
 float Stroke::min_dist(Stroke *st) {
   float mind = FLT_MAX;
-  for(int i=0; i<NP; i++) {
+  for(int i=0; i<(int)pseq.size(); i++) {
     for(int j=0; j<st->getNpuntos(); j++) {
       Punto *p = st->get(j);
 

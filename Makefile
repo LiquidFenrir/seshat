@@ -1,98 +1,102 @@
 APP=seshat
 CC=g++
-LINK=-lxerces-c -lm
-FLAGS = -O3 -Wno-unused-result -fpermissive -I/opt/xerces-c/include -L/opt/xerces-c/lib -I./boost_1_82_0
-# should remove -g and add -03 whenever not debugging
+LINK=-lm
+BUILDDIR=build
+FLAGS = -std=c++23 -O3 -Wno-unused-result
 
-OBJFEAS=symfeatures.o featureson.o online.o
-OBJMUESTRA=sample.o stroke.o
-OBJPARSE=seshat.o meparser.o gparser.o grammar.o production.o symrec.o duration.o segmentation.o sparel.o gmm.o
-OBJTABLA=tablecyk.o cellcyk.o hypothesis.o logspace.o
-OBJRNNLIB=Random.o DataExporter.o WeightContainer.o ClassificationLayer.o Layer.o Mdrnn.o Optimiser.o
+OBJFEAS=$(BUILDDIR)/symfeatures.o $(BUILDDIR)/featureson.o $(BUILDDIR)/online.o
+OBJMUESTRA=$(BUILDDIR)/sample.o $(BUILDDIR)/stroke.o
+OBJPARSE=$(BUILDDIR)/seshat.o $(BUILDDIR)/meparser.o $(BUILDDIR)/gparser.o $(BUILDDIR)/grammar.o $(BUILDDIR)/production.o $(BUILDDIR)/symrec.o $(BUILDDIR)/duration.o $(BUILDDIR)/segmentation.o $(BUILDDIR)/sparel.o $(BUILDDIR)/gmm.o
+OBJTABLA=$(BUILDDIR)/tablecyk.o $(BUILDDIR)/cellcyk.o $(BUILDDIR)/hypothesis.o $(BUILDDIR)/logspace.o
+OBJRNNLIB=$(BUILDDIR)/Random.o $(BUILDDIR)/DataExporter.o $(BUILDDIR)/WeightContainer.o $(BUILDDIR)/ClassificationLayer.o $(BUILDDIR)/Layer.o $(BUILDDIR)/Mdrnn.o $(BUILDDIR)/Optimiser.o
 RNNLIBHEADERS=rnnlib4seshat/DataSequence.hpp rnnlib4seshat/NetcdfDataset.hpp rnnlib4seshat/Mdrnn.hpp rnnlib4seshat/MultilayerNet.hpp rnnlib4seshat/Rprop.hpp rnnlib4seshat/SteepestDescent.hpp rnnlib4seshat/Trainer.hpp rnnlib4seshat/WeightContainer.hpp
 OBJS=$(OBJFEAS) $(OBJMUESTRA) $(OBJPARSE) $(OBJTABLA) $(OBJRNNLIB)
 
-seshat: $(OBJS)
+seshat: $(BUILDDIR) $(OBJS)
 	$(CC) -o $(APP) $(OBJS) $(FLAGS) $(LINK)
 
-seshat.o: seshat.cc grammar.o sample.o meparser.o
-	$(CC) -c seshat.cc $(FLAGS)
+$(BUILDDIR):
+	mkdir -p $@
 
-production.o: production.h production.cc symrec.o
-	$(CC) -c production.cc $(FLAGS)
+$(BUILDDIR)/seshat.o: seshat.cc $(BUILDDIR)/grammar.o $(BUILDDIR)/sample.o $(BUILDDIR)/meparser.o
+	$(CC) -c seshat.cc $(FLAGS) -o $@
 
-grammar.o: grammar.h grammar.cc production.o gparser.o symrec.o
-	$(CC) -c grammar.cc $(FLAGS)
+$(BUILDDIR)/production.o: production.h production.cc $(BUILDDIR)/symrec.o
+	$(CC) -c production.cc $(FLAGS) -o $@
 
-meparser.o: meparser.h meparser.cc grammar.o production.o symrec.o tablecyk.o cellcyk.o logspace.o duration.o segmentation.o sparel.o sample.o hypothesis.o
-	$(CC) -c meparser.cc $(FLAGS)
+$(BUILDDIR)/grammar.o: grammar.h grammar.cc $(BUILDDIR)/production.o $(BUILDDIR)/gparser.o $(BUILDDIR)/symrec.o
+	$(CC) -c grammar.cc $(FLAGS) -o $@
 
-gparser.o: gparser.h gparser.cc
-	$(CC) -c gparser.cc $(FLAGS)
+$(BUILDDIR)/meparser.o: meparser.h meparser.cc $(BUILDDIR)/grammar.o $(BUILDDIR)/production.o $(BUILDDIR)/symrec.o $(BUILDDIR)/tablecyk.o $(BUILDDIR)/cellcyk.o $(BUILDDIR)/logspace.o $(BUILDDIR)/duration.o $(BUILDDIR)/segmentation.o $(BUILDDIR)/sparel.o $(BUILDDIR)/sample.o $(BUILDDIR)/hypothesis.o
+	$(CC) -c meparser.cc $(FLAGS) -o $@
 
-sample.o: sample.h sample.cc tablecyk.o cellcyk.o stroke.o grammar.o
-	$(CC) -c sample.cc $(FLAGS)
+$(BUILDDIR)/gparser.o: gparser.h gparser.cc
+	$(CC) -c gparser.cc $(FLAGS) -o $@
 
-symrec.o: symrec.h symrec.cc symfeatures.o $(RNNLIBHEADERS)
-	$(CC) -c symrec.cc $(FLAGS)
+$(BUILDDIR)/sample.o: vectorimage.h sample.h sample.cc $(BUILDDIR)/tablecyk.o $(BUILDDIR)/cellcyk.o $(BUILDDIR)/stroke.o $(BUILDDIR)/grammar.o
+	$(CC) -c sample.cc $(FLAGS) -o $@
 
-duration.o: duration.h duration.cc symrec.o
-	$(CC) -c duration.cc $(FLAGS)
+$(BUILDDIR)/symrec.o: vectorimage.h symrec.h symrec.cc $(BUILDDIR)/symfeatures.o $(RNNLIBHEADERS)
+	$(CC) -c symrec.cc $(FLAGS) -o $@
 
-segmentation.o: segmentation.h segmentation.cc cellcyk.o sample.o gmm.o
-	$(CC) -c segmentation.cc $(FLAGS)
+$(BUILDDIR)/duration.o: duration.h duration.cc $(BUILDDIR)/symrec.o
+	$(CC) -c duration.cc $(FLAGS) -o $@
 
-tablecyk.o: tablecyk.h tablecyk.cc cellcyk.o hypothesis.o
-	$(CC) -c tablecyk.cc $(FLAGS)
+$(BUILDDIR)/segmentation.o: segmentation.h segmentation.cc $(BUILDDIR)/cellcyk.o $(BUILDDIR)/sample.o $(BUILDDIR)/gmm.o
+	$(CC) -c segmentation.cc $(FLAGS) -o $@
 
-cellcyk.o: cellcyk.h cellcyk.cc hypothesis.o
-	$(CC) -c cellcyk.cc $(FLAGS)
+$(BUILDDIR)/tablecyk.o: tablecyk.h tablecyk.cc $(BUILDDIR)/cellcyk.o $(BUILDDIR)/hypothesis.o
+	$(CC) -c tablecyk.cc $(FLAGS) -o $@
 
-hypothesis.o: hypothesis.h hypothesis.cc production.o grammar.o
-	$(CC) -c hypothesis.cc $(FLAGS)
+$(BUILDDIR)/cellcyk.o: cellcyk.h cellcyk.cc $(BUILDDIR)/hypothesis.o
+	$(CC) -c cellcyk.cc $(FLAGS) -o $@
 
-logspace.o: logspace.h logspace.cc cellcyk.o
-	$(CC) -c logspace.cc $(FLAGS)
+$(BUILDDIR)/hypothesis.o: hypothesis.h hypothesis.cc $(BUILDDIR)/production.o $(BUILDDIR)/grammar.o
+	$(CC) -c hypothesis.cc $(FLAGS) -o $@
 
-sparel.o: sparel.h sparel.cc hypothesis.o cellcyk.o gmm.o sample.o
-	$(CC) -c sparel.cc $(FLAGS)
+$(BUILDDIR)/logspace.o: logspace.h logspace.cc $(BUILDDIR)/cellcyk.o
+	$(CC) -c logspace.cc $(FLAGS) -o $@
 
-gmm.o: gmm.cc gmm.h
-	$(CC) -c gmm.cc $(FLAGS)
+$(BUILDDIR)/sparel.o: sparel.h sparel.cc $(BUILDDIR)/hypothesis.o $(BUILDDIR)/cellcyk.o $(BUILDDIR)/gmm.o $(BUILDDIR)/sample.o
+	$(CC) -c sparel.cc $(FLAGS) -o $@
 
-stroke.o: stroke.cc stroke.h
-	$(CC) -c stroke.cc $(FLAGS)
+$(BUILDDIR)/gmm.o: gmm.cc gmm.h
+	$(CC) -c gmm.cc $(FLAGS) -o $@
 
-symfeatures.o: symfeatures.cc online.o featureson.o
-	$(CC) -c symfeatures.cc $(FLAGS)
+$(BUILDDIR)/stroke.o: stroke.cc stroke.h
+	$(CC) -c stroke.cc $(FLAGS) -o $@
 
-featureson.o: featureson.cc featureson.h online.o
-	$(CC) -c featureson.cc $(FLAGS)
+$(BUILDDIR)/symfeatures.o: vectorimage.h symfeatures.cc $(BUILDDIR)/online.o $(BUILDDIR)/featureson.o
+	$(CC) -c symfeatures.cc $(FLAGS) -o $@
 
-online.o: online.cc online.h
-	$(CC) -c online.cc $(FLAGS)
+$(BUILDDIR)/featureson.o: featureson.cc featureson.h $(BUILDDIR)/online.o
+	$(CC) -c featureson.cc $(FLAGS) -o $@
+
+$(BUILDDIR)/online.o: online.cc online.h
+	$(CC) -c online.cc $(FLAGS) -o $@
 
 #rnnlib4seshat
-Random.o: rnnlib4seshat/Random.cpp
-	$(CC) -c rnnlib4seshat/Random.cpp $(FLAGS)
+$(BUILDDIR)/Random.o: rnnlib4seshat/Random.cpp
+	$(CC) -c rnnlib4seshat/Random.cpp $(FLAGS) -o $@
 
-DataExporter.o: rnnlib4seshat/DataExporter.cpp
-	$(CC) -c rnnlib4seshat/DataExporter.cpp $(FLAGS)
+$(BUILDDIR)/DataExporter.o: rnnlib4seshat/DataExporter.cpp
+	$(CC) -c rnnlib4seshat/DataExporter.cpp $(FLAGS) -o $@
 
-WeightContainer.o: rnnlib4seshat/WeightContainer.cpp
-	$(CC) -c rnnlib4seshat/WeightContainer.cpp $(FLAGS)
+$(BUILDDIR)/WeightContainer.o: rnnlib4seshat/WeightContainer.cpp
+	$(CC) -c rnnlib4seshat/WeightContainer.cpp $(FLAGS) -o $@
 
-ClassificationLayer.o: rnnlib4seshat/ClassificationLayer.cpp
-	$(CC) -c rnnlib4seshat/ClassificationLayer.cpp $(FLAGS)
+$(BUILDDIR)/ClassificationLayer.o: rnnlib4seshat/ClassificationLayer.cpp
+	$(CC) -c rnnlib4seshat/ClassificationLayer.cpp $(FLAGS) -o $@
 
-Layer.o: rnnlib4seshat/Layer.cpp
-	$(CC) -c rnnlib4seshat/Layer.cpp $(FLAGS)
+$(BUILDDIR)/Layer.o: rnnlib4seshat/Layer.cpp
+	$(CC) -c rnnlib4seshat/Layer.cpp $(FLAGS) -o $@
 
-Mdrnn.o: rnnlib4seshat/Mdrnn.cpp
-	$(CC) -c rnnlib4seshat/Mdrnn.cpp $(FLAGS)
+$(BUILDDIR)/Mdrnn.o: rnnlib4seshat/Mdrnn.cpp
+	$(CC) -c rnnlib4seshat/Mdrnn.cpp $(FLAGS) -o $@
 
-Optimiser.o: rnnlib4seshat/Optimiser.cpp
-	$(CC) -c rnnlib4seshat/Optimiser.cpp $(FLAGS)
+$(BUILDDIR)/Optimiser.o: rnnlib4seshat/Optimiser.cpp
+	$(CC) -c rnnlib4seshat/Optimiser.cpp $(FLAGS) -o $@
 
 clean:
-	rm -f *.o $(APP)
+	rm -r $(BUILDDIR)
+	rm $(APP)

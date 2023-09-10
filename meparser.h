@@ -34,33 +34,32 @@
 
 class meParser{
 
-  Grammar *G;
+  std::unique_ptr<Grammar> G;
 
   int   max_strokes;
   float clusterF, segmentsTH;
   float ptfactor, pbfactor, rfactor;
   float qfactor, dfactor, gfactor, InsPen;
 
-  SymRec *sym_rec;
-  GMM *gmm_spr;
-  DurationModel  *duration;
-  SegmentationModelGMM *segmentation;
+  std::unique_ptr<SymRec> sym_rec;
+  std::unique_ptr<GMM> gmm_spr;
+  std::optional<DurationModel> duration;
+  std::optional<SegmentationModelGMM> segmentation;
 
   //Private methods
   void loadSymRec(char *conf);
   int  tree2dot(FILE *fd, Hypothesis *H, int id);
 
-  void initCYKterms(Sample *m, TableCYK *tcyk, int N, int K);
+  void initCYKterms(Sample &m, TableCYK *tcyk, int N, int K);
 
-  void combineStrokes(Sample *M, TableCYK *tcyk, LogSpace **LSP, int N);
-  CellCYK* fusion(Sample *M, ProductionB *pd, Hypothesis *A, Hypothesis *B, int N, double prob);
+  void combineStrokes(Sample &M, TableCYK *tcyk, LogSpace **LSP, int N);
+  CellCYK* fusion(Sample &M, ProductionB *pd, Hypothesis *A, Hypothesis *B, int N, double prob);
 
  public:
   meParser(char *conf);
-  ~meParser();
 
   //Parse math expression
-  void parse_me(Sample *M);
+  void parse_me(Sample &M);
   
   //Output formatting methods
   void print_symrec(Hypothesis *H);

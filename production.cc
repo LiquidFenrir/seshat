@@ -272,7 +272,7 @@ void ProductionH::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid) 
 
       char inkid[128];
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hi->inkml_id = inkid;
+      //H->hi->inkml_id = inkid;
 
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
 	      tipo, inkid, clase, tipo);
@@ -287,7 +287,7 @@ void ProductionH::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid) 
 
       char inkid[128];
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hd->inkml_id = inkid;
+      //H->hd->inkml_id = inkid;
 
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
 	      tipo, inkid, clase, tipo);
@@ -333,7 +333,7 @@ void ProductionV::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid) 
 
       char inkid[128];
       sprintf(inkid, "-_%d", *nid);
-      H->hd->hi->inkml_id = inkid;
+      //H->hd->hi->inkml_id = inkid;
 
       //Init mfrac
       fprintf(fout, "<mfrac xml:id=\"%s\">\n", inkid);
@@ -346,7 +346,7 @@ void ProductionV::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid) 
 	
 	*nid = *nid + 1;
 	sprintf(inkid, "%s_%d", clase, *nid);
-	H->hi->inkml_id = inkid;	
+	//H->hi->inkml_id = inkid;	
 
 	fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 		tipo, inkid, clase, tipo);
@@ -361,7 +361,7 @@ void ProductionV::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid) 
 
         *nid = *nid + 1;
         sprintf(inkid, "%s_%d", clase, *nid);
-        H->hd->hd->inkml_id = inkid;
+        //H->hd->hd->inkml_id = inkid;
 
         fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
                 tipo, inkid, clase, tipo);
@@ -379,7 +379,7 @@ void ProductionV::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid) 
 
       char inkid[128];
       sprintf(inkid, "%s_%d", hdhiclass, *nid);
-      H->hd->hi->inkml_id = inkid;
+      //H->hd->hi->inkml_id = inkid;
 
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 	      tipo, inkid, hdhiclass, tipo);
@@ -393,7 +393,7 @@ void ProductionV::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid) 
 
 	*nid = *nid + 1;
 	sprintf(inkid, "%s_%d", clase, *nid);
-	H->hd->hd->inkml_id = inkid;
+	//H->hd->hd->inkml_id = inkid;
 
 	fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 		tipo, inkid, clase, tipo);
@@ -408,7 +408,7 @@ void ProductionV::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid) 
 
         *nid = *nid + 1;
         sprintf(inkid, "%s_%d", clase, *nid);
-        H->hi->inkml_id = inkid;
+        //H->hi->inkml_id = inkid;
 
         fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 		tipo, inkid, clase, tipo);
@@ -433,7 +433,7 @@ void ProductionV::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid) 
       *nid = *nid + 1;
       char inkid[128];
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hi->inkml_id = inkid;
+      //H->hi->inkml_id = inkid;
       
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 	      tipo, inkid, clase, tipo);
@@ -448,7 +448,7 @@ void ProductionV::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid) 
       *nid = *nid + 1;
       char inkid[128];
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hd->inkml_id = inkid;
+      //H->hd->inkml_id = inkid;
 
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 	      tipo, inkid, clase, tipo);
@@ -494,7 +494,7 @@ void ProductionVe::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid)
 
       char inkid[128];
       sprintf(inkid, "-_%d", *nid);
-      H->hd->hi->inkml_id = inkid;
+      //H->hd->hi->inkml_id = inkid;
 
       //Init mfrac
       fprintf(fout, "<mfrac xml:id=\"%s\">\n", inkid);
@@ -507,7 +507,7 @@ void ProductionVe::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid)
 	
 	*nid = *nid + 1;
 	sprintf(inkid, "%s_%d", clase, *nid);
-	H->hi->inkml_id = inkid;	
+	//H->hi->inkml_id = inkid;	
 
 	fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 		tipo, inkid, clase, tipo);
@@ -522,7 +522,7 @@ void ProductionVe::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid)
 
         *nid = *nid + 1;
         sprintf(inkid, "%s_%d", clase, *nid);
-        H->hd->hd->inkml_id = inkid;
+        //H->hd->hd->inkml_id = inkid;
 
         fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
                 tipo, inkid, clase, tipo);
@@ -540,7 +540,7 @@ void ProductionVe::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid)
 
       char inkid[128];
       sprintf(inkid, "%s_%d", hdhiclass, *nid);
-      H->hd->hi->inkml_id = inkid;
+      //H->hd->hi->inkml_id = inkid;
 
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 	      tipo, inkid, hdhiclass, tipo);
@@ -554,7 +554,7 @@ void ProductionVe::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid)
 
 	*nid = *nid + 1;
 	sprintf(inkid, "%s_%d", clase, *nid);
-	H->hd->hd->inkml_id = inkid;
+	//H->hd->hd->inkml_id = inkid;
 
 	fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 		tipo, inkid, clase, tipo);
@@ -569,7 +569,7 @@ void ProductionVe::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid)
 
         *nid = *nid + 1;
         sprintf(inkid, "%s_%d", clase, *nid);
-        H->hi->inkml_id = inkid;
+        //H->hi->inkml_id = inkid;
 
         fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 		tipo, inkid, clase, tipo);
@@ -594,7 +594,7 @@ void ProductionVe::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid)
       *nid = *nid + 1;
       char inkid[128];
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hi->inkml_id = inkid;
+      //H->hi->inkml_id = inkid;
       
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 	      tipo, inkid, clase, tipo);
@@ -609,7 +609,7 @@ void ProductionVe::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid)
       *nid = *nid + 1;
       char inkid[128];
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hd->inkml_id = inkid;
+      //H->hd->inkml_id = inkid;
 
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 	      tipo, inkid, clase, tipo);
@@ -654,7 +654,7 @@ void ProductionSSE::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
 
     char inkid[128];
     sprintf(inkid, "%s_%d", clase, *nid);
-    H->hi->hi->inkml_id = inkid;
+    //H->hi->hi->inkml_id = inkid;
 
     fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
     tipo, inkid, clase, tipo);
@@ -669,7 +669,7 @@ void ProductionSSE::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
 
     char inkid[128];
     sprintf(inkid, "%s_%d", clase, *nid);
-    H->hi->hd->inkml_id = inkid;
+    //H->hi->hd->inkml_id = inkid;
 
     fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
     tipo, inkid, clase, tipo);
@@ -684,7 +684,7 @@ void ProductionSSE::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
 
     char inkid[128];
     sprintf(inkid, "%s_%d", clase, *nid);
-    H->hd->inkml_id = inkid;
+    //H->hd->inkml_id = inkid;
 
     fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
     tipo, inkid, clase, tipo);
@@ -764,7 +764,7 @@ void ProductionSup::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
       
       char inkid[128];
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hi->hi->inkml_id = inkid;
+      //H->hi->hi->inkml_id = inkid;
       
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 	      tipo, inkid, clase, tipo);
@@ -780,7 +780,7 @@ void ProductionSup::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
       
       char inkid[128];
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hi->hd->inkml_id = inkid;
+      //H->hi->hd->inkml_id = inkid;
       
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 	      tipo, inkid, clase, tipo);
@@ -796,7 +796,7 @@ void ProductionSup::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
       
       char inkid[128];
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hd->inkml_id = inkid;
+      //H->hd->inkml_id = inkid;
       
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
 	      tipo, inkid, clase, tipo);
@@ -818,7 +818,7 @@ void ProductionSup::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
 
       char inkid[128];
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hi->inkml_id = inkid;
+      //H->hi->inkml_id = inkid;
 
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
       tipo, inkid, clase, tipo);
@@ -833,7 +833,7 @@ void ProductionSup::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
 
       char inkid[128];
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hd->inkml_id = inkid;
+      //H->hd->inkml_id = inkid;
 
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
       tipo, inkid, clase, tipo);
@@ -879,7 +879,7 @@ void ProductionSub::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
 
     char inkid[128];
     sprintf(inkid, "%s_%d", clase, *nid);
-    H->hi->inkml_id = inkid;
+    //H->hi->inkml_id = inkid;
 
     fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
 	    tipo, inkid, clase, tipo);
@@ -894,7 +894,7 @@ void ProductionSub::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
 
     char inkid[128];
     sprintf(inkid, "%s_%d", clase, *nid);
-    H->hd->inkml_id = inkid;
+    //H->hd->inkml_id = inkid;
 
     fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
 	    tipo, inkid, clase, tipo);
@@ -933,7 +933,7 @@ void ProductionIns::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
     //Mroot case
     char inkid[128];
     sprintf(inkid, "\\sqrt_%d", *nid);
-    H->hi->hd->inkml_id = inkid;
+    //H->hi->hd->inkml_id = inkid;
 
     fprintf(fout, "<mroot xml:id=\"%s\">\n", inkid);
 
@@ -946,7 +946,7 @@ void ProductionIns::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
       *nid = *nid + 1;
       
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hd->inkml_id = inkid;
+      //H->hd->inkml_id = inkid;
       
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
 	      tipo, inkid, clase, tipo);
@@ -961,7 +961,7 @@ void ProductionIns::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
       *nid = *nid + 1;
       
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hi->hi->inkml_id = inkid;
+      //H->hi->hi->inkml_id = inkid;
       
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
 	      tipo, inkid, clase, tipo);
@@ -973,7 +973,7 @@ void ProductionIns::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
     //Regular msqrt
     char inkid[128];
     sprintf(inkid, "\\sqrt_%d", *nid);
-    H->hi->inkml_id = inkid;
+    //H->hi->inkml_id = inkid;
 
     fprintf(fout, "<msqrt xml:id=\"%s\">\n", inkid);
     
@@ -985,7 +985,7 @@ void ProductionIns::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
       *nid = *nid + 1;
       
       sprintf(inkid, "%s_%d", clase, *nid);
-      H->hd->inkml_id = inkid;
+      //H->hd->inkml_id = inkid;
       
       fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
 	      tipo, inkid, clase, tipo);
@@ -1022,7 +1022,7 @@ void ProductionMrt::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
 
   char inkid[128];
   sprintf(inkid, "\\sqrt_%d", *nid);
-  H->hi->inkml_id = inkid;
+  //H->hi->inkml_id = inkid;
 
   fprintf(fout, "<mroot xml:id=\"%s\">\n", inkid);
 
@@ -1034,7 +1034,7 @@ void ProductionMrt::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
     *nid = *nid + 1;
 
     sprintf(inkid, "%s_%d", clase, *nid);
-    H->hd->inkml_id = inkid;
+    //H->hd->inkml_id = inkid;
 
     fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
     tipo, inkid, clase, tipo);
@@ -1049,7 +1049,7 @@ void ProductionMrt::print_mathml(Grammar *G, Hypothesis *H, FILE *fout, int *nid
     *nid = *nid + 1;
 
     sprintf(inkid, "%s_%d", clase, *nid);
-    H->hd->inkml_id = inkid;
+    //H->hd->inkml_id = inkid;
 
     fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n", 
     tipo, inkid, clase, tipo);

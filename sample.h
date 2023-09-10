@@ -29,12 +29,13 @@ class TableCYK;
 #include "stroke.h"
 #include "symrec.h"
 #include "grammar.h"
+#include "vectorimage.h"
 
 using namespace std;
 
 //Segmentation hypothesis
 struct SegmentHyp{
-  list<int> stks;  //List of strokes
+  std::vector<int> stks;  //List of strokes
 
   //Bounding box (online coordinates)
   int rx, ry; //Top-left
@@ -43,28 +44,26 @@ struct SegmentHyp{
   int cen;
 };
 
-
 class Sample{
-  vector<Stroke*> dataon;
-  float **stk_dis;
+  vector<Stroke> dataon;
+  VectorImagef stk_dis;
 
-  int **dataoff;
+  VectorImage dataoff;
   int X, Y;
   int IMGxMIN, IMGyMIN, IMGxMAX, IMGyMAX;
-  int **pix_stk;
+  VectorImage pix_stk;
 
   SymRec *SR;
 
   //Information to create the output InkML file
-  char *outinkml, *outdot;
+  char *outdot;
   string UItag;
   int next_id;
 
-  void loadInkML(char *str);
   void loadSCGInk(char *str);
 
-  void linea(int **img, Punto *pa, Punto *pb, int stkid);
-  void linea_pbm(int **img, Punto *pa, Punto *pb, int stkid);
+  void linea(VectorImage& img, Punto *pa, Punto *pb, int stkid);
+  void linea_pbm(VectorImage& img, Punto *pa, Punto *pb, int stkid);
   bool not_visible(int si, int sj, Punto *pi, Punto *pj);
 
 public:
@@ -83,7 +82,7 @@ public:
   int dimY();
   int nStrokes();
   int get(int x, int y);
-  Stroke *getStroke(int i);
+  Stroke &getStroke(int i);
 
   void getCentroids(CellCYK *cd, int *ce, int *as, int *ds);
   void getAVGstroke_size(float *avgw, float *avgh);
@@ -92,28 +91,25 @@ public:
   void  compute_strokes_distances(int rx, int ry);
   float stroke_distance(int si, int sj);
   float getDist(int si, int sj);
-  void  get_close_strokes(int id, list<int> *L, float dist_th);
+  void  get_close_strokes(int id, std::list<int> *L, float dist_th);
 
   float group_penalty(CellCYK *A, CellCYK *B);
-  bool  visibility(list<int> *strokes_list);
+  bool  visibility(std::list<int> *strokes_list);
 
   void setSymRec( SymRec *sr );
 
   void setRegion(CellCYK *c, int nComp);
-  void setRegion(CellCYK *c, list<int> *LT);
+  void setRegion(CellCYK *c, std::list<int> *LT);
   void setRegion(CellCYK *c, int *v, int size);
 
-  int **render(int *pW, int *pH);
-  void renderStrokesPBM(list<int> *SL, int ***img, int *rows, int *cols);
+  VectorImage render();
+  void renderStrokesPBM(const std::vector<int> &SL, VectorImage& img);
 
   void render_img(char *out);
-  void set_out_inkml(char *out);
   void set_out_dot(char *out);
   char *getOutDot();
 
   void print();
-  void printInkML(Grammar *G, Hypothesis *H);
-  void printSymRecInkML(Hypothesis *H, FILE *fout);
 };
 
 #endif

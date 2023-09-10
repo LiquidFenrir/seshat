@@ -43,6 +43,7 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #include "SoftmaxLayer.hpp"
 #include "NeuronLayer.hpp"
 #include "ActivationFunctions.hpp"
+#include <initializer_list>
 
 struct ClassificationLayer: public NetworkOutput
 {
@@ -68,7 +69,7 @@ struct ClassificationLayer: public NetworkOutput
 		{
 			v.resize(labels.size());
 		}
-		criteria = list_of("crossEntropyError")("classificationError");
+		criteria = std::vector<std::string>{"crossEntropyError", "classificationError"};
 	}
 	virtual int output_class(int pt) const = 0;
 	virtual real_t class_prob(int pt, int index) const = 0;
@@ -82,10 +83,10 @@ struct ClassificationLayer: public NetworkOutput
 		outputs.clear();
 		targets.reshape(seq.targetClasses.seq_shape(), 0);
 		real_t crossEntropyError = 0;
-		LOOP(int pt, span(seq.targetClasses.seq_size()))
+		LOOP(int pt, iota_range(seq.targetClasses.seq_size()))
 		{
 			int outputClass = output_class(pt);
-			outputs += outputClass;
+			outputs.push_back(outputClass);
 			int targetClass = seq.targetClasses[pt].front();
 			if (targetClass >= 0)
 			{

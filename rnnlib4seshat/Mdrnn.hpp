@@ -124,14 +124,14 @@ struct Mdrnn {
   }
 
   FullConnection* connect_layers(
-      Layer* from, Layer* to, const vector<int>& delay = empty_list_of<int>()) {
+      Layer* from, Layer* to, const vector<int>& delay = {}) {
     FullConnection* conn = new FullConnection(from, to, wc, delay);
     add_connection(conn);
     return conn;
   }
 
   void make_layer_recurrent(Layer* layer) {
-    vector<int> delay = empty_list_of<int>().repeat(layer->num_seq_dims(), 0);
+    vector<int> delay(layer->num_seq_dims(), 0);
     FOR(i, delay.size()) {
       delay[i] = -layer->directions[i];
       connect_layers(layer, layer, delay);
@@ -145,7 +145,7 @@ struct Mdrnn {
 
   Layer* collapse_layer(
       Layer* src, Layer* dest,
-      const vector<bool>& activeDims = empty_list_of<bool>()) {
+      const vector<bool>& activeDims = {}) {
     Layer* layer = add_layer(new CollapseLayer (src, dest, wc, DEH, activeDims));
     add_connection(new CopyConnection(layer, dest, wc));
     return layer;
@@ -173,16 +173,16 @@ struct Mdrnn {
     Layer* layer = dynamic_cast<Layer*>(output);
     check(layer, "unable to cast network output " + string(
         typeid(*output).name()) + " to layer");
-    outputLayers += layer;
+    outputLayers.push_back(layer);
     if (addBias) {
       add_bias(layer);
     }
-    outputs += output;
+    outputs.push_back(output);
     return layer;
   }
 
   Layer* add_layer(Layer* layer, bool addBias = false, bool recurrent = false) {
-    hiddenLayers += layer;
+    hiddenLayers.push_back(layer);
     if (!is_mirror(layer)) {
       if (addBias) {
         add_bias(layer);
@@ -249,7 +249,7 @@ struct Mdrnn {
         if (is_mirror(dest)) {
           vector<int> sourceDirs(dest->directions.size());
           LOOP(TIBI t, zip(sourceDirs, symmetry, dest->directions)) {
-            t.get<0>() = (((t.get<1>() > 0) || t.get<2>()) ? 1 : -1);
+            std::get<0>(t) = (((std::get<1>(t) > 0) || std::get<2>(t)) ? 1 : -1);
           }
           LOOP(Layer* src, v) {
             if (src->directions == sourceDirs) {
@@ -264,7 +264,7 @@ struct Mdrnn {
     LOOP(Layer* l, hiddenLayers) {
       l->build();
       if (is_recurrent(l)) {
-        recurrentLayers += l;
+        recurrentLayers.push_back(l);
       }
     }
     criteria.clear();
@@ -322,7 +322,7 @@ struct Mdrnn {
     hiddenLevels.resize(levelNum + 1);
     add_hidden_layers_to_level(
         type, size, recurrent, name, 0, levelNum,
-        empty_list_of<bool>().repeat(num_seq_dims(), true), addBias);
+        std::vector<int>(num_seq_dims(), 1), addBias);
     return levelNum;
   }
 

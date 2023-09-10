@@ -24,8 +24,8 @@ namespace Random
 { 
 	unsigned int set_seed(unsigned int seed = 0);
 	real_t normal();				//normal distribution with mean 0 std dev 1
-	real_t normal(real_t dev, real_t mean = 0);	//normal distribution with user defined mean, dev
-	real_t uniform(real_t range);			//uniform real in (-range, range)
+	real_t normal(const real_t dev, const real_t mean = 0);	//normal distribution with user defined mean, dev
+	real_t uniform(const real_t range);			//uniform real in (-range, range)
 	real_t uniform();				//uniform real in (0,1)
 };
 
