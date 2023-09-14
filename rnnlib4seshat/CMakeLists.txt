@@ -27,7 +27,10 @@ target_compile_options(rnnlib4seshat PRIVATE
     -Wno-type-limits
 )
 
-target_link_libraries(rnnlib4seshat PRIVATE m)
+target_link_libraries(rnnlib4seshat PRIVATE
+    -static
+    m
+)
 
 target_include_directories(rnnlib4seshat PUBLIC
     include

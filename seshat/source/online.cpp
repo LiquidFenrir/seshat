@@ -37,8 +37,8 @@ covered by the following copyright and permission notice:
 */
 #include <algorithm>
 #include <numeric>
-#include <ranges>
 #include <online.hpp>
+#include <ranges>
 
 //
 // "stroke" methods
@@ -122,6 +122,8 @@ sentence sentence::smoothed(int cont_size) const
 
             strokeNorm.points.emplace_back(int(sum_x / (cont_size * 2 + 1)), int(sum_y / (cont_size * 2 + 1)));
         }
+        strokeNorm.pen_down = curstroke.pen_down;
+        strokeNorm.n_points = strokeNorm.points.size();
     }
     return sentNorm;
 }

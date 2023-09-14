@@ -56,7 +56,6 @@ SymFeatures::SymFeatures(const char* mav_on, const char* mav_off)
 
 std::unique_ptr<DataSequence> SymFeatures::getOnline(Sample& M, SegmentHyp& SegHyp)
 {
-
     // Create and fill sequence of points
     sentence sent(SegHyp.stks.size());
 

@@ -22,6 +22,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 add_subdirectory(rnnlib4seshat)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    -static
     rnnlib4seshat
 )
 
