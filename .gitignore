@@ -19,7 +19,6 @@
 *.exe
 *.out
 *.app
-seshat
 
 /boost_1_*
 /hmer_dataset
