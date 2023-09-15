@@ -69,7 +69,7 @@ struct ConfigFile {
     const T& set_val(
         const std::string& name, const T& val, bool valUsed = true)
     {
-        std::stringstream ss;
+        std::ostringstream ss;
         ss << std::boolalpha << val;
         params[name] = ss.str();
         if (valUsed) {

@@ -211,8 +211,7 @@ struct DataExporter : public Named {
             if (stringIt == conf.params.end()) {
                 out << "WARNING: unable to find '" << displayName << "'" << std::endl;
             } else {
-                std::stringstream ss;
-                ss << stringIt->second;
+                std::istringstream ss(stringIt->second);
                 if (val.second->load(ss, out)) {
                     conf.params.erase(stringIt);
                 } else {

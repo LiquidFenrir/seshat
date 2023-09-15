@@ -89,7 +89,7 @@ struct FullConnection : public Connection {
         static std::string name;
         name = f->name + "_to_" + t->name;
         if (find_if(d.begin(), d.end(), std::bind(std::not_equal_to<int>(), std::placeholders::_1, 0)) != d.end()) {
-            std::stringstream temp;
+            std::ostringstream temp;
             temp << "_delay_";
             std::copy(d.begin(), d.end() - 1, std::ostream_iterator<int>(temp, "_"));
             temp << d.back();

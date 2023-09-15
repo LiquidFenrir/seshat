@@ -51,7 +51,7 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 template<class R>
 static std::string label_seq_to_str(const R& labelSeq, const std::vector<std::string>& alphabet, const std::string& delim = " ")
 {
-    std::stringstream ss;
+    std::ostringstream ss;
     bool first = true;
     LOOP(const auto& it, labelSeq)
     {
@@ -72,7 +72,7 @@ static std::vector<int> str_to_label_seq(const std::string& labelSeqString, cons
 {
     static std::vector<int> v;
     v.clear();
-    std::stringstream ss(labelSeqString);
+    std::istringstream ss(labelSeqString);
     std::string lab;
     while (ss >> lab) {
         /*		check(in_right(alphabet, lab), lab + " not found in alphabet");*/

@@ -106,7 +106,7 @@ struct MultilayerNet : public Mdrnn {
                     }
                 }
                 if (goodDelim) {
-                    std::stringstream ss;
+                    std::ostringstream ss;
                     print_range(ss, data.targetLabels, c);
                     conf.set_val("targetLabels", ss.str());
                     conf.set_val("labelDelimiter", c);

@@ -84,8 +84,7 @@ static Vector<T> split(
     const std::string& original, char delim = ' ', size_t maxSplits = 0)
 {
     Vector<T> vect;
-    std::stringstream ss;
-    ss << original;
+    std::istringstream ss(original);
     std::string s;
     while (delim == ' ' ? ss >> s : getline(ss, s, delim)) {
         vect.push_back(read<T>(s));

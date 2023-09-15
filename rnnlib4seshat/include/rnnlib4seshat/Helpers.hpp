@@ -295,7 +295,7 @@ static std::basic_ostream<C, Tr>& operator<<(
 template<class T>
 static std::string str(const T& t)
 {
-    std::stringstream ss;
+    std::ostringstream ss;
     ss << t;
     return ss.str();
 }
