@@ -80,7 +80,6 @@ concept PairLike = requires(P p) {
     p.first;
     p.second;
 };
-
 template<typename R>
 auto make_subrange_for(R&& r)
 {
@@ -90,9 +89,14 @@ auto make_subrange_for(R&& r)
     } else
         return std::views::all(std::forward<R>(r));
 }
+template<class R>
+concept RangeLike = requires(R&& r)
+{
+    make_subrange_for(r);
+};
 
-template<typename R>
-using RangeValueType_t = std::remove_cvref_t<decltype(*std::begin(make_subrange_for(std::declval<R>())))>;
+template<RangeLike R>
+using RangeValueType_t = std::ranges::range_value_t<decltype(make_subrange_for(std::declval<R>()))>;
 
 #define LOOP(x, y) for (x : make_subrange_for(y))
 #define LOOP_BACK(x, y) for (x : make_subrange_for(y) | std::views::reverse)
@@ -301,7 +305,7 @@ static std::string str(const T& t)
 }
 
 // GENERIC RANGE OPERATIONS
-template<class R, class T>
+template<RangeLike R, class T>
 static auto find(R& r, const T& t)
 {
     return std::ranges::find(make_subrange_for(r), t);
@@ -319,57 +323,57 @@ static auto iota_range(T t)
     return iota_range(0, t);
 }
 
-template<class R>
+template<RangeLike R>
 static auto indices(const R& r)
 {
     return iota_range<int>(std::size(r));
 }
-template<class R1, class R2, class F>
+template<RangeLike R1, RangeLike R2, class F>
 static auto transform(const R1& r1, R2& r2, const F& f)
 {
     return std::ranges::transform(make_subrange_for(r1), std::begin(make_subrange_for(r2)), f).out;
 }
-template<class R>
+template<RangeLike R>
 static bool in_range(R& r, size_t n)
 {
     return n >= 0 && n < std::size(r);
 }
-template<class R>
+template<RangeLike R>
 static auto& nth_last(R& r, size_t n = 1)
 {
     check(in_range(r, n - 1), "nth_last called with n = " + str(n) + " for range of size " + (str(std::size(r))));
     return *(std::end(r) - n);
 }
-template<class R>
+template<RangeLike R>
 static size_t last_index(const R& r)
 {
     return (std::size(r) - 1);
 }
-template<class R, class T>
+template<RangeLike R, class T>
 static bool in(const R& r, const T& t)
 {
     auto vr = make_subrange_for(r);
     return std::end(vr) != std::ranges::find(vr, t);
 }
-template<class R, class T>
+template<RangeLike R, class T>
 static size_t index(const R& r, const T& t)
 {
     auto vr = make_subrange_for(r);
     return std::distance(std::begin(vr), std::ranges::find(vr, t));
 }
-template<class R>
+template<RangeLike R>
 static void reverse(R& r)
 {
     std::ranges::reverse(make_subrange_for(r));
 }
 
-template<class R>
+template<RangeLike R>
 static auto minmax(const R& r)
 {
     const auto [mini_val, maxi_val] = std::ranges::minmax(make_subrange_for(r));
     return std::pair<RangeValueType_t<R>, RangeValueType_t<R>>(mini_val, maxi_val);
 }
-template<class R>
+template<RangeLike R>
 static void bound_range(R& r, const RangeValueType_t<R>& minVal, const RangeValueType_t<R>& maxVal)
 {
     LOOP(auto& vr, r)
@@ -378,7 +382,7 @@ static void bound_range(R& r, const RangeValueType_t<R>& minVal, const RangeValu
     }
 }
 
-template<class R>
+template<RangeLike R>
 static void fill(R& r, const RangeValueType_t<R>& v)
 {
     std::ranges::fill(make_subrange_for(r), v);
@@ -389,12 +393,12 @@ static void flood(std::vector<T>& r, size_t size, const T& v = 0)
     r.resize(size);
     fill(r, v);
 }
-template<class R>
+template<RangeLike R>
 static size_t count(const R& r, const RangeValueType_t<R>& v)
 {
     return std::ranges::count(make_subrange_for(r), v);
 }
-template<class R1, class R2>
+template<RangeLike R1, RangeLike R2>
 static void copy(const R1& source, R2& dest)
 {
     auto a = make_subrange_for(source);
@@ -403,20 +407,20 @@ static void copy(const R1& source, R2& dest)
     std::ranges::copy(a, std::begin(b));
 }
 
-template<class R1, class R2>
+template<RangeLike R1, RangeLike R2>
 static bool equal(const R1& source, R2& dest)
 {
     return std::ranges::equal(make_subrange_for(source), make_subrange_for(dest));
 }
 
-template<class R>
+template<RangeLike R>
 static R& shuffle(R& r)
 {
     static std::mt19937 shufflegen(std::time(nullptr));
     std::ranges::shuffle(make_subrange_for(r), shufflegen);
     return r;
 }
-// template <class R> static auto max(const R& r) {
+// template <RangeLike R> static auto max(const R& r) {
 //   return std::ranges::max_element(make_subrange_for(r));
 // }
 
@@ -435,7 +439,7 @@ static std::basic_istream<C, Tr>& operator>>(std::basic_istream<C, Tr>& in, R& r
     }
     return in;
 }
-template<class R>
+template<RangeLike R>
 void delete_range(R& r)
 {
     LOOP(const auto it, r)
@@ -444,14 +448,14 @@ void delete_range(R& r)
     }
 }
 
-template<class R1, class R2, class R3>
+template<RangeLike R1, RangeLike R2, RangeLike R3>
 static size_t range_min_size(
     const R1& a, const R2& b, const R3& c)
 {
     return std::min(std::min(std::size(a), std::size(b)), std::size(c));
 }
 
-template<class R>
+template<RangeLike R>
 static int arg_max(const R& r)
 {
     auto vr = make_subrange_for(r);
@@ -462,20 +466,20 @@ template<class... Rs>
 using zip = std::ranges::zip_view<Rs...>;
 
 // ARITHMETIC RANGE OPERATIONS
-template<class R1, class R2>
+template<RangeLike R1, RangeLike R2>
 static RangeValueType_t<R1> inner_product(const R1& a, const R2& b, RangeValueType_t<R1> c = 0)
 {
     auto va = make_subrange_for(a);
     auto vb = make_subrange_for(b);
     return std::inner_product(std::begin(va), std::end(va), std::begin(vb), c);
 }
-template<class R>
+template<RangeLike R>
 static auto norm(const R& r)
 {
     return sqrt(inner_product(r, r));
 }
 
-template<class R>
+template<RangeLike R>
 static auto product(const R& r)
 {
     return std::ranges::fold_left(make_subrange_for(r),
@@ -483,7 +487,7 @@ static auto product(const R& r)
                                       return x * y;
                                   });
 }
-template<class R>
+template<RangeLike R>
 static auto sum(const R& r)
 {
     return std::ranges::fold_left(make_subrange_for(r),
@@ -491,7 +495,7 @@ static auto sum(const R& r)
                                       return x + y;
                                   });
 }
-template<class R>
+template<RangeLike R>
 static auto abs_sum(const R& r)
 {
     decltype(*std::begin(make_subrange_for(r))) v = 0;
@@ -502,12 +506,12 @@ static auto abs_sum(const R& r)
     return v;
 }
 
-template<class R>
+template<RangeLike R>
 static auto mean(const R& r)
 {
     return sum(r) / (decltype(*std::begin(make_subrange_for(r))))std::size(r);
 }
-template<class R>
+template<RangeLike R>
 static auto variance(const R& r)
 {
     auto M = mean(r);
@@ -519,13 +523,13 @@ static auto variance(const R& r)
     }
     return v / std::size(r);
 }
-template<class R>
+template<RangeLike R>
 static auto std_dev(const R& r)
 {
     return sqrt(variance(r));
 }
 // plus
-template<class R1, class R2, class R3>
+template<RangeLike R1, RangeLike R2, RangeLike R3>
 static R1& range_plus(R1& a, const R2& b, const R3& c)
 {
     std::ranges::transform(make_subrange_for(b), make_subrange_for(c), std::begin(make_subrange_for(a)), [](const auto& x, const auto& y) {
@@ -533,13 +537,13 @@ static R1& range_plus(R1& a, const R2& b, const R3& c)
     });
     return a;
 }
-template<class R1, class R2>
+template<RangeLike R1, RangeLike R2>
 static void range_plus_equals(R1& a, const R2& b)
 {
     range_plus(a, a, b);
 }
 // minus
-template<class R1, class R2, class R3>
+template<RangeLike R1, RangeLike R2, RangeLike R3>
 static void range_minus(R1& a, const R2& b, const R3& c)
 {
     std::ranges::transform(make_subrange_for(b), make_subrange_for(c), std::begin(make_subrange_for(a)), [](const auto& x, const auto& y) {
@@ -547,19 +551,19 @@ static void range_minus(R1& a, const R2& b, const R3& c)
     });
 }
 // multiply
-template<class R1, class R2>
+template<RangeLike R1, RangeLike R2>
 static void range_multiply_val(R1& a, const R2& b, const RangeValueType_t<R2>& c)
 {
     std::ranges::transform(make_subrange_for(b), std::begin(make_subrange_for(a)), [&c](const auto& x) {
         return x * c;
     });
 }
-template<class R>
+template<RangeLike R>
 static void range_multiply_val(R& a, const RangeValueType_t<R>& b)
 {
     range_multiply_val(a, a, b);
 }
-template<class R1, class R2, class R3>
+template<RangeLike R1, RangeLike R2, RangeLike R3>
 static void range_multiply(R1& a, const R2& b, const R3& c)
 {
     std::ranges::transform(make_subrange_for(b), make_subrange_for(c), std::begin(make_subrange_for(a)), [](const auto& x, const auto& y) {
@@ -568,14 +572,14 @@ static void range_multiply(R1& a, const R2& b, const R3& c)
 }
 
 // divide
-template<class R1, class R2>
+template<RangeLike R1, RangeLike R2>
 static void range_divide_val(R1& a, const R2& b, const RangeValueType_t<R1>& c)
 {
     std::ranges::transform(make_subrange_for(b), std::begin(make_subrange_for(a)), [&c](const auto& x) {
         return x / c;
     });
 }
-template<class R>
+template<RangeLike R>
 static void range_divide_val(R& a, const RangeValueType_t<R>& b)
 {
     range_divide_val(a, a, b);
@@ -743,11 +747,11 @@ static void operator/=(
         it->second /= b;
     }
 }
-template<class R>
+template<RangeLike R>
 void delete_map(R& r)
 {
-    for (auto it = std::begin(r); it != std::end(r); ++it) {
-        delete it->second;
+    for (auto& [it_first, it_second] : make_subrange_for(r)) {
+        delete it_second;
     }
 }
 // MULTIMAP OPERATIONS

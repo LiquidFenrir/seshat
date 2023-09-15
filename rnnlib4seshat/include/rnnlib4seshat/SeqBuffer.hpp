@@ -18,8 +18,6 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #ifndef _INCLUDED_SeqBuffer_h
 #define _INCLUDED_SeqBuffer_h
 
-#include <vector>
-
 #include "MultiArray.hpp"
 #include "RealType.hpp"
 
@@ -143,7 +141,8 @@ struct SeqBuffer : public MultiArray<T> {
         return View<const T>(start, end);
     }
 
-    int seq_offset(const std::vector<int>& coords)
+    template<RangeLike R = std::span<int>>
+    int seq_offset(const R& coords)
     {
         return this->offset(coords) / this->shape.back();
     }

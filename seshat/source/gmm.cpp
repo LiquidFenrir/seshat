@@ -15,6 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <array>
+#include <cassert>
 #include <cfloat>
 #include <cmath>
 #include <cstdio>
@@ -40,93 +42,75 @@ void GMM::loadModel(const char* str)
     fscanf(fd, "%d %d %d", &C, &D, &G);
 
     // Read prior probabilities
-    prior = new float[C];
-    for (int i = 0; i < C; i++)
-        fscanf(fd, "%f", &prior[i]);
+    prior.resize(C);
+    for (auto& f_i : prior)
+        fscanf(fd, "%f", &f_i);
 
-    invcov = new float*[C * G];
-    mean = new float*[C * G];
-    weight = new float*[C];
-    det = new float[C * G];
+    invcov.reshape(std::array{C, G, D});
+    mean.reshape(std::array{C, G, D});
+    weight.reshape(std::array{C, G});
+    det.reshape(std::array{C, G}, 1.0f);
 
     // Read a GMM for each class
-    for (int c = 0; c < C; c++) {
+    std::array<int, 1> c_arr = {0};
+    for (int& c = c_arr[0]; c < C; c++) {
 
         // Read diagonal covariances
         for (int i = 0; i < G; i++) {
-            invcov[c * G + i] = new float[D];
-            det[c * G + i] = 1.0;
-
-            for (int j = 0; j < D; j++) {
-                fscanf(fd, "%f", &invcov[c * G + i][j]);
+            auto& cur_det = det.get(std::array{c, i});
+            for (auto& ic_j : invcov[std::array{c, i}]) {
+                fscanf(fd, "%f", &ic_j);
 
                 // Compute determinant of convariance matrix (diagonal)
-                det[c * G + i] *= invcov[c * G + i][j];
+                cur_det *= ic_j;
 
                 // Save the inverse of the convariance to save future computations
-                if (invcov[c * G + i][j] == 0.0) {
+                if (ic_j == 0) {
                     fprintf(stderr, "Warning: covariance value equal to zero in GMM\n");
-                    invcov[c * G + i][j] = 1.0 / 1.0e-10;
+                    ic_j = 1.0 / 1.0e-10;
                 } else
-                    invcov[c * G + i][j] = 1.0 / invcov[c * G + i][j];
+                    ic_j = 1.0 / ic_j;
             }
         }
 
         // Read means
-        for (int i = 0; i < G; i++) {
-            mean[c * G + i] = new float[D];
-            for (int j = 0; j < D; j++)
-                fscanf(fd, "%f", &mean[c * G + i][j]);
+        for (auto& m_i : mean[c_arr]) {
+            fscanf(fd, "%f", &m_i);
         }
 
         // Read mixture weights
-        weight[c] = new float[G];
-        for (int i = 0; i < G; i++)
-            fscanf(fd, "%f", &weight[c][i]);
+        for (auto& w_i : weight[c_arr])
+            fscanf(fd, "%f", &w_i);
     }
 
     fclose(fd);
 }
 
 // Probability density function
-float GMM::pdf(int c, float* v)
+float GMM::pdf(const int c, std::span<const float> v)
 {
+    assert(v.size() >= D);
     float pr = 0.0;
 
     for (int i = 0; i < G; i++) {
 
         float exponent = 0.0;
         for (int j = 0; j < D; j++)
-            exponent += (v[j] - mean[c * G + i][j]) * invcov[c * G + i][j] * (v[j] - mean[c * G + i][j]);
+            exponent += (v[j] - mean.get(std::array{c, i, j})) * invcov.get(std::array{c, i, j}) * (v[j] - mean.get(std::array{c, i, j}));
 
         exponent *= -0.5;
 
-        pr += weight[c][i] * pow(2 * PI, -D / 2.0) * pow(det[c * G + i], -0.5) * exp(exponent);
+        pr += weight.get(std::array{c, i}) * pow(2 * PI, -D / 2.0) * pow(det.get(std::array{c, i}), -0.5) * exp(exponent);
     }
 
     return prior[c] * pr;
 }
 
-GMM::~GMM()
+void GMM::posterior(std::span<const float> x, std::span<float> pr)
 {
-    for (int c = 0; c < C; c++) {
-        for (int i = 0; i < G; i++) {
-            delete[] invcov[c * G + i];
-            delete[] mean[c * G + i];
-        }
-        delete[] weight[c];
-    }
+    assert(pr.size() >= C);
 
-    delete[] det;
-    delete[] prior;
-    delete[] invcov;
-    delete[] mean;
-    delete[] weight;
-}
-
-void GMM::posterior(float* x, float* pr)
-{
-    float total = 0.0;
+    float total = 0;
     for (int c = 0; c < C; c++) {
         pr[c] = pdf(c, x);
         total += pr[c];

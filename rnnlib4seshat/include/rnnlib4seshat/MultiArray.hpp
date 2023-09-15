@@ -26,6 +26,7 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #include <numeric>
 #include <optional>
 #include <ranges>
+#include <span>
 #include <vector>
 
 template<class T>
@@ -84,13 +85,14 @@ struct MultiArray {
         reshape(dims);
         fill_data(fillVal);
     }
-    bool in_range(const std::vector<int>& coords) const
+    template<RangeLike R = std::span<int>>
+    bool in_range(const R& coords) const
     {
-        if (coords.size() > shape.size()) {
+        if (std::size(coords) > shape.size()) {
             return false;
         }
         VSTCI shapeIt = shape.begin();
-        for (VICI coordIt = coords.begin(); coordIt != coords.end();
+        for (auto coordIt = std::begin(coords); coordIt != std::end(coords);
              ++coordIt, ++shapeIt) {
             int c = *coordIt;
             if (c < 0 || c >= *shapeIt) {
@@ -99,49 +101,56 @@ struct MultiArray {
         }
         return true;
     }
-    T& get(const std::vector<int>& coords)
+    template<RangeLike R = std::span<int>>
+    T& get(const R& coords)
     {
         check(std::size(coords) == shape.size(), "get(" + str(coords) + ") called with shape " + str(shape));
         return *((*this)[coords].begin());
     }
-    const T& get(const std::vector<int>& coords) const
+    template<RangeLike R = std::span<int>>
+    const T& get(const R& coords) const
     {
         check(std::size(coords) == shape.size(), "get(" + str(coords) + ") called with shape " + str(shape));
         return (*this)[coords].front();
     }
-    size_t offset(const std::vector<int>& coords) const
+    template<RangeLike R = std::span<int>>
+    size_t offset(const R& coords) const
     {
         return inner_product(coords, strides);
     }
-    const View<T> operator[](const std::vector<int>& coords)
+    template<RangeLike R = std::span<int>>
+    const View<T> operator[](const R& coords)
     {
-        check(coords.size() <= shape.size(), "operator [" + str(coords) + "] called with shape " + str(shape));
-        if (coords.empty()) {
+        check(std::size(coords) <= shape.size(), "operator [" + str(coords) + "] called with shape " + str(shape));
+        if (std::empty(coords)) {
             return View<T>(&data.front(), &data.front() + data.size());
         }
         T* start = &data.front() + offset(coords);
-        T* end = start + strides[coords.size() - 1];
+        T* end = start + strides[std::size(coords) - 1];
         return View<T>(start, end);
     }
-    const View<const T> operator[](const std::vector<int>& coords) const
+    template<RangeLike R = std::span<int>>
+    const View<const T> operator[](const R& coords) const
     {
-        check(coords.size() <= shape.size(), "operator [" + str(coords) + "] called with shape " + str(shape));
-        if (coords.empty()) {
+        check(std::size(coords) <= shape.size(), "operator [" + str(coords) + "] called with shape " + str(shape));
+        if (std::empty(coords)) {
             return View<const T>(&data.front(), &data.front() + data.size());
         }
         const T* start = &data.front();
         VSTCI strideIt = strides.begin() + offset(coords);
-        const T* end = start + strides[coords.size() - 1];
+        const T* end = start + strides[std::size(coords) - 1];
         return View<const T>(start, end);
     }
-    const View<T> at(const std::vector<int>& coords)
+    template<RangeLike R = std::span<int>>
+    const View<T> at(const R& coords)
     {
         if (in_range(coords)) {
             return (*this)[coords];
         }
         return View<T>(0, 0);
     }
-    const View<const T> at(const std::vector<int>& coords) const
+    template<RangeLike R = std::span<int>>
+    const View<const T> at(const R& coords) const
     {
         if (in_range(coords)) {
             return (*this)[coords];

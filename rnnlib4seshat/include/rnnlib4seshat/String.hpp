@@ -101,7 +101,7 @@ static Vector<T> split_with_repeat(
     Vector<T> vect;
     LOOP(const std::string& s1, split<std::string>(original, delim))
     {
-        std::vector<std::string> v = split<std::string>(s1, repeater);
+        const auto v = split<std::string>(s1, repeater);
         size_t numRepeats = (v.size() == 1 ? 1 : std::stoi(v[1]));
         T val = read<T>(v[0]);
         vect.insert(vect.end(), numRepeats, val);

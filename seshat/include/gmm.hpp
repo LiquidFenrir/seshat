@@ -22,19 +22,21 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <span>
+#include <rnnlib4seshat/MultiArray.hpp>
 
 class GMM {
     int C, D, G;
-    float **invcov, **mean, **weight, *prior, *det;
+    MultiArray<float> invcov, mean, weight, det;
+    std::vector<float> prior;
 
     void loadModel(const char* str);
-    float pdf(int c, float* v);
+    float pdf(const int c, std::span<const float> v);
 
 public:
     GMM(const char* model);
-    ~GMM();
 
-    void posterior(float* x, float* pr);
+    void posterior(std::span<const float> x, std::span<float> pr);
 };
 
 #endif
