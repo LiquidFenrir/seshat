@@ -454,8 +454,7 @@ void meParser::parse_me(Sample& M)
     // Spatial structure for retrieving hypotheses within a certain region
     {
         std::vector<std::unique_ptr<LogSpace>> logspace(N);
-        std::list<CellCYK*> c1setH, c1setV, c1setU, c1setI, c1setM, c1setS;
-        SpaRel SPR(gmm_spr.get(), M);
+        SpaRel SPR(*gmm_spr, M);
 
         // Init spatial space for size 1
         logspace[1] = std::make_unique<LogSpace>(tcyk.get(1), tcyk.size(1), M.RX, M.RY);
@@ -482,11 +481,11 @@ void meParser::parse_me(Sample& M)
                     c1setS.clear();
 
                     // Get the subset of regions close to c1 according to different spatial relations
-                    logspace[b]->getH(c1, &c1setH); // Horizontal (right)
-                    logspace[b]->getV(c1, &c1setV); // Vertical (down)
-                    logspace[b]->getU(c1, &c1setU); // Vertical (up)
-                    logspace[b]->getI(c1, &c1setI); // Inside (sqrt)
-                    logspace[b]->getM(c1, &c1setM); // mroot (sqrt[i])
+                    logspace[b]->getH(c1, c1setH); // Horizontal (right)
+                    logspace[b]->getV(c1, c1setV); // Vertical (down)
+                    logspace[b]->getU(c1, c1setU); // Vertical (up)
+                    logspace[b]->getI(c1, c1setI); // Inside (sqrt)
+                    logspace[b]->getM(c1, c1setM); // mroot (sqrt[i])
 
                     for (const auto& c2 : c1setH) {
 
@@ -756,7 +755,7 @@ void meParser::parse_me(Sample& M)
                         // If c1->noterm[pa] is a Hypothesis of a subscript (parent_son)
                         if (c1->noterm[pps] && c1->noterm[pps]->prod && c1->noterm[pps]->prod->tipo() == 'B') {
 
-                            logspace[b + c1->noterm[pps]->hi->parent->talla]->getS(c1, &c1setS); // sup/sub-scripts union
+                            logspace[b + c1->noterm[pps]->hi->parent->talla]->getS(c1, c1setS); // sup/sub-scripts union
 
                             for (const auto& c2 : c1setS) {
                                 if (c2->x != c1->x || c1 != c2)
@@ -837,10 +836,6 @@ void meParser::parse_me(Sample& M)
     }
 
     printf("\nMost Likely Hypothesis (%d strokes)\n\n", mlh->parent->talla);
-
-    printf("Math Symbols:\n");
-    print_symrec(mlh);
-    printf("\n");
 
     printf("LaTeX:\n");
     print_latex(mlh);

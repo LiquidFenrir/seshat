@@ -32,7 +32,7 @@ public:
     static const int NFEAT = 9;
 
 private:
-    GMM* model;
+    GMM& model;
     Sample& mue;
     float probs[NRELS];
 
@@ -40,7 +40,7 @@ private:
     void smooth(float* post);
 
 public:
-    SpaRel(GMM* gmm, Sample& m);
+    SpaRel(GMM& gmm, Sample& m);
 
     void getFeas(Hypothesis* a, Hypothesis* b, float* sample, int ry);
 

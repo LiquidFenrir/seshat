@@ -68,10 +68,11 @@ float solape(CellCYK* a, CellCYK* b)
 // SpaRel methods
 //
 
-SpaRel::SpaRel(GMM* gmm, Sample& m)
-    : mue{ m }
+SpaRel::SpaRel(GMM& gmm, Sample& m)
+    : model{ gmm }
+    , mue{ m }
 {
-    model = gmm;
+
 }
 
 void SpaRel::smooth(float* post)
@@ -116,7 +117,7 @@ double SpaRel::compute_prob(Hypothesis* h1, Hypothesis* h2, int k)
     getFeas(h1, h2, sample, mue.RY);
 
     // Get spatial relationships probability from the model
-    model->posterior(sample, probs);
+    model.posterior(sample, probs);
 
     // Slightly smooth probabilities because GMM classifier can provide
     // to biased probabilities. Thsi way we give some room to the

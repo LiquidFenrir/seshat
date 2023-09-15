@@ -44,6 +44,7 @@ class meParser {
     std::unique_ptr<GMM> gmm_spr;
     std::optional<DurationModel> duration;
     std::optional<SegmentationModelGMM> segmentation;
+    std::vector<CellCYK*> c1setH, c1setV, c1setU, c1setI, c1setM, c1setS;
 
     // Private methods
     void loadSymRec(const char* conf);

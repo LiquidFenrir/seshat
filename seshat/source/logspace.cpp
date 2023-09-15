@@ -37,7 +37,7 @@ LogSpace::LogSpace(CellCYK* c, int nr, int dx, int dy)
     quicksort(data.get(), 0, N - 1);
 }
 
-void LogSpace::getH(CellCYK* c, std::list<CellCYK*>* set)
+void LogSpace::getH(CellCYK* c, std::vector<CellCYK*>& set)
 {
     int sx, sy, ss, st;
 
@@ -52,7 +52,7 @@ void LogSpace::getH(CellCYK* c, std::list<CellCYK*>* set)
 }
 
 // Below region
-void LogSpace::getV(CellCYK* c, std::list<CellCYK*>* set)
+void LogSpace::getV(CellCYK* c, std::vector<CellCYK*>& set)
 {
     int sx, sy, ss, st;
 
@@ -70,7 +70,7 @@ void LogSpace::getV(CellCYK* c, std::list<CellCYK*>* set)
 // solve the problem of the case | aaa|
 //                               |bbbb|
 // such that "a" would never find "b" because its 'sx' would start before "b.x"
-void LogSpace::getU(CellCYK* c, std::list<CellCYK*>* set)
+void LogSpace::getU(CellCYK* c, std::vector<CellCYK*>& set)
 {
     int sx, sy, ss, st;
 
@@ -85,7 +85,7 @@ void LogSpace::getU(CellCYK* c, std::list<CellCYK*>* set)
 }
 
 // Inside region (sqrt)
-void LogSpace::getI(CellCYK* c, std::list<CellCYK*>* set)
+void LogSpace::getI(CellCYK* c, std::vector<CellCYK*>& set)
 {
     int sx, sy, ss, st;
 
@@ -100,7 +100,7 @@ void LogSpace::getI(CellCYK* c, std::list<CellCYK*>* set)
 }
 
 // Mroot region (n-th sqrt)
-void LogSpace::getM(CellCYK* c, std::list<CellCYK*>* set)
+void LogSpace::getM(CellCYK* c, std::vector<CellCYK*>& set)
 {
     int sx, sy, ss, st;
 
@@ -115,7 +115,7 @@ void LogSpace::getM(CellCYK* c, std::list<CellCYK*>* set)
 }
 
 // SubSupScript regions
-void LogSpace::getS(CellCYK* c, std::list<CellCYK*>* set)
+void LogSpace::getS(CellCYK* c, std::vector<CellCYK*>& set)
 {
     int sx, sy, ss, st;
 
@@ -128,7 +128,7 @@ void LogSpace::getS(CellCYK* c, std::list<CellCYK*>* set)
     bsearch(sx, sy, ss, st, set);
 }
 
-void LogSpace::bsearch(int sx, int sy, int ss, int st, std::list<CellCYK*>* set)
+void LogSpace::bsearch(int sx, int sy, int ss, int st, std::vector<CellCYK*>& set)
 {
     // Binary search of "sx"
     int i, j;
@@ -144,14 +144,14 @@ void LogSpace::bsearch(int sx, int sy, int ss, int st, std::list<CellCYK*>* set)
     // Retrieve the compatible regions
     while (i < N && data[i]->x <= ss) {
         if (data[i]->y <= st && data[i]->t >= sy) {
-            set->push_back(data[i]);
+            set.push_back(data[i]);
         }
         i++;
     }
 }
 
 // Version more strict with the upper/lower vertical positions
-void LogSpace::bsearchStv(int sx, int sy, int ss, int st, std::list<CellCYK*>* set, bool U_V, CellCYK* cd)
+void LogSpace::bsearchStv(int sx, int sy, int ss, int st, std::vector<CellCYK*>& set, bool U_V, CellCYK* cd)
 {
 
     // Binary search of "sx"
@@ -171,7 +171,7 @@ void LogSpace::bsearchStv(int sx, int sy, int ss, int st, std::list<CellCYK*>* s
             if (data[i]->t <= st && data[i]->t >= sy && data[i]->s <= ss) {
                 if (data[i]->t < cd->y)
                     sy = std::max(std::max(data[i]->y, data[i]->t - RY), sy);
-                set->push_back(data[i]);
+                set.push_back(data[i]);
             }
             i++;
         }
@@ -180,7 +180,7 @@ void LogSpace::bsearchStv(int sx, int sy, int ss, int st, std::list<CellCYK*>* s
             if (data[i]->y <= st && data[i]->y >= sy && data[i]->s <= ss) {
                 if (data[i]->y > cd->t)
                     st = std::min(std::min(data[i]->t, data[i]->y + RY), st);
-                set->push_back(data[i]);
+                set.push_back(data[i]);
             }
             i++;
         }
@@ -189,7 +189,7 @@ void LogSpace::bsearchStv(int sx, int sy, int ss, int st, std::list<CellCYK*>* s
 
 // Version that reduces the sx-ss region as soon as hypotheses are found
 
-void LogSpace::bsearchHBP(int sx, int sy, int ss, int st, std::list<CellCYK*>* set, CellCYK* cd)
+void LogSpace::bsearchHBP(int sx, int sy, int ss, int st, std::vector<CellCYK*>& set, CellCYK* cd)
 {
     // Binary search of "sx"
     int i, j;
@@ -207,7 +207,7 @@ void LogSpace::bsearchHBP(int sx, int sy, int ss, int st, std::list<CellCYK*>* s
         if (data[i]->y <= st && data[i]->t >= sy) {
             if (data[i]->x > cd->s)
                 ss = std::min(std::min(data[i]->s, data[i]->x + RX), ss);
-            set->push_back(data[i]);
+            set.push_back(data[i]);
         }
         i++;
     }
