@@ -32,7 +32,6 @@ class Sample;
 #include <rnnlib4seshat/NetcdfDataset.hpp>
 #include <rnnlib4seshat/Rprop.hpp>
 #include <rnnlib4seshat/SteepestDescent.hpp>
-#include <rnnlib4seshat/Trainer.hpp>
 #include <rnnlib4seshat/WeightContainer.hpp>
 #include <span>
 #include <string>

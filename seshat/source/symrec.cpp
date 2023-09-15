@@ -160,8 +160,6 @@ SymRec::SymRec(const char* config)
     // build the network after the weight container
     blstm_on->build();
 
-    // create trainer
-    Trainer trainer_on(std::cout, blstm_on.get(), conf_on, wc_on.get(), &deh_on);
     if (conf_on.get<bool>("loadWeights", false))
         deh_on.load(conf_on, std::cout);
 
@@ -199,8 +197,6 @@ SymRec::SymRec(const char* config)
     // build the network after the weight container
     blstm_off->build();
 
-    // create trainer
-    Trainer trainer_off(std::cout, blstm_off.get(), conf_off, wc_off.get(), &deh_off);
     if (conf_off.get<bool>("loadWeights", false))
         deh_off.load(conf_off, std::cout);
 }
