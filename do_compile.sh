@@ -11,5 +11,5 @@ export CC=gcc
 export CXX=g++
 export MY_BUILDDIR="build-$CUR_BUILD_TYPE"
 
-cmake $2 -DCMAKE_BUILD_TYPE=$CUR_BUILD_TYPE -S . -B $MY_BUILDDIR
+cmake ${@:2} -DCMAKE_BUILD_TYPE=$CUR_BUILD_TYPE -S . -B $MY_BUILDDIR
 cmake --build $MY_BUILDDIR --config $CUR_BUILD_TYPE

@@ -9,6 +9,9 @@ message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 if(WANT_GPROF_INSTR)
     set(EXTRA_GPROF_FLAGS -pg -no-pie)
 endif()
+if(WANT_LIBC_STATIC)
+    set(USE_STATIC_LIB_FLAGS -static)
+endif()
 
 # Options for code generation
 target_compile_options(${PROJECT_NAME} PRIVATE
@@ -24,7 +27,7 @@ add_subdirectory(rnnlib4seshat)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     ${EXTRA_GPROF_FLAGS}
-    -static
+    ${USE_STATIC_LIB_FLAGS}
     rnnlib4seshat
     m
 )
