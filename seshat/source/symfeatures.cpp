@@ -140,8 +140,8 @@ std::unique_ptr<DataSequence> SymFeatures::getOfflineFKI(VectorImage& img, int H
     for (int x = 0; x < W; x++) {
 
         // Compute the FKI 9 features
-        for (int i = 0; i < OFF_FEAT; i++)
-            c[i] = 0;
+        for (auto& c_i : c)
+            c_i = 0;
         c[4] = H + 1;
 
         for (int y = 1; y <= H; y++) {
@@ -155,7 +155,7 @@ std::unique_ptr<DataSequence> SymFeatures::getOfflineFKI(VectorImage& img, int H
                     c[5] = y;
             }
             if (y > 1 && img.img[(y - 1) * img.width + x] != img.img[(y - 2) * img.width + x])
-                c[8]++;
+                c[8] += 1;
         }
 
         c[2] /= H;
@@ -163,7 +163,7 @@ std::unique_ptr<DataSequence> SymFeatures::getOfflineFKI(VectorImage& img, int H
 
         for (int y = c[4] + 1; y < c[5]; y++)
             if (img.img[(y - 1) * img.width + x]) // Black pixel
-                c[9]++;
+                c[9] += 1;
 
         c[6] = H + 1;
         c[7] = 0;

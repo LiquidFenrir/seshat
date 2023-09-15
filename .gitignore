@@ -26,4 +26,4 @@
 *.pgm
 *.inkml
 *.dot
-/build
+/build-*
