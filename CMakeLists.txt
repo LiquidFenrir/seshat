@@ -6,12 +6,13 @@ add_executable(${PROJECT_NAME})
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE NDEBUG=1)
+if(WANT_GPROF_INSTR)
+    set(EXTRA_GPROF_FLAGS -pg -no-pie)
 endif()
 
 # Options for code generation
 target_compile_options(${PROJECT_NAME} PRIVATE
+    ${EXTRA_GPROF_FLAGS}
     -Wall -Wextra
     -Wno-sign-compare
     -Wno-unused-parameter
@@ -22,8 +23,10 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 add_subdirectory(rnnlib4seshat)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    ${EXTRA_GPROF_FLAGS}
     -static
     rnnlib4seshat
+    m
 )
 
 add_subdirectory(seshat)

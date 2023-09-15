@@ -20,7 +20,7 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 #include "RealType.hpp"
 
-#define OP_TRACKING
+// #define OP_TRACKING
 
 #ifdef OP_TRACKING
 static uint64_t matrixOps = 0;
@@ -35,7 +35,7 @@ static void outer(
     const real_t* mStart = M;
 #endif
     for (; b != bEnd; ++b) {
-        real_t input = *b;
+        const real_t input = *b;
         for (const real_t* a = aBegin; a != aEnd; ++a, ++M) {
             *M += *a * input;
         }
@@ -74,7 +74,7 @@ static void dot_transpose(
     const real_t* mStart = M;
 #endif
     for (; in != inEnd; ++in) {
-        real_t input = *in;
+        const real_t input = *in;
         for (real_t* out = outBegin; out != outEnd; ++out, ++M) {
             *out += *M * input;
         }
@@ -93,7 +93,7 @@ static void dot_transpose_m_squared(
     const real_t* mStart = M;
 #endif
     for (; in != inEnd; ++in) {
-        real_t input = *in;
+        const real_t input = *in;
         for (real_t* out = outBegin; out != outEnd; ++out, ++M) {
             *out += squared(*M) * input;
         }
@@ -112,7 +112,7 @@ static void outer_a_squared(
     const real_t* mStart = M;
 #endif
     for (; b != bEnd; ++b) {
-        real_t input = *b;
+        const real_t input = *b;
         for (const real_t* a = aBegin; a != aEnd; ++a, ++M) {
             *M += squared(*a) * input;
         }

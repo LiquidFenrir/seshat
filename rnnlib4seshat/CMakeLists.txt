@@ -15,11 +15,8 @@ add_library(rnnlib4seshat STATIC ${RNN_LIB_SRCS})
 
 target_compile_features(rnnlib4seshat PRIVATE cxx_std_23)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_definitions(rnnlib4seshat PRIVATE NDEBUG=1)
-endif()
-
 target_compile_options(rnnlib4seshat PRIVATE
+    ${EXTRA_GPROF_FLAGS}
     -Wall -Wextra
     -Wno-sign-compare
     -Wno-unused-parameter
@@ -28,6 +25,7 @@ target_compile_options(rnnlib4seshat PRIVATE
 )
 
 target_link_libraries(rnnlib4seshat PRIVATE
+    ${EXTRA_GPROF_FLAGS}
     -static
     m
 )

@@ -38,13 +38,13 @@ int main(int argc, char* argv[])
     while ((option = getopt(argc, argv, "c:i:r:")) != -1)
         switch (option) {
         case 'c':
-            strncpy(config, optarg, sizeof(config));
+            strncpy(config, optarg, sizeof(config) - 1);
             break;
         case 'i':
-            strncpy(input, optarg, sizeof(input));
+            strncpy(input, optarg, sizeof(input) - 1);
             break;
         case 'r':
-            strncpy(render, optarg, sizeof(render));
+            strncpy(render, optarg, sizeof(render) - 1);
             break;
         case '?':
             usage(argv[0]);
