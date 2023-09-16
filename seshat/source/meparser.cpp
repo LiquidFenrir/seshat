@@ -847,6 +847,8 @@ std::vector<hypothesis> meParser::parse_me(Samples& M)
         if (mlh->parent->talla == 0)
             break;
 
+        print_latex(mlh);
+
         auto& hyp = out.emplace_back();
         fillHypothesis(hyp, mlh, 0);
         printf("hypothesis %d filled\n", mlh_i);
@@ -889,26 +891,26 @@ int meParser::fillHypothesis(hypothesis& into, const InternalHypothesis* H, int 
         const char* self_token = G->key2str(H->ntid);
         const auto self_token_idx = into.tokens.size();
         into.tokens.emplace_back(self_token);
-        printf("Added binary token %s at id %zd = %d?\n", self_token, self_token_idx, id);
+        // printf("Added binary token %s at id %zd = %d?\n", self_token, self_token_idx, id);
 
         // fprintf(fd, "%s%d -> %s%d [label=%c]\n", self_token, id, G->key2str(a), id+1, H->prod->tipo());
 
         nid = fillHypothesis(into, H->hi, id + 1);
         into.relations.emplace_back(self_token_idx, nid);
-        printf("Added relation A p %zd, c %d\n", self_token_idx, nid);
+        // printf("Added relation A p %zd, c %d\n", self_token_idx, nid);
 
         // fprintf(fd, "%s%d -> %s%d [label=%c]\n", self_token, id, G->key2str(b), nid, H->prod->tipo());
 
         nid = fillHypothesis(into, H->hd, nid);
         into.relations.emplace_back(self_token_idx, nid);
-        printf("Added relation B p %zd, c %d\n", self_token_idx, nid);
+        // printf("Added relation B p %zd, c %d\n", self_token_idx, nid);
     } else {
         std::string aux = H->pt->getTeX(H->clase);
         const auto self_token_idx = into.tokens.size();
         into.tokens.emplace_back(aux);
-        printf("Added terminal token %s at id %zd = %d?\n", aux.c_str(), self_token_idx, id);
+        // printf("Added terminal token %s at id %zd = %d?\n", aux.c_str(), self_token_idx, id);
         into.relations.emplace_back(id, self_token_idx);
-        printf("Added relation p %d, c (self) %zd\n", id, self_token_idx);
+        // printf("Added relation p %d, c (self) %zd\n", id, self_token_idx);
 
         // Terminal production
         //  fprintf(fd, "T%s%d [shape=box,label=\"%s\"]\n", aux.c_str(), id, H->pt->getTeX(H->clase));
@@ -918,4 +920,14 @@ int meParser::fillHypothesis(hypothesis& into, const InternalHypothesis* H, int 
     }
 
     return nid;
+}
+
+void meParser::print_latex(InternalHypothesis *H) {
+    if( !H->pt )
+        H->prod->printOut( G.get(), H );
+    else {
+        std::string clatex = H->pt->getTeX( H->clase );
+        printf("%s", clatex.c_str() );
+    }
+    printf("\n");
 }

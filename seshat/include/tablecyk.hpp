@@ -85,7 +85,7 @@ class TableCYK {
     int N, K;
 
 public:
-    static inline constexpr int NumHypotheses = 7;
+    static inline constexpr int NumHypotheses = 3;
     TableCYK(int n, int k);
     ~TableCYK();
 

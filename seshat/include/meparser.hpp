@@ -59,6 +59,7 @@ class meParser {
     CellCYK* fusion(Samples& M, ProductionB* pd, InternalHypothesis* A, InternalHypothesis* B, int N, double prob);
 
     int fillHypothesis(hypothesis& into, const InternalHypothesis* H, int id);
+    void print_latex(InternalHypothesis *H);
 
 public:
     meParser(const char* conf);
