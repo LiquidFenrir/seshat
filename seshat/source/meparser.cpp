@@ -850,6 +850,24 @@ std::vector<hypothesis> meParser::parse_me(Samples& M)
         auto& hyp = out.emplace_back();
         fillHypothesis(hyp, mlh, 0);
         printf("hypothesis %d filled\n", mlh_i);
+
+        std::stable_sort(hyp.relations.begin(), hyp.relations.end(), [](const auto& a, const auto& b) {
+            return a.parent_id < b.parent_id;
+        });
+
+        const auto sz = hyp.tokens.size();
+        hyp.tree.resize(sz);
+        auto start_it = hyp.relations.begin();
+        const auto end_it = hyp.relations.end();
+        for(std::size_t i = 0; i < sz; ++i)
+        {
+            auto cur_it = start_it;
+            while(cur_it != end_it && cur_it->parent_id == i)
+            {
+                ++cur_it;
+            }
+            hyp.tree[i] = std::span(std::exchange(start_it, cur_it), cur_it);
+        }
     }
 
     return out;
