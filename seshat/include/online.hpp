@@ -46,29 +46,29 @@ covered by the following copyright and permission notice:
 namespace seshat {
 
 // Real point
-class PointR {
+class sent_point_real {
     // True if this is the last point of a stroke
     bool point_pu;
 
 public:
     float x, y;
 
-    PointR(float _x, float _y)
+    sent_point_real(float _x, float _y)
         : point_pu(false)
         , x(_x)
         , y(_y) { }
-    PointR& operator=(const PointR& p)
+    sent_point_real& operator=(const sent_point_real& p)
     {
         x = p.x;
         y = p.y;
         point_pu = p.point_pu;
         return *this;
     }
-    bool operator==(const PointR& p) const
+    bool operator==(const sent_point_real& p) const
     {
         return p.x == x && p.y == y;
     }
-    bool operator!=(const PointR& p) const
+    bool operator!=(const sent_point_real& p) const
     {
         return p.x != x || p.y != y;
     }
@@ -87,29 +87,29 @@ public:
 };
 
 // Integer point
-class Point {
+class sent_point {
     // True if this is the last point of a stroke
     bool point_pu;
 
 public:
     int x, y;
 
-    Point(int _x, int _y)
+    sent_point(int _x, int _y)
         : point_pu(false)
         , x(_x)
         , y(_y) { }
-    Point& operator=(const Point& p)
+    sent_point& operator=(const sent_point& p)
     {
         x = p.x;
         y = p.y;
         point_pu = p.point_pu;
         return *this;
     }
-    bool operator==(const Point& p) const
+    bool operator==(const sent_point& p) const
     {
         return p.x == x && p.y == y;
     }
-    bool operator!=(const Point& p) const
+    bool operator!=(const sent_point& p) const
     {
         return p.x != x || p.y != y;
     }
@@ -127,14 +127,14 @@ public:
     }
 };
 
-class stroke {
+class sent_stroke {
 public:
     int n_points;
     bool pen_down;
     bool is_hat;
-    std::vector<Point> points;
+    std::vector<sent_point> points;
 
-    stroke(int n_p = 0, bool pen_d = 0, bool is_ht = 0);
+    sent_stroke(int n_p = 0, bool pen_d = 0, bool is_ht = 0);
 
     int F_XMIN();
     int F_XMAX();
@@ -144,7 +144,7 @@ public:
 class sentence {
 public:
     int n_strokes;
-    std::vector<stroke> strokes;
+    std::vector<sent_stroke> strokes;
 
     sentence(int n_s);
 

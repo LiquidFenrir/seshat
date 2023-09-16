@@ -41,7 +41,7 @@ covered by the following copyright and permission notice:
 using namespace seshat;
 
 // frame methods
-frame::frame(PointR pt)
+frame::frame(sent_point_real pt)
     : x{ pt.x }
     , y{ pt.y }
     , dx{ 0 }
@@ -62,9 +62,9 @@ int frame::get_fr_dim()
 void sentenceF::calculate_features(const sentence& S)
 {
     {
-        const std::vector<PointR> pointsN = [&S, this]() {
+        const std::vector<sent_point_real> pointsN = [&S, this]() {
             // Aspect normalization
-            std::vector<Point> points;
+            std::vector<sent_point> points;
 
             for (const auto& s_stroke : S.strokes) {
                 if (!s_stroke.pen_down)
@@ -92,7 +92,7 @@ void sentenceF::calculate_features(const sentence& S)
 // sentenceF Private methods
 
 // Signal normalization
-std::vector<PointR> sentenceF::normalizaAspect(const std::vector<Point>& Points)
+std::vector<sent_point_real> sentenceF::normalizaAspect(const std::vector<sent_point>& Points)
 {
     double ymax = -100000, xmax = -100000, ymin = 100000, xmin = 100000;
 
@@ -111,7 +111,7 @@ std::vector<PointR> sentenceF::normalizaAspect(const std::vector<Point>& Points)
     if (ymin < (ymax + .5) && ymin > (ymax - .5))
         ymax = ymin + 1;
 
-    std::vector<PointR> trazoNorm;
+    std::vector<sent_point_real> trazoNorm;
     trazoNorm.reserve(Points.size());
 
     for (const auto& pt : Points) {
@@ -128,7 +128,7 @@ std::vector<PointR> sentenceF::normalizaAspect(const std::vector<Point>& Points)
 }
 
 // HTK style derivatives
-void sentenceF::calculate_derivatives(const std::vector<PointR>& points, bool norm)
+void sentenceF::calculate_derivatives(const std::vector<sent_point_real>& points, bool norm)
 {
     constexpr int tamW = 2;
     unsigned int sigma = 0;

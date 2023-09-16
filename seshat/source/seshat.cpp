@@ -20,7 +20,7 @@
 #include <samples.hpp>
 #include <seshat/seshat.hpp>
 
-namespace seshat {
+using namespace seshat;
 
 math_expression::math_expression(const char* config_path)
     : parser{ std::make_unique<meParser>(config_path) }
@@ -54,6 +54,4 @@ std::vector<hypothesis> math_expression::parse_sample(const sample& input)
     samples->makeReady();
 
     return parser->parse_me(*samples);
-}
-
 }

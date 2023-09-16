@@ -21,13 +21,11 @@
 #include <utility>
 #include <vector>
 
-using namespace seshat;
-
 namespace std {
 
-void swap(InternalOptHypothesis& a, InternalOptHypothesis& b)
+void swap(seshat::InternalOptHypothesis& a, seshat::InternalOptHypothesis& b)
 {
-    InternalHypothesis tmp(-1, -FLT_MAX, nullptr, -1);
+    seshat::InternalHypothesis tmp(-1, -FLT_MAX, nullptr, -1);
     std::swap(a.pm_comps, b.pm_comps);
     tmp.copy(*a.Target);
     a.Target->copy(*b.Target);
@@ -36,23 +34,8 @@ void swap(InternalOptHypothesis& a, InternalOptHypothesis& b)
 
 }
 
-bool operator<(const coo& A, const coo& B)
-{
-    if (A.x < B.x)
-        return true;
-    if (A.x == B.x) {
-        if (A.y < B.y)
-            return true;
-        if (A.y == B.y) {
-            if (A.s < B.s)
-                return true;
-            if (A.s == B.s)
-                if (A.t < B.t)
-                    return true;
-        }
-    }
-    return false;
-}
+using namespace seshat;
+
 
 TableCYK::TableCYK(int n, int k)
     : T(n, nullptr)

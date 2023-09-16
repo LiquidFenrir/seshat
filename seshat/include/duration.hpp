@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <memory>
 #include <vector>
+#include <rnnlib4seshat/MultiArray.hpp>
 
 namespace seshat {
 

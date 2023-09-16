@@ -22,12 +22,10 @@
 #include <cstdio>
 #include <cstring>
 #include <map>
+#include <rnnlib4seshat/DataExporter.hpp>
 #include <rnnlib4seshat/DataSequence.hpp>
 #include <rnnlib4seshat/Mdrnn.hpp>
-#include <rnnlib4seshat/MultilayerNet.hpp>
 #include <rnnlib4seshat/NetcdfDataset.hpp>
-#include <rnnlib4seshat/Rprop.hpp>
-#include <rnnlib4seshat/SteepestDescent.hpp>
 #include <rnnlib4seshat/WeightContainer.hpp>
 #include <span>
 #include <string>

@@ -54,7 +54,7 @@ namespace seshat {
 class frame {
 public:
     double x, y, dx, dy, ax, ay, k;
-    frame(PointR pt);
+    frame(sent_point_real pt);
 
     void print(std::ostream& fd);
     int get_fr_dim();
@@ -93,8 +93,8 @@ public:
     void calculate_features(const sentence& s);
 
 private:
-    std::vector<PointR> normalizaAspect(const std::vector<Point>& Points);
-    void calculate_derivatives(const std::vector<PointR>& points, bool norm = true);
+    std::vector<sent_point_real> normalizaAspect(const std::vector<sent_point>& Points);
+    void calculate_derivatives(const std::vector<sent_point_real>& points, bool norm = true);
     void calculate_kurvature();
 };
 

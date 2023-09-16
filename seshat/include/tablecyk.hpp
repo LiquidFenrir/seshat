@@ -48,13 +48,30 @@ struct coo {
         t = d;
     }
 
-    bool operator==(coo& R)
+    bool operator==(coo& R) const
     {
         return x == R.x && y == R.y && s == R.s && t == R.t;
     }
+
+    bool operator<(const coo& R) const
+    {
+        if (x < R.x)
+            return true;
+        if (x == R.x) {
+            if (y < R.y)
+                return true;
+            if (y == R.y) {
+                if (s < R.s)
+                    return true;
+                if (s == R.s)
+                    if (t < R.t)
+                        return true;
+            }
+        }
+        return false;
+    }
 };
 
-bool operator<(const coo& A, const coo& B);
 
 struct InternalOptHypothesis {
     // InternalHypothesis that accounts for the target (input) math expression

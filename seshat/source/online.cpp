@@ -44,10 +44,10 @@ covered by the following copyright and permission notice:
 using namespace seshat;
 
 //
-// "stroke" methods
+// "sent_stroke" methods
 //
 
-stroke::stroke(int n_p, bool pen_d, bool is_ht)
+sent_stroke::sent_stroke(int n_p, bool pen_d, bool is_ht)
     : n_points(n_p)
     , pen_down(pen_d)
     , is_hat(is_ht)
@@ -55,17 +55,17 @@ stroke::stroke(int n_p, bool pen_d, bool is_ht)
     points.reserve(n_points);
 }
 
-int stroke::F_XMIN()
+int sent_stroke::F_XMIN()
 {
-    return points.empty() ? (INT_MAX) : std::ranges::min_element(points, {}, &Point::x)->x;
+    return points.empty() ? (INT_MAX) : std::ranges::min_element(points, {}, &sent_point::x)->x;
 }
 
-int stroke::F_XMAX()
+int sent_stroke::F_XMAX()
 {
-    return points.empty() ? (INT_MIN) : std::ranges::max_element(points, {}, &Point::x)->x;
+    return points.empty() ? (INT_MIN) : std::ranges::max_element(points, {}, &sent_point::x)->x;
 }
 
-int stroke::F_XMED()
+int sent_stroke::F_XMED()
 {
     return std::accumulate(points.begin(), points.end(), 0, [](const int val, const auto& pt) {
                return pt.x + val;
@@ -112,7 +112,7 @@ sentence sentence::smoothed(int cont_size) const
     int sum_x, sum_y;
     for (const auto& curstroke : strokes) {
         auto& strokeNorm = sentNorm.strokes.emplace_back();
-        const std::vector<Point>& Points = curstroke.points;
+        const auto& Points = curstroke.points;
         int np = curstroke.n_points;
         for (int p = 0; p < np; p++) {
             sum_x = 0;

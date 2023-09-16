@@ -23,6 +23,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <map>
+#include <rnnlib4seshat/MultilayerNet.hpp>
+#include <rnnlib4seshat/Rprop.hpp>
+#include <rnnlib4seshat/SteepestDescent.hpp>
 #include <samples.hpp>
 #include <symrec.hpp>
 #include <vectorimage.hpp>
