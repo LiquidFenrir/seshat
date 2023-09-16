@@ -39,10 +39,14 @@ struct hypothesis {
     // spans point into `relations`
     std::vector<std::span<relation>> tree;
 
+    hypothesis() = default;
+    ~hypothesis() = default;
+
+    hypothesis(hypothesis&&) = default;
+    hypothesis& operator=(hypothesis&&) = default;
     // this container is trivially move-safe, but not copy-safe.
-    hypothesis(const hypothesis&) = delete;
-    hypothesis& operator=(const hypothesis&) = delete;
-    // TODO: copy operations.
+    hypothesis(const hypothesis&);
+    hypothesis& operator=(const hypothesis&);
 
     /* Example representation: exp.scgink
      * Infix: (x + y)^2

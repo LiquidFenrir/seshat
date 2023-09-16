@@ -52,8 +52,8 @@ public:
 
     // Pure virtual functions
     virtual char tipo() = 0;
-    virtual void print() = 0;
-    virtual void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid) = 0;
+    // virtual void print() = 0;
+    // virtual void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid) = 0;
 };
 
 // Production S -> A : B
@@ -66,7 +66,7 @@ public:
     void print();
     char tipo();
     void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A / B
@@ -79,7 +79,7 @@ public:
     void print();
     char tipo();
     void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A /u B
@@ -92,7 +92,7 @@ public:
     void print();
     char tipo();
     void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A /e B
@@ -105,7 +105,7 @@ public:
     void print();
     char tipo();
     void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A sse B
@@ -118,7 +118,7 @@ public:
     void print();
     char tipo();
     void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A ^ B
@@ -131,7 +131,7 @@ public:
     void print();
     char tipo();
     void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A _ B
@@ -144,7 +144,7 @@ public:
     void print();
     char tipo();
     void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A ins B
@@ -157,7 +157,7 @@ public:
     void print();
     char tipo();
     void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A mroot B
@@ -170,7 +170,7 @@ public:
     void print();
     char tipo();
     void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production S -> term ( N clases )

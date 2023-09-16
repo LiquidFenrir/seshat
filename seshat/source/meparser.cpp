@@ -22,11 +22,6 @@
 #include <internal_hypothesis.hpp>
 #include <logspace.hpp>
 #include <meparser.hpp>
-#include <production.hpp>
-#include <samples.hpp>
-#include <seshat/hypothesis.hpp>
-#include <symrec.hpp>
-#include <tablecyk.hpp>
 
 using namespace seshat;
 

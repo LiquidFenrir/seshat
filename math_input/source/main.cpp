@@ -18,7 +18,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
-#include <seshat.hpp>
+#include <seshat/seshat.hpp>
 
 struct FILEDeleter {
 

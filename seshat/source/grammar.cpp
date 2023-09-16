@@ -25,7 +25,6 @@
 #include <gparser.hpp>
 #include <grammar.hpp>
 #include <map>
-#include <production.hpp>
 #include <sparel.hpp>
 #include <string>
 #include <symrec.hpp>
@@ -116,8 +115,7 @@ void Grammar::addTerminal(float pr, const char* S, const char* T, const char* te
         if (it->getNoTerm() == not_it->second) {
             int id = sym_rec->keyClase(str_T);
             if (id >= 0) {
-                char inkMLClass = isOperator(str_tex) ? 'o' : 'i';
-                it->setClase(id, pr, tex, inkMLClass);
+                it->setClase(id, pr, tex, 'i');
             } else
                 fprintf(stderr, "ERROR: %s -> %s (id < 0)\n", S, T);
 
@@ -131,8 +129,7 @@ void Grammar::addTerminal(float pr, const char* S, const char* T, const char* te
 
         int id = sym_rec->keyClase(str_T);
         if (id >= 0) {
-            char inkMlClass = isOperator(str_tex) ? 'o' : 'i';
-            pt->setClase(id, pr, tex, inkMlClass);
+            pt->setClase(id, pr, tex, 'i');
         } else
             fprintf(stderr, "ERROR: %s -> %s (id < 0)\n", S, T);
 
@@ -295,9 +292,4 @@ const char* Grammar::key2str(int k)
             return pair_k.c_str();
     }
     return "NULL";
-}
-
-bool Grammar::isOperator(const std::string& str) const
-{
-    return operatorSet.find(str) != operatorSet.end();
 }

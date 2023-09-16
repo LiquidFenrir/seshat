@@ -19,22 +19,19 @@
 #define _MEPARSER_
 
 #include "duration.hpp"
+#include "grammar.hpp"
+#include "production.hpp"
+#include "samples.hpp"
 #include "segmentation.hpp"
+#include "sparel.hpp"
+#include "symrec.hpp"
+#include "tablecyk.hpp"
 #include <memory>
 #include <optional>
+#include <seshat/hypothesis.hpp>
 #include <vector>
 
 namespace seshat {
-
-struct hypothesis;
-struct InternalHypothesis;
-struct CellCYK;
-struct TableCYK;
-struct ProductionB;
-struct GMM;
-struct SymRec;
-struct Grammar;
-struct Samples;
 
 class meParser {
     std::unique_ptr<Grammar> G;

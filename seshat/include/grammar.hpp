@@ -18,6 +18,7 @@
 #ifndef _GRAMMAR_
 #define _GRAMMAR_
 
+#include "production.hpp"
 #include <cstdio>
 #include <map>
 #include <memory>
@@ -28,18 +29,12 @@
 namespace seshat {
 
 class SymRec;
-class ProductionB;
-class ProductionT;
 
 struct Grammar {
     std::map<std::string, int> noTerminales;
     std::vector<int> initsyms;
     std::unique_ptr<bool[]> esInit;
     SymRec* sym_rec;
-    std::unordered_set<std::string> operatorSet = { "-", "+", "\\pm", "\\times", "\\div", "\\cdot", "=", "\\neq", "\\leq", "\\lt", "\\gt", "\\geq",
-                                                    "\\in", "\\rightarrow", "COMMA", "\\forall", "\\exists", "\\int", "\\sum", "\\log", "\\lim",
-                                                    "\\sin", "\\cos", "\\tan", "\\lbrace", "\\lbracket", "\\lpar", "\\rbrace", "\\rbracket", "\\rpar",
-                                                    "\\prime", "\\vee", "\\wedge", "\\equiv", "\\cup" };
 
     std::vector<std::unique_ptr<ProductionB>> prodsH, prodsSup, prodsSub;
     std::vector<std::unique_ptr<ProductionB>> prodsV, prodsVe, prodsIns, prodsMrt, prodsSSE;
@@ -60,8 +55,6 @@ struct Grammar {
     void addRuleSSE(float pr, const std::string& S, const std::string& A, const std::string& B, const std::string& out, const std::string& merge);
     void addRuleIns(float pr, const std::string& S, const std::string& A, const std::string& B, const std::string& out, const std::string& merge);
     void addRuleMrt(float pr, const std::string& S, const std::string& A, const std::string& B, const std::string& out, const std::string& merge);
-
-    bool isOperator(const std::string& str) const;
 };
 
 }

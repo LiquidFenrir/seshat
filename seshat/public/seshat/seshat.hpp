@@ -43,6 +43,7 @@ class math_expression {
 
 public:
     explicit math_expression(const char* config_path = "Config/CONFIG");
+    ~math_expression();
 
     std::vector<hypothesis> parse_sample(const sample&);
 };

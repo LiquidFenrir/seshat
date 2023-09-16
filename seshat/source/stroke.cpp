@@ -53,10 +53,10 @@ int Stroke::getNPoints() const
 
 void Stroke::print()
 {
-    printf("STROKE - %d points\n", (int)pseq.size());
-    for (int i = 0; i < (int)pseq.size(); i++)
-        printf(" (%g,%g)", pseq[i].x, pseq[i].y);
-    printf("\n");
+    // printf("STROKE - %d points\n", (int)pseq.size());
+    // for (int i = 0; i < (int)pseq.size(); i++)
+    //     printf(" (%g,%g)", pseq[i].x, pseq[i].y);
+    // printf("\n");
 }
 
 float Stroke::min_dist(Stroke* st)

@@ -16,6 +16,7 @@
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cellcyk.hpp>
 #include <cfloat>
 #include <cmath>
 #include <cstdio>
@@ -220,82 +221,82 @@ char ProductionH::tipo()
     return 'H';
 }
 
-void ProductionH::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
-{
+// void ProductionH::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
+// {
 
-    if (!H->hi->pt && H->hi->prod->tipo() == 'P' && !H->hi->hi->pt && !H->hi->hi->hi->prod && !strcmp(H->hi->hi->hi->pt->getTeX(H->hi->hi->hi->clase), "(")) {
+//     if (!H->hi->pt && H->hi->prod->tipo() == 'P' && !H->hi->hi->pt && !H->hi->hi->hi->prod && !strcmp(H->hi->hi->hi->pt->getTeX(H->hi->hi->hi->clase), "(")) {
 
-        // Deal with a bracketed expression such that only the right parenthesis has a superscript
-        // this is because CROHME evaluation requires this representation... in a non-ambiguous
-        // evaluation escenario this must be removed
+//         // Deal with a bracketed expression such that only the right parenthesis has a superscript
+//         // this is because CROHME evaluation requires this representation... in a non-ambiguous
+//         // evaluation escenario this must be removed
 
-        InternalHypothesis* hip = H->hi->hi;
-        while (hip->prod && hip->hd->prod && hip->hd->hd->prod)
-            hip = hip->hd;
+//         InternalHypothesis* hip = H->hi->hi;
+//         while (hip->prod && hip->hd->prod && hip->hd->hd->prod)
+//             hip = hip->hd;
 
-        InternalHypothesis* closep = hip->hd->hd;
-        InternalHypothesis* rest = hip->hd;
-        hip->hd = hip->hd->hi;
+//         InternalHypothesis* closep = hip->hd->hd;
+//         InternalHypothesis* rest = hip->hd;
+//         hip->hd = hip->hd->hi;
 
-        InternalHypothesis* hsup = new InternalHypothesis(-1, 0, nullptr, 0);
-        hsup->hi = closep;
-        hsup->hd = H->hi->hd;
-        hsup->prod = H->hi->prod;
+//         InternalHypothesis* hsup = new InternalHypothesis(-1, 0, nullptr, 0);
+//         hsup->hi = closep;
+//         hsup->hd = H->hi->hd;
+//         hsup->prod = H->hi->prod;
 
-        InternalHypothesis* haux = new InternalHypothesis(-1, 0, nullptr, 0);
-        haux->hi = hip;
-        haux->hd = hsup;
-        haux->prod = this;
+//         InternalHypothesis* haux = new InternalHypothesis(-1, 0, nullptr, 0);
+//         haux->hi = hip;
+//         haux->hd = hsup;
+//         haux->prod = this;
 
-        InternalHypothesis* hbig = new InternalHypothesis(-1, 0, nullptr, 0);
-        hbig->hi = haux;
-        hbig->hd = H->hd;
-        hbig->prod = this;
+//         InternalHypothesis* hbig = new InternalHypothesis(-1, 0, nullptr, 0);
+//         hbig->hi = haux;
+//         hbig->hd = H->hd;
+//         hbig->prod = this;
 
-        hbig->prod->print_mathml(G, hbig, fout, nid);
+//         hbig->prod->print_mathml(G, hbig, fout, nid);
 
-        delete hsup;
-        delete haux;
-        delete hbig;
+//         delete hsup;
+//         delete haux;
+//         delete hbig;
 
-        // Restore the original tree
-        hip->hd = rest;
-    } else {
-        fprintf(fout, "<mrow>\n");
+//         // Restore the original tree
+//         hip->hd = rest;
+//     } else {
+//         fprintf(fout, "<mrow>\n");
 
-        if (!H->hi->pt)
-            H->hi->prod->print_mathml(G, H->hi, fout, nid);
-        else {
-            char tipo = H->hi->pt->getMLtype(H->hi->clase);
-            const char* clase = H->hi->pt->getTeX(H->hi->clase);
-            *nid = *nid + 1;
+//         if (!H->hi->pt)
+//             H->hi->prod->print_mathml(G, H->hi, fout, nid);
+//         else {
+//             char tipo = H->hi->pt->getMLtype(H->hi->clase);
+//             const char* clase = H->hi->pt->getTeX(H->hi->clase);
+//             *nid = *nid + 1;
 
-            char inkid[128];
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hi->inkml_id = inkid;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hi->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
 
-        if (!H->hd->pt)
-            H->hd->prod->print_mathml(G, H->hd, fout, nid);
-        else {
-            char tipo = H->hd->pt->getMLtype(H->hd->clase);
-            const char* clase = H->hd->pt->getTeX(H->hd->clase);
-            *nid = *nid + 1;
+//         if (!H->hd->pt)
+//             H->hd->prod->print_mathml(G, H->hd, fout, nid);
+//         else {
+//             char tipo = H->hd->pt->getMLtype(H->hd->clase);
+//             const char* clase = H->hd->pt->getTeX(H->hd->clase);
+//             *nid = *nid + 1;
 
-            char inkid[128];
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hd->inkml_id = inkid;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hd->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
 
-        fprintf(fout, "</mrow>\n");
-    }
-}
+//         fprintf(fout, "</mrow>\n");
+//     }
+// }
 
 //
 // ProductionV methods
@@ -321,141 +322,141 @@ char ProductionV::tipo()
     return 'V';
 }
 
-void ProductionV::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
-{
+// void ProductionV::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
+// {
 
-    const char* hdhiclass = nullptr;
-    if (!H->hd->pt && !H->hd->hi->prod)
-        hdhiclass = H->hd->hi->pt->getTeX(H->hd->hi->clase);
+//     const char* hdhiclass = nullptr;
+//     if (!H->hd->pt && !H->hd->hi->prod)
+//         hdhiclass = H->hd->hi->pt->getTeX(H->hd->hi->clase);
 
-    if (hdhiclass && (!strcmp(hdhiclass, "\\sum") || !strcmp(hdhiclass, "\\int") || !strcmp(hdhiclass, "-"))) {
-        // Special cases: frac || msubsup bigop
-        if (!strcmp(hdhiclass, "-")) {
-            *nid = *nid + 1;
+//     if (hdhiclass && (!strcmp(hdhiclass, "\\sum") || !strcmp(hdhiclass, "\\int") || !strcmp(hdhiclass, "-"))) {
+//         // Special cases: frac || msubsup bigop
+//         if (!strcmp(hdhiclass, "-")) {
+//             *nid = *nid + 1;
 
-            char inkid[128];
-            sprintf(inkid, "-_%d", *nid);
-            // H->hd->hi->inkml_id = inkid;
+//             char inkid[128];
+//             sprintf(inkid, "-_%d", *nid);
+//             // H->hd->hi->inkml_id = inkid;
 
-            // Init mfrac
-            fprintf(fout, "<mfrac xml:id=\"%s\">\n", inkid);
-            // Numerator
-            if (!H->hi->pt)
-                H->hi->prod->print_mathml(G, H->hi, fout, nid);
-            else {
-                char tipo = H->hi->pt->getMLtype(H->hi->clase);
-                const char* clase = H->hi->pt->getTeX(H->hi->clase);
+//             // Init mfrac
+//             fprintf(fout, "<mfrac xml:id=\"%s\">\n", inkid);
+//             // Numerator
+//             if (!H->hi->pt)
+//                 H->hi->prod->print_mathml(G, H->hi, fout, nid);
+//             else {
+//                 char tipo = H->hi->pt->getMLtype(H->hi->clase);
+//                 const char* clase = H->hi->pt->getTeX(H->hi->clase);
 
-                *nid = *nid + 1;
-                sprintf(inkid, "%s_%d", clase, *nid);
-                // H->hi->inkml_id = inkid;
+//                 *nid = *nid + 1;
+//                 sprintf(inkid, "%s_%d", clase, *nid);
+//                 // H->hi->inkml_id = inkid;
 
-                fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                        tipo, inkid, clase, tipo);
-            }
+//                 fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                         tipo, inkid, clase, tipo);
+//             }
 
-            // Denominator
-            if (!H->hd->hd->pt)
-                H->hd->hd->prod->print_mathml(G, H->hd->hd, fout, nid);
-            else {
-                char tipo = H->hd->hd->pt->getMLtype(H->hd->hd->clase);
-                const char* clase = H->hd->hd->pt->getTeX(H->hd->hd->clase);
+//             // Denominator
+//             if (!H->hd->hd->pt)
+//                 H->hd->hd->prod->print_mathml(G, H->hd->hd, fout, nid);
+//             else {
+//                 char tipo = H->hd->hd->pt->getMLtype(H->hd->hd->clase);
+//                 const char* clase = H->hd->hd->pt->getTeX(H->hd->hd->clase);
 
-                *nid = *nid + 1;
-                sprintf(inkid, "%s_%d", clase, *nid);
-                // H->hd->hd->inkml_id = inkid;
+//                 *nid = *nid + 1;
+//                 sprintf(inkid, "%s_%d", clase, *nid);
+//                 // H->hd->hd->inkml_id = inkid;
 
-                fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                        tipo, inkid, clase, tipo);
-            }
-            // End mfrac
-            fprintf(fout, "</mfrac>\n");
-        } else {
-            // Cases Something V BigOp V Something
-            fprintf(fout, "<munderover>\n");
+//                 fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                         tipo, inkid, clase, tipo);
+//             }
+//             // End mfrac
+//             fprintf(fout, "</mfrac>\n");
+//         } else {
+//             // Cases Something V BigOp V Something
+//             fprintf(fout, "<munderover>\n");
 
-            // Base: \sum or \lim
-            int tipo = H->hd->hi->pt->getMLtype(H->hd->hi->clase);
-            *nid = *nid + 1;
+//             // Base: \sum or \lim
+//             int tipo = H->hd->hi->pt->getMLtype(H->hd->hi->clase);
+//             *nid = *nid + 1;
 
-            char inkid[128];
-            sprintf(inkid, "%s_%d", hdhiclass, *nid);
-            // H->hd->hi->inkml_id = inkid;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", hdhiclass, *nid);
+//             // H->hd->hi->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, hdhiclass, tipo);
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, hdhiclass, tipo);
 
-            // Under
-            if (!H->hd->hd->pt)
-                H->hd->hd->prod->print_mathml(G, H->hd->hd, fout, nid);
-            else {
-                char tipo = H->hd->hd->pt->getMLtype(H->hd->hd->clase);
-                const char* clase = H->hd->hd->pt->getTeX(H->hd->hd->clase);
+//             // Under
+//             if (!H->hd->hd->pt)
+//                 H->hd->hd->prod->print_mathml(G, H->hd->hd, fout, nid);
+//             else {
+//                 char tipo = H->hd->hd->pt->getMLtype(H->hd->hd->clase);
+//                 const char* clase = H->hd->hd->pt->getTeX(H->hd->hd->clase);
 
-                *nid = *nid + 1;
-                sprintf(inkid, "%s_%d", clase, *nid);
-                // H->hd->hd->inkml_id = inkid;
+//                 *nid = *nid + 1;
+//                 sprintf(inkid, "%s_%d", clase, *nid);
+//                 // H->hd->hd->inkml_id = inkid;
 
-                fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                        tipo, inkid, clase, tipo);
-            }
+//                 fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                         tipo, inkid, clase, tipo);
+//             }
 
-            // Over
-            if (!H->hi->pt)
-                H->hi->prod->print_mathml(G, H->hi, fout, nid);
-            else {
-                char tipo = H->hi->pt->getMLtype(H->hi->clase);
-                const char* clase = H->hi->pt->getTeX(H->hi->clase);
+//             // Over
+//             if (!H->hi->pt)
+//                 H->hi->prod->print_mathml(G, H->hi, fout, nid);
+//             else {
+//                 char tipo = H->hi->pt->getMLtype(H->hi->clase);
+//                 const char* clase = H->hi->pt->getTeX(H->hi->clase);
 
-                *nid = *nid + 1;
-                sprintf(inkid, "%s_%d", clase, *nid);
-                // H->hi->inkml_id = inkid;
+//                 *nid = *nid + 1;
+//                 sprintf(inkid, "%s_%d", clase, *nid);
+//                 // H->hi->inkml_id = inkid;
 
-                fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                        tipo, inkid, clase, tipo);
-            }
-            // End munderover
-            fprintf(fout, "</munderover>\n");
-        }
+//                 fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                         tipo, inkid, clase, tipo);
+//             }
+//             // End munderover
+//             fprintf(fout, "</munderover>\n");
+//         }
 
-        // End special cases
-    } else {
+//         // End special cases
+//     } else {
 
-        // Normal production print, munder
-        fprintf(fout, "<munder>\n");
+//         // Normal production print, munder
+//         fprintf(fout, "<munder>\n");
 
-        if (!H->hi->pt)
-            H->hi->prod->print_mathml(G, H->hi, fout, nid);
-        else {
-            char tipo = H->hi->pt->getMLtype(H->hi->clase);
-            const char* clase = H->hi->pt->getTeX(H->hi->clase);
+//         if (!H->hi->pt)
+//             H->hi->prod->print_mathml(G, H->hi, fout, nid);
+//         else {
+//             char tipo = H->hi->pt->getMLtype(H->hi->clase);
+//             const char* clase = H->hi->pt->getTeX(H->hi->clase);
 
-            *nid = *nid + 1;
-            char inkid[128];
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hi->inkml_id = inkid;
+//             *nid = *nid + 1;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hi->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
 
-        if (!H->hd->pt)
-            H->hd->prod->print_mathml(G, H->hd, fout, nid);
-        else {
-            char tipo = H->hd->pt->getMLtype(H->hd->clase);
-            const char* clase = H->hd->pt->getTeX(H->hd->clase);
+//         if (!H->hd->pt)
+//             H->hd->prod->print_mathml(G, H->hd, fout, nid);
+//         else {
+//             char tipo = H->hd->pt->getMLtype(H->hd->clase);
+//             const char* clase = H->hd->pt->getTeX(H->hd->clase);
 
-            *nid = *nid + 1;
-            char inkid[128];
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hd->inkml_id = inkid;
+//             *nid = *nid + 1;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hd->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
-        fprintf(fout, "</munder>\n");
-    }
-}
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
+//         fprintf(fout, "</munder>\n");
+//     }
+// }
 
 //
 // ProductionVe methods
@@ -481,141 +482,141 @@ char ProductionVe::tipo()
     return 'e';
 }
 
-void ProductionVe::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
-{
+// void ProductionVe::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
+// {
 
-    const char* hdhiclass = nullptr;
-    if (!H->hd->pt && !H->hd->hi->prod)
-        hdhiclass = H->hd->hi->pt->getTeX(H->hd->hi->clase);
+//     const char* hdhiclass = nullptr;
+//     if (!H->hd->pt && !H->hd->hi->prod)
+//         hdhiclass = H->hd->hi->pt->getTeX(H->hd->hi->clase);
 
-    if (hdhiclass && (!strcmp(hdhiclass, "\\sum") || !strcmp(hdhiclass, "\\int") || !strcmp(hdhiclass, "-"))) {
-        // Special cases: frac || msubsup bigop
-        if (!strcmp(hdhiclass, "-")) {
-            *nid = *nid + 1;
+//     if (hdhiclass && (!strcmp(hdhiclass, "\\sum") || !strcmp(hdhiclass, "\\int") || !strcmp(hdhiclass, "-"))) {
+//         // Special cases: frac || msubsup bigop
+//         if (!strcmp(hdhiclass, "-")) {
+//             *nid = *nid + 1;
 
-            char inkid[128];
-            sprintf(inkid, "-_%d", *nid);
-            // H->hd->hi->inkml_id = inkid;
+//             char inkid[128];
+//             sprintf(inkid, "-_%d", *nid);
+//             // H->hd->hi->inkml_id = inkid;
 
-            // Init mfrac
-            fprintf(fout, "<mfrac xml:id=\"%s\">\n", inkid);
-            // Numerator
-            if (!H->hi->pt)
-                H->hi->prod->print_mathml(G, H->hi, fout, nid);
-            else {
-                char tipo = H->hi->pt->getMLtype(H->hi->clase);
-                const char* clase = H->hi->pt->getTeX(H->hi->clase);
+//             // Init mfrac
+//             fprintf(fout, "<mfrac xml:id=\"%s\">\n", inkid);
+//             // Numerator
+//             if (!H->hi->pt)
+//                 H->hi->prod->print_mathml(G, H->hi, fout, nid);
+//             else {
+//                 char tipo = H->hi->pt->getMLtype(H->hi->clase);
+//                 const char* clase = H->hi->pt->getTeX(H->hi->clase);
 
-                *nid = *nid + 1;
-                sprintf(inkid, "%s_%d", clase, *nid);
-                // H->hi->inkml_id = inkid;
+//                 *nid = *nid + 1;
+//                 sprintf(inkid, "%s_%d", clase, *nid);
+//                 // H->hi->inkml_id = inkid;
 
-                fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                        tipo, inkid, clase, tipo);
-            }
+//                 fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                         tipo, inkid, clase, tipo);
+//             }
 
-            // Denominator
-            if (!H->hd->hd->pt)
-                H->hd->hd->prod->print_mathml(G, H->hd->hd, fout, nid);
-            else {
-                char tipo = H->hd->hd->pt->getMLtype(H->hd->hd->clase);
-                const char* clase = H->hd->hd->pt->getTeX(H->hd->hd->clase);
+//             // Denominator
+//             if (!H->hd->hd->pt)
+//                 H->hd->hd->prod->print_mathml(G, H->hd->hd, fout, nid);
+//             else {
+//                 char tipo = H->hd->hd->pt->getMLtype(H->hd->hd->clase);
+//                 const char* clase = H->hd->hd->pt->getTeX(H->hd->hd->clase);
 
-                *nid = *nid + 1;
-                sprintf(inkid, "%s_%d", clase, *nid);
-                // H->hd->hd->inkml_id = inkid;
+//                 *nid = *nid + 1;
+//                 sprintf(inkid, "%s_%d", clase, *nid);
+//                 // H->hd->hd->inkml_id = inkid;
 
-                fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                        tipo, inkid, clase, tipo);
-            }
-            // End mfrac
-            fprintf(fout, "</mfrac>\n");
-        } else {
-            // Cases Something V BigOp V Something
-            fprintf(fout, "<munderover>\n");
+//                 fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                         tipo, inkid, clase, tipo);
+//             }
+//             // End mfrac
+//             fprintf(fout, "</mfrac>\n");
+//         } else {
+//             // Cases Something V BigOp V Something
+//             fprintf(fout, "<munderover>\n");
 
-            // Base: \sum or \lim
-            int tipo = H->hd->hi->pt->getMLtype(H->hd->hi->clase);
-            *nid = *nid + 1;
+//             // Base: \sum or \lim
+//             int tipo = H->hd->hi->pt->getMLtype(H->hd->hi->clase);
+//             *nid = *nid + 1;
 
-            char inkid[128];
-            sprintf(inkid, "%s_%d", hdhiclass, *nid);
-            // H->hd->hi->inkml_id = inkid;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", hdhiclass, *nid);
+//             // H->hd->hi->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, hdhiclass, tipo);
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, hdhiclass, tipo);
 
-            // Under
-            if (!H->hd->hd->pt)
-                H->hd->hd->prod->print_mathml(G, H->hd->hd, fout, nid);
-            else {
-                char tipo = H->hd->hd->pt->getMLtype(H->hd->hd->clase);
-                const char* clase = H->hd->hd->pt->getTeX(H->hd->hd->clase);
+//             // Under
+//             if (!H->hd->hd->pt)
+//                 H->hd->hd->prod->print_mathml(G, H->hd->hd, fout, nid);
+//             else {
+//                 char tipo = H->hd->hd->pt->getMLtype(H->hd->hd->clase);
+//                 const char* clase = H->hd->hd->pt->getTeX(H->hd->hd->clase);
 
-                *nid = *nid + 1;
-                sprintf(inkid, "%s_%d", clase, *nid);
-                // H->hd->hd->inkml_id = inkid;
+//                 *nid = *nid + 1;
+//                 sprintf(inkid, "%s_%d", clase, *nid);
+//                 // H->hd->hd->inkml_id = inkid;
 
-                fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                        tipo, inkid, clase, tipo);
-            }
+//                 fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                         tipo, inkid, clase, tipo);
+//             }
 
-            // Over
-            if (!H->hi->pt)
-                H->hi->prod->print_mathml(G, H->hi, fout, nid);
-            else {
-                char tipo = H->hi->pt->getMLtype(H->hi->clase);
-                const char* clase = H->hi->pt->getTeX(H->hi->clase);
+//             // Over
+//             if (!H->hi->pt)
+//                 H->hi->prod->print_mathml(G, H->hi, fout, nid);
+//             else {
+//                 char tipo = H->hi->pt->getMLtype(H->hi->clase);
+//                 const char* clase = H->hi->pt->getTeX(H->hi->clase);
 
-                *nid = *nid + 1;
-                sprintf(inkid, "%s_%d", clase, *nid);
-                // H->hi->inkml_id = inkid;
+//                 *nid = *nid + 1;
+//                 sprintf(inkid, "%s_%d", clase, *nid);
+//                 // H->hi->inkml_id = inkid;
 
-                fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                        tipo, inkid, clase, tipo);
-            }
-            // End munderover
-            fprintf(fout, "</munderover>\n");
-        }
+//                 fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                         tipo, inkid, clase, tipo);
+//             }
+//             // End munderover
+//             fprintf(fout, "</munderover>\n");
+//         }
 
-        // End special cases
-    } else {
+//         // End special cases
+//     } else {
 
-        // Normal production print, munder
-        fprintf(fout, "<munder>\n");
+//         // Normal production print, munder
+//         fprintf(fout, "<munder>\n");
 
-        if (!H->hi->pt)
-            H->hi->prod->print_mathml(G, H->hi, fout, nid);
-        else {
-            char tipo = H->hi->pt->getMLtype(H->hi->clase);
-            const char* clase = H->hi->pt->getTeX(H->hi->clase);
+//         if (!H->hi->pt)
+//             H->hi->prod->print_mathml(G, H->hi, fout, nid);
+//         else {
+//             char tipo = H->hi->pt->getMLtype(H->hi->clase);
+//             const char* clase = H->hi->pt->getTeX(H->hi->clase);
 
-            *nid = *nid + 1;
-            char inkid[128];
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hi->inkml_id = inkid;
+//             *nid = *nid + 1;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hi->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
 
-        if (!H->hd->pt)
-            H->hd->prod->print_mathml(G, H->hd, fout, nid);
-        else {
-            char tipo = H->hd->pt->getMLtype(H->hd->clase);
-            const char* clase = H->hd->pt->getTeX(H->hd->clase);
+//         if (!H->hd->pt)
+//             H->hd->prod->print_mathml(G, H->hd, fout, nid);
+//         else {
+//             char tipo = H->hd->pt->getMLtype(H->hd->clase);
+//             const char* clase = H->hd->pt->getTeX(H->hd->clase);
 
-            *nid = *nid + 1;
-            char inkid[128];
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hd->inkml_id = inkid;
+//             *nid = *nid + 1;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hd->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
-        fprintf(fout, "</munder>\n");
-    }
-}
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
+//         fprintf(fout, "</munder>\n");
+//     }
+// }
 
 //
 // ProductionSSE methods
@@ -641,57 +642,57 @@ char ProductionSSE::tipo()
     return 'S';
 }
 
-void ProductionSSE::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
-{
-    fprintf(fout, "<msubsup>\n");
+// void ProductionSSE::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
+// {
+//     fprintf(fout, "<msubsup>\n");
 
-    if (!H->hi->hi->pt)
-        H->hi->hi->prod->print_mathml(G, H->hi->hi, fout, nid);
-    else {
-        char tipo = H->hi->hi->pt->getMLtype(H->hi->hi->clase);
-        const char* clase = H->hi->hi->pt->getTeX(H->hi->hi->clase);
-        *nid = *nid + 1;
+//     if (!H->hi->hi->pt)
+//         H->hi->hi->prod->print_mathml(G, H->hi->hi, fout, nid);
+//     else {
+//         char tipo = H->hi->hi->pt->getMLtype(H->hi->hi->clase);
+//         const char* clase = H->hi->hi->pt->getTeX(H->hi->hi->clase);
+//         *nid = *nid + 1;
 
-        char inkid[128];
-        sprintf(inkid, "%s_%d", clase, *nid);
-        // H->hi->hi->inkml_id = inkid;
+//         char inkid[128];
+//         sprintf(inkid, "%s_%d", clase, *nid);
+//         // H->hi->hi->inkml_id = inkid;
 
-        fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                tipo, inkid, clase, tipo);
-    }
+//         fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                 tipo, inkid, clase, tipo);
+//     }
 
-    if (!H->hi->hd->pt)
-        H->hi->hd->prod->print_mathml(G, H->hi->hd, fout, nid);
-    else {
-        char tipo = H->hi->hd->pt->getMLtype(H->hi->hd->clase);
-        const char* clase = H->hi->hd->pt->getTeX(H->hi->hd->clase);
-        *nid = *nid + 1;
+//     if (!H->hi->hd->pt)
+//         H->hi->hd->prod->print_mathml(G, H->hi->hd, fout, nid);
+//     else {
+//         char tipo = H->hi->hd->pt->getMLtype(H->hi->hd->clase);
+//         const char* clase = H->hi->hd->pt->getTeX(H->hi->hd->clase);
+//         *nid = *nid + 1;
 
-        char inkid[128];
-        sprintf(inkid, "%s_%d", clase, *nid);
-        // H->hi->hd->inkml_id = inkid;
+//         char inkid[128];
+//         sprintf(inkid, "%s_%d", clase, *nid);
+//         // H->hi->hd->inkml_id = inkid;
 
-        fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                tipo, inkid, clase, tipo);
-    }
+//         fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                 tipo, inkid, clase, tipo);
+//     }
 
-    if (!H->hd->pt)
-        H->hd->prod->print_mathml(G, H->hd, fout, nid);
-    else {
-        char tipo = H->hd->pt->getMLtype(H->hd->clase);
-        const char* clase = H->hd->pt->getTeX(H->hd->clase);
-        *nid = *nid + 1;
+//     if (!H->hd->pt)
+//         H->hd->prod->print_mathml(G, H->hd, fout, nid);
+//     else {
+//         char tipo = H->hd->pt->getMLtype(H->hd->clase);
+//         const char* clase = H->hd->pt->getTeX(H->hd->clase);
+//         *nid = *nid + 1;
 
-        char inkid[128];
-        sprintf(inkid, "%s_%d", clase, *nid);
-        // H->hd->inkml_id = inkid;
+//         char inkid[128];
+//         sprintf(inkid, "%s_%d", clase, *nid);
+//         // H->hd->inkml_id = inkid;
 
-        fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                tipo, inkid, clase, tipo);
-    }
+//         fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                 tipo, inkid, clase, tipo);
+//     }
 
-    fprintf(fout, "</msubsup>\n");
-}
+//     fprintf(fout, "</msubsup>\n");
+// }
 
 //
 // ProductionSup methods
@@ -717,129 +718,129 @@ char ProductionSup::tipo()
     return 'P';
 }
 
-void ProductionSup::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
-{
+// void ProductionSup::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
+// {
 
-    if (!H->hi->pt && !H->hi->hi->prod && !strcmp(H->hi->hi->pt->getTeX(H->hi->hi->clase), "(")) {
+//     if (!H->hi->pt && !H->hi->hi->prod && !strcmp(H->hi->hi->pt->getTeX(H->hi->hi->clase), "(")) {
 
-        // Deal with a bracketed expression such that only the right parenthesis has a superscript
-        // this is because CROHME evaluation requires this representation... in a non-ambiguous
-        // evaluation escenario this must be removed
+//         // Deal with a bracketed expression such that only the right parenthesis has a superscript
+//         // this is because CROHME evaluation requires this representation... in a non-ambiguous
+//         // evaluation escenario this must be removed
 
-        InternalHypothesis* hip = H->hi;
-        while (!hip->pt && !hip->hd->pt && !hip->hd->hd->pt)
-            hip = hip->hd;
+//         InternalHypothesis* hip = H->hi;
+//         while (!hip->pt && !hip->hd->pt && !hip->hd->hd->pt)
+//             hip = hip->hd;
 
-        InternalHypothesis* closep = hip->hd->hd;
-        InternalHypothesis* rest = hip->hd;
-        hip->hd = hip->hd->hi;
+//         InternalHypothesis* closep = hip->hd->hd;
+//         InternalHypothesis* rest = hip->hd;
+//         hip->hd = hip->hd->hi;
 
-        InternalHypothesis* haux = new InternalHypothesis(-1, 0, nullptr, 0);
+//         InternalHypothesis* haux = new InternalHypothesis(-1, 0, nullptr, 0);
 
-        haux->hi = closep;
-        haux->hd = H->hd;
-        haux->prod = this;
+//         haux->hi = closep;
+//         haux->hd = H->hd;
+//         haux->prod = this;
 
-        InternalHypothesis* hbig = new InternalHypothesis(-1, 0, nullptr, 0);
-        hbig->hi = H->hi;
-        hbig->hd = haux;
-        hbig->prod = H->hi->prod;
+//         InternalHypothesis* hbig = new InternalHypothesis(-1, 0, nullptr, 0);
+//         hbig->hi = H->hi;
+//         hbig->hd = haux;
+//         hbig->prod = H->hi->prod;
 
-        hbig->prod->print_mathml(G, hbig, fout, nid);
+//         hbig->prod->print_mathml(G, hbig, fout, nid);
 
-        delete haux;
-        delete hbig;
+//         delete haux;
+//         delete hbig;
 
-        // Restore original tree
-        hip->hd = rest;
-    } else if (!H->hi->pt && H->hi->prod->tipo() == 'V' && H->hi->hi->pt && !strcmp(H->hi->hi->pt->getTeX(H->hi->hi->clase), "\\int")) {
-        // Print as msubsup (BigOp [Below] Algo) [Sup] Algo
-        fprintf(fout, "<msubsup>\n");
+//         // Restore original tree
+//         hip->hd = rest;
+//     } else if (!H->hi->pt && H->hi->prod->tipo() == 'V' && H->hi->hi->pt && !strcmp(H->hi->hi->pt->getTeX(H->hi->hi->clase), "\\int")) {
+//         // Print as msubsup (BigOp [Below] Algo) [Sup] Algo
+//         fprintf(fout, "<msubsup>\n");
 
-        //\int
-        {
-            char tipo = H->hi->hi->pt->getMLtype(H->hi->hi->clase);
-            const char* clase = H->hi->hi->pt->getTeX(H->hi->hi->clase);
-            *nid = *nid + 1;
+//         //\int
+//         {
+//             char tipo = H->hi->hi->pt->getMLtype(H->hi->hi->clase);
+//             const char* clase = H->hi->hi->pt->getTeX(H->hi->hi->clase);
+//             *nid = *nid + 1;
 
-            char inkid[128];
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hi->hi->inkml_id = inkid;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hi->hi->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
 
-        // subscript
-        if (!H->hi->hd->pt)
-            H->hi->hd->prod->print_mathml(G, H->hi->hd, fout, nid);
-        else {
-            char tipo = H->hi->hd->pt->getMLtype(H->hi->hd->clase);
-            const char* clase = H->hi->hd->pt->getTeX(H->hi->hd->clase);
-            *nid = *nid + 1;
+//         // subscript
+//         if (!H->hi->hd->pt)
+//             H->hi->hd->prod->print_mathml(G, H->hi->hd, fout, nid);
+//         else {
+//             char tipo = H->hi->hd->pt->getMLtype(H->hi->hd->clase);
+//             const char* clase = H->hi->hd->pt->getTeX(H->hi->hd->clase);
+//             *nid = *nid + 1;
 
-            char inkid[128];
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hi->hd->inkml_id = inkid;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hi->hd->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
 
-        // superscript
-        if (!H->hd->pt)
-            H->hd->prod->print_mathml(G, H->hd, fout, nid);
-        else {
-            char tipo = H->hd->pt->getMLtype(H->hd->clase);
-            const char* clase = H->hd->pt->getTeX(H->hd->clase);
-            *nid = *nid + 1;
+//         // superscript
+//         if (!H->hd->pt)
+//             H->hd->prod->print_mathml(G, H->hd, fout, nid);
+//         else {
+//             char tipo = H->hd->pt->getMLtype(H->hd->clase);
+//             const char* clase = H->hd->pt->getTeX(H->hd->clase);
+//             *nid = *nid + 1;
 
-            char inkid[128];
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hd->inkml_id = inkid;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hd->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
 
-        fprintf(fout, "</msubsup>\n");
-    } else {
+//         fprintf(fout, "</msubsup>\n");
+//     } else {
 
-        fprintf(fout, "<msup>\n");
+//         fprintf(fout, "<msup>\n");
 
-        if (!H->hi->pt)
-            H->hi->prod->print_mathml(G, H->hi, fout, nid);
-        else {
-            char tipo = H->hi->pt->getMLtype(H->hi->clase);
-            const char* clase = H->hi->pt->getTeX(H->hi->clase);
-            *nid = *nid + 1;
+//         if (!H->hi->pt)
+//             H->hi->prod->print_mathml(G, H->hi, fout, nid);
+//         else {
+//             char tipo = H->hi->pt->getMLtype(H->hi->clase);
+//             const char* clase = H->hi->pt->getTeX(H->hi->clase);
+//             *nid = *nid + 1;
 
-            char inkid[128];
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hi->inkml_id = inkid;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hi->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
 
-        if (!H->hd->pt)
-            H->hd->prod->print_mathml(G, H->hd, fout, nid);
-        else {
-            char tipo = H->hd->pt->getMLtype(H->hd->clase);
-            const char* clase = H->hd->pt->getTeX(H->hd->clase);
-            *nid = *nid + 1;
+//         if (!H->hd->pt)
+//             H->hd->prod->print_mathml(G, H->hd, fout, nid);
+//         else {
+//             char tipo = H->hd->pt->getMLtype(H->hd->clase);
+//             const char* clase = H->hd->pt->getTeX(H->hd->clase);
+//             *nid = *nid + 1;
 
-            char inkid[128];
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hd->inkml_id = inkid;
+//             char inkid[128];
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hd->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
 
-        fprintf(fout, "</msup>\n");
-    }
-}
+//         fprintf(fout, "</msup>\n");
+//     }
+// }
 
 //
 // ProductionSub methods
@@ -865,42 +866,42 @@ char ProductionSub::tipo()
     return 'B';
 }
 
-void ProductionSub::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
-{
-    fprintf(fout, "<msub>\n");
+// void ProductionSub::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
+// {
+//     fprintf(fout, "<msub>\n");
 
-    if (!H->hi->pt)
-        H->hi->prod->print_mathml(G, H->hi, fout, nid);
-    else {
-        char tipo = H->hi->pt->getMLtype(H->hi->clase);
-        const char* clase = H->hi->pt->getTeX(H->hi->clase);
-        *nid = *nid + 1;
+//     if (!H->hi->pt)
+//         H->hi->prod->print_mathml(G, H->hi, fout, nid);
+//     else {
+//         char tipo = H->hi->pt->getMLtype(H->hi->clase);
+//         const char* clase = H->hi->pt->getTeX(H->hi->clase);
+//         *nid = *nid + 1;
 
-        char inkid[128];
-        sprintf(inkid, "%s_%d", clase, *nid);
-        // H->hi->inkml_id = inkid;
+//         char inkid[128];
+//         sprintf(inkid, "%s_%d", clase, *nid);
+//         // H->hi->inkml_id = inkid;
 
-        fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                tipo, inkid, clase, tipo);
-    }
+//         fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                 tipo, inkid, clase, tipo);
+//     }
 
-    if (!H->hd->pt)
-        H->hd->prod->print_mathml(G, H->hd, fout, nid);
-    else {
-        char tipo = H->hd->pt->getMLtype(H->hd->clase);
-        const char* clase = H->hd->pt->getTeX(H->hd->clase);
-        *nid = *nid + 1;
+//     if (!H->hd->pt)
+//         H->hd->prod->print_mathml(G, H->hd, fout, nid);
+//     else {
+//         char tipo = H->hd->pt->getMLtype(H->hd->clase);
+//         const char* clase = H->hd->pt->getTeX(H->hd->clase);
+//         *nid = *nid + 1;
 
-        char inkid[128];
-        sprintf(inkid, "%s_%d", clase, *nid);
-        // H->hd->inkml_id = inkid;
+//         char inkid[128];
+//         sprintf(inkid, "%s_%d", clase, *nid);
+//         // H->hd->inkml_id = inkid;
 
-        fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                tipo, inkid, clase, tipo);
-    }
+//         fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                 tipo, inkid, clase, tipo);
+//     }
 
-    fprintf(fout, "</msub>\n");
-}
+//     fprintf(fout, "</msub>\n");
+// }
 
 //
 // ProductionIns methods
@@ -926,74 +927,74 @@ char ProductionIns::tipo()
     return 'I';
 }
 
-void ProductionIns::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
-{
-    *nid = *nid + 1;
+// void ProductionIns::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
+// {
+//     *nid = *nid + 1;
 
-    if (!H->hi->pt && H->hi->prod->tipo() == 'M') {
-        // Mroot case
-        char inkid[128];
-        sprintf(inkid, "\\sqrt_%d", *nid);
-        // H->hi->hd->inkml_id = inkid;
+//     if (!H->hi->pt && H->hi->prod->tipo() == 'M') {
+//         // Mroot case
+//         char inkid[128];
+//         sprintf(inkid, "\\sqrt_%d", *nid);
+//         // H->hi->hd->inkml_id = inkid;
 
-        fprintf(fout, "<mroot xml:id=\"%s\">\n", inkid);
+//         fprintf(fout, "<mroot xml:id=\"%s\">\n", inkid);
 
-        // Sqrt content
-        if (!H->hd->pt)
-            H->hd->prod->print_mathml(G, H->hd, fout, nid);
-        else {
-            char tipo = H->hd->pt->getMLtype(H->hd->clase);
-            const char* clase = H->hd->pt->getTeX(H->hd->clase);
-            *nid = *nid + 1;
+//         // Sqrt content
+//         if (!H->hd->pt)
+//             H->hd->prod->print_mathml(G, H->hd, fout, nid);
+//         else {
+//             char tipo = H->hd->pt->getMLtype(H->hd->clase);
+//             const char* clase = H->hd->pt->getTeX(H->hd->clase);
+//             *nid = *nid + 1;
 
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hd->inkml_id = inkid;
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hd->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
 
-        // sqrt index
-        if (!H->hi->hi->pt)
-            H->hi->hi->prod->print_mathml(G, H->hi->hi, fout, nid);
-        else {
-            char tipo = H->hi->hi->pt->getMLtype(H->hi->hi->clase);
-            const char* clase = H->hi->hi->pt->getTeX(H->hi->hi->clase);
-            *nid = *nid + 1;
+//         // sqrt index
+//         if (!H->hi->hi->pt)
+//             H->hi->hi->prod->print_mathml(G, H->hi->hi, fout, nid);
+//         else {
+//             char tipo = H->hi->hi->pt->getMLtype(H->hi->hi->clase);
+//             const char* clase = H->hi->hi->pt->getTeX(H->hi->hi->clase);
+//             *nid = *nid + 1;
 
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hi->hi->inkml_id = inkid;
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hi->hi->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
 
-        fprintf(fout, "</mroot>\n");
-    } else {
-        // Regular msqrt
-        char inkid[128];
-        sprintf(inkid, "\\sqrt_%d", *nid);
-        // H->hi->inkml_id = inkid;
+//         fprintf(fout, "</mroot>\n");
+//     } else {
+//         // Regular msqrt
+//         char inkid[128];
+//         sprintf(inkid, "\\sqrt_%d", *nid);
+//         // H->hi->inkml_id = inkid;
 
-        fprintf(fout, "<msqrt xml:id=\"%s\">\n", inkid);
+//         fprintf(fout, "<msqrt xml:id=\"%s\">\n", inkid);
 
-        if (!H->hd->pt)
-            H->hd->prod->print_mathml(G, H->hd, fout, nid);
-        else {
-            char tipo = H->hd->pt->getMLtype(H->hd->clase);
-            const char* clase = H->hd->pt->getTeX(H->hd->clase);
-            *nid = *nid + 1;
+//         if (!H->hd->pt)
+//             H->hd->prod->print_mathml(G, H->hd, fout, nid);
+//         else {
+//             char tipo = H->hd->pt->getMLtype(H->hd->clase);
+//             const char* clase = H->hd->pt->getTeX(H->hd->clase);
+//             *nid = *nid + 1;
 
-            sprintf(inkid, "%s_%d", clase, *nid);
-            // H->hd->inkml_id = inkid;
+//             sprintf(inkid, "%s_%d", clase, *nid);
+//             // H->hd->inkml_id = inkid;
 
-            fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                    tipo, inkid, clase, tipo);
-        }
+//             fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                     tipo, inkid, clase, tipo);
+//         }
 
-        fprintf(fout, "</msqrt>\n");
-    }
-}
+//         fprintf(fout, "</msqrt>\n");
+//     }
+// }
 
 //
 // ProductionMrt methods
@@ -1019,46 +1020,46 @@ char ProductionMrt::tipo()
     return 'M';
 }
 
-void ProductionMrt::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
-{
-    *nid = *nid + 1;
+// void ProductionMrt::print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid)
+// {
+//     *nid = *nid + 1;
 
-    char inkid[128];
-    sprintf(inkid, "\\sqrt_%d", *nid);
-    // H->hi->inkml_id = inkid;
+//     char inkid[128];
+//     sprintf(inkid, "\\sqrt_%d", *nid);
+//     // H->hi->inkml_id = inkid;
 
-    fprintf(fout, "<mroot xml:id=\"%s\">\n", inkid);
+//     fprintf(fout, "<mroot xml:id=\"%s\">\n", inkid);
 
-    if (!H->hd->pt)
-        H->hd->prod->print_mathml(G, H->hd, fout, nid);
-    else {
-        char tipo = H->hd->pt->getMLtype(H->hd->clase);
-        const char* clase = H->hd->pt->getTeX(H->hd->clase);
-        *nid = *nid + 1;
+//     if (!H->hd->pt)
+//         H->hd->prod->print_mathml(G, H->hd, fout, nid);
+//     else {
+//         char tipo = H->hd->pt->getMLtype(H->hd->clase);
+//         const char* clase = H->hd->pt->getTeX(H->hd->clase);
+//         *nid = *nid + 1;
 
-        sprintf(inkid, "%s_%d", clase, *nid);
-        // H->hd->inkml_id = inkid;
+//         sprintf(inkid, "%s_%d", clase, *nid);
+//         // H->hd->inkml_id = inkid;
 
-        fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                tipo, inkid, clase, tipo);
-    }
+//         fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                 tipo, inkid, clase, tipo);
+//     }
 
-    if (!H->hi->hi->pt)
-        H->hi->hi->prod->print_mathml(G, H->hi->hi, fout, nid);
-    else {
-        char tipo = H->hd->pt->getMLtype(H->hi->hi->clase);
-        const char* clase = H->hd->pt->getTeX(H->hi->hi->clase);
-        *nid = *nid + 1;
+//     if (!H->hi->hi->pt)
+//         H->hi->hi->prod->print_mathml(G, H->hi->hi, fout, nid);
+//     else {
+//         char tipo = H->hd->pt->getMLtype(H->hi->hi->clase);
+//         const char* clase = H->hd->pt->getTeX(H->hi->hi->clase);
+//         *nid = *nid + 1;
 
-        sprintf(inkid, "%s_%d", clase, *nid);
-        // H->hd->inkml_id = inkid;
+//         sprintf(inkid, "%s_%d", clase, *nid);
+//         // H->hd->inkml_id = inkid;
 
-        fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
-                tipo, inkid, clase, tipo);
-    }
+//         fprintf(fout, "<m%c xml:id=\"%s\">%s</m%c>\n",
+//                 tipo, inkid, clase, tipo);
+//     }
 
-    fprintf(fout, "</mroot>\n");
-}
+//     fprintf(fout, "</mroot>\n");
+// }
 
 //
 // ProductionT methods

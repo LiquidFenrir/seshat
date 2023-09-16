@@ -9,6 +9,7 @@ set(SESHAT_LIB_SRCS
     source/gparser.cpp
     source/grammar.cpp
     source/hypothesis.cpp
+    source/internal_hypothesis.cpp
     source/logspace.cpp
     source/meparser.cpp
     source/online.cpp
@@ -35,8 +36,6 @@ target_compile_options(seshat PRIVATE
     -Wno-unused-function
     -Wno-type-limits
 )
-
-add_subdirectory(../rnnlib4seshat)
 
 target_link_libraries(seshat PRIVATE
     ${EXTRA_GPROF_FLAGS}

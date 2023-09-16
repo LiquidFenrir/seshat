@@ -18,7 +18,7 @@
 
 #include <meparser.hpp>
 #include <samples.hpp>
-#include <seshat.hpp>
+#include <seshat/seshat.hpp>
 
 namespace seshat {
 
@@ -27,6 +27,8 @@ math_expression::math_expression(const char* config_path)
     , samples{ std::make_unique<Samples>() }
 {
 }
+
+math_expression::~math_expression() = default;
 
 std::vector<hypothesis> math_expression::parse_sample(const sample& input)
 {

@@ -38,9 +38,9 @@ covered by the following copyright and permission notice:
 #ifndef VECTORIMAGE_H
 #define VECTORIMAGE_H
 
-namespace seshat {
-
 #include <vector>
+
+namespace seshat {
 
 template<typename T>
 struct VectorImageT {

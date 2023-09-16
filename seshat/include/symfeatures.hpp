@@ -19,13 +19,13 @@
 #define _SYMFEATURES_
 
 #include <memory>
+#include <rnnlib4seshat/DataSequence.hpp>
+#include <vectorimage.hpp>
 
 namespace seshat {
 
-class DataSequence;
 class SegmentHyp;
 class Samples;
-class VectorImage;
 
 class SymFeatures {
     static inline constexpr int ON_FEAT = 7;

@@ -23,6 +23,8 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wno-type-limits
 )
 
+add_subdirectory(rnnlib4seshat)
+# required by the following
 add_subdirectory(seshat)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

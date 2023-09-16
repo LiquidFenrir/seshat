@@ -17,6 +17,7 @@
 */
 
 #include <cmath>
+#include <samples.hpp>
 #include <segmentation.hpp>
 
 using namespace seshat;

@@ -32,7 +32,6 @@ class Stroke {
     friend math_expression;
 
     std::vector<Point> pseq;
-    int id; // InkML information
 
 public:
     // Coordinates of the region it defines
