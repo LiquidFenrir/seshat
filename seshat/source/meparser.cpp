@@ -460,7 +460,7 @@ std::vector<hypothesis> meParser::parse_me(Samples& M)
 
     // Spatial structure for retrieving hypotheses within a certain region
     {
-        std::vector<std::unique_ptr<LogSpace>> logspace(N);
+        std::vector<std::unique_ptr<LogSpace>> logspace(std::max(2, N));
         SpaRel SPR(*gmm_spr, M);
 
         // Init spatial space for size 1
@@ -473,7 +473,7 @@ std::vector<hypothesis> meParser::parse_me(Samples& M)
         // printf("Size 1: Generated %d\n", tcyk.size(1));
 
         // CYK algorithm main loop
-        for (int talla = 2; talla <= N; talla++) {
+        for (int talla = 2; talla <= std::max(2, N); talla++) {
 
             for (int a = 1; a < talla; a++) {
                 int b = talla - a;
@@ -488,11 +488,14 @@ std::vector<hypothesis> meParser::parse_me(Samples& M)
                     c1setS.clear();
 
                     // Get the subset of regions close to c1 according to different spatial relations
-                    logspace[b]->getH(c1, c1setH); // Horizontal (right)
-                    logspace[b]->getV(c1, c1setV); // Vertical (down)
-                    logspace[b]->getU(c1, c1setU); // Vertical (up)
-                    logspace[b]->getI(c1, c1setI); // Inside (sqrt)
-                    logspace[b]->getM(c1, c1setM); // mroot (sqrt[i])
+                    {
+                    const auto& logspace_b = logspace[b];
+                    logspace_b->getH(c1, c1setH); // Horizontal (right)
+                    logspace_b->getV(c1, c1setV); // Vertical (down)
+                    logspace_b->getU(c1, c1setU); // Vertical (up)
+                    logspace_b->getI(c1, c1setI); // Inside (sqrt)
+                    logspace_b->getM(c1, c1setM); // mroot (sqrt[i])
+                    }
 
                     for (const auto& c2 : c1setH) {
 
@@ -822,7 +825,7 @@ std::vector<hypothesis> meParser::parse_me(Samples& M)
 
             } // for 1 <= a < talla
 
-            if (talla < N) {
+            if (talla < std::max(2, N)) {
                 // Create new logspace structure of size "talla"
                 logspace[talla] = std::make_unique<LogSpace>(tcyk.get(talla), tcyk.size(talla), M.RX, M.RY);
             }

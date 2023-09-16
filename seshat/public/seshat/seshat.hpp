@@ -30,6 +30,7 @@ struct sample {
         std::vector<point> points;
     };
     std::vector<stroke> strokes;
+    std::size_t total_points{0};
 };
 
 // do not use these, forward declarations for the inner workings
