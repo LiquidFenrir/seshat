@@ -18,17 +18,18 @@
 #ifndef _GRAMMAR_
 #define _GRAMMAR_
 
-class gParser;
-
-#include "gparser.hpp"
-#include "production.hpp"
-#include "symrec.hpp"
 #include <cstdio>
 #include <map>
 #include <memory>
 #include <string>
 #include <unordered_set>
 #include <vector>
+
+namespace seshat {
+
+class SymRec;
+class ProductionB;
+class ProductionT;
 
 struct Grammar {
     std::map<std::string, int> noTerminales;
@@ -62,5 +63,7 @@ struct Grammar {
 
     bool isOperator(const std::string& str) const;
 };
+
+}
 
 #endif

@@ -18,20 +18,26 @@
 #ifndef _SEGMENTATION_MODEL_
 #define _SEGMENTATION_MODEL_
 
-#include "cellcyk.hpp"
 #include "gmm.hpp"
-#include "sample.hpp"
 #include <cstdio>
 #include <cstdlib>
 #include <optional>
 
+namespace seshat {
+
+class CellCYK;
+class Samples;
+
 class SegmentationModelGMM {
+    std::vector<int> strokes_list;
     std::optional<GMM> model;
 
 public:
     SegmentationModelGMM(const char* mod);
 
-    float prob(CellCYK* cd, Sample* m);
+    float prob(CellCYK* cd, Samples* m);
 };
+
+}
 
 #endif

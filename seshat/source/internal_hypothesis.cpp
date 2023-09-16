@@ -15,40 +15,38 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _STROKE_
-#define _STROKE_
 
-#include <climits>
-#include <cstdio>
-#include <cstdlib>
-#include <seshat/point.hpp>
-#include <vector>
+#include <cellcyk.hpp>
+#include <internal_hypothesis.hpp>
 
-namespace seshat {
+using namespace seshat;
 
-class math_expression;
-
-class Stroke {
-    friend math_expression;
-
-    std::vector<Point> pseq;
-    int id; // InkML information
-
-public:
-    // Coordinates of the region it defines
-    int rx, ry, rs, rt;
-    int cx, cy; // Centroid
-
-    Stroke();
-
-    Point* get(int idx);
-    const Point* get(int idx) const;
-    int getNPoints() const;
-    void print();
-
-    float min_dist(Stroke* st);
-};
-
+InternalHypothesis::InternalHypothesis(int c, double p, CellCYK* cd, int nt)
+{
+    clase = c;
+    pr = p;
+    hi = nullptr;
+    hd = nullptr;
+    prod = nullptr;
+    prod_sse = nullptr;
+    pt = nullptr;
+    lcen = 0;
+    rcen = 0;
+    parent = cd;
+    ntid = nt;
 }
 
-#endif
+void InternalHypothesis::copy(const InternalHypothesis& H)
+{
+    clase = H.clase;
+    pr = H.pr;
+    hi = H.hi;
+    hd = H.hd;
+    prod = H.prod;
+    prod_sse = H.prod_sse;
+    pt = H.pt;
+    lcen = H.lcen;
+    rcen = H.rcen;
+    parent = H.parent;
+    ntid = H.ntid;
+}

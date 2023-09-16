@@ -15,7 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <logspace.hpp>
+
+using namespace seshat;
 
 LogSpace::LogSpace(CellCYK* c, int nr, int dx, int dy)
 {

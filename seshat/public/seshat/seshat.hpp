@@ -15,38 +15,36 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _STROKE_
-#define _STROKE_
+#ifndef SESHAT_PUBLIC_INTERFACE
+#define SESHAT_PUBLIC_INTERFACE
 
-#include <climits>
-#include <cstdio>
-#include <cstdlib>
+#include <memory>
+#include <seshat/hypothesis.hpp>
 #include <seshat/point.hpp>
 #include <vector>
 
 namespace seshat {
 
-class math_expression;
+struct sample {
+    struct stroke {
+        std::vector<point> points;
+    };
+    std::vector<stroke> strokes;
+};
 
-class Stroke {
-    friend math_expression;
+// do not use these, forward declarations for the inner workings
+class meParser;
+class Samples;
 
-    std::vector<Point> pseq;
-    int id; // InkML information
+// only this
+class math_expression {
+    std::unique_ptr<meParser> parser;
+    std::unique_ptr<Samples> samples;
 
 public:
-    // Coordinates of the region it defines
-    int rx, ry, rs, rt;
-    int cx, cy; // Centroid
+    explicit math_expression(const char* config_path = "Config/CONFIG");
 
-    Stroke();
-
-    Point* get(int idx);
-    const Point* get(int idx) const;
-    int getNPoints() const;
-    void print();
-
-    float min_dist(Stroke* st);
+    std::vector<hypothesis> parse_sample(const sample&);
 };
 
 }

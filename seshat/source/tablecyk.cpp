@@ -15,10 +15,26 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <algorithm>
 #include <tablecyk.hpp>
 #include <utility>
 #include <vector>
+
+using namespace seshat;
+
+namespace std {
+
+void swap(InternalOptHypothesis& a, InternalOptHypothesis& b)
+{
+    InternalHypothesis tmp(-1, -FLT_MAX, nullptr, -1);
+    std::swap(a.pm_comps, b.pm_comps);
+    tmp.copy(*a.Target);
+    a.Target->copy(*b.Target);
+    b.Target->copy(tmp);
+}
+
+}
 
 bool operator<(const coo& A, const coo& B)
 {
@@ -43,9 +59,11 @@ TableCYK::TableCYK(int n, int k)
     , TS(n)
     , N{ n }
     , K{ k }
-    , Target(-1, -FLT_MAX, NULL, -1)
-    , pm_comps{ 0 }
 {
+    for (auto& hyp : Targets) {
+        hyp.Target.emplace(-1, -FLT_MAX, nullptr, -1);
+        hyp.pm_comps = 0;
+    }
 }
 
 TableCYK::~TableCYK()
@@ -57,9 +75,12 @@ TableCYK::~TableCYK()
     }
 }
 
-Hypothesis* TableCYK::getMLH()
+InternalHypothesis* TableCYK::getMLH(int n)
 {
-    return &Target;
+    if (n >= NumHypotheses)
+        return nullptr;
+
+    return &Targets[n].Target.value();
 }
 
 CellCYK* TableCYK::get(int n)
@@ -72,13 +93,17 @@ int TableCYK::size(int n)
     return TS[n - 1].size();
 }
 
-void TableCYK::updateTarget(const Hypothesis& H)
+void TableCYK::updateTarget(const InternalHypothesis& H)
 {
     const int pcomps = std::count(&H.parent->ccc[0], &H.parent->ccc[0] + H.parent->nc, true);
 
-    if (pcomps > pm_comps || (pcomps == pm_comps && H.pr > Target.pr)) {
-        Target.copy(H);
-        pm_comps = pcomps;
+    for (auto it = Targets.begin(); it != Targets.end(); ++it) {
+        if (pcomps > it->pm_comps || (pcomps == it->pm_comps && H.pr > it->Target->pr)) {
+            std::rotate(it, it + 1, Targets.end());
+            it->Target->copy(H);
+            it->pm_comps = pcomps;
+            break;
+        }
     }
 }
 

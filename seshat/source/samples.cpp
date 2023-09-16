@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <algorithm>
 #include <cfloat>
 #include <climits>
@@ -24,8 +25,10 @@
 #include <cstring>
 #include <map>
 #include <queue>
-#include <sample.hpp>
+#include <samples.hpp>
 #include <vector>
+
+using namespace seshat;
 
 #define PI 3.14159265
 
@@ -46,95 +49,84 @@ static bool isRelation(const char* str)
     return false;
 }
 
-Sample::Sample(const char* in)
+void Samples::clearAll()
 {
-
-    RX = RY = 0;
-
-    // Read file extension
-    loadSCGInk(in);
-    ox = oy = INT_MAX;
-    os = ot = -INT_MAX;
-    for (int i = 0; i < nStrokes(); i++) {
+    vmedx.clear();
+    vmedy.clear();
+    dataon.clear();
+    stk_dis.img.clear();
+    stk_dis.width = 0;
+    stk_dis.height = 0;
+    pix_stk.img.clear();
+    pix_stk.width = 0;
+    pix_stk.height = 0;
+    dataoff.img.clear();
+    dataoff.width = 0;
+    dataoff.height = 0;
+}
+void Samples::makeReady()
+{
+    ox = INT_MAX;
+    oy = INT_MAX;
+    os = -INT_MAX;
+    ot = -INT_MAX;
+    for (auto& datapoint : dataon) {
         // Compute bouding box
-        if (dataon[i].rx < ox)
-            ox = dataon[i].rx;
-        if (dataon[i].ry < oy)
-            oy = dataon[i].ry;
-        if (dataon[i].rs > os)
-            os = dataon[i].rs;
-        if (dataon[i].rt > ot)
-            ot = dataon[i].rt;
+        if (datapoint.rx < ox)
+            ox = datapoint.rx;
+        if (datapoint.ry < oy)
+            oy = datapoint.ry;
+        if (datapoint.rs > os)
+            os = datapoint.rs;
+        if (datapoint.rt > ot)
+            ot = datapoint.rt;
 
         // Compute centroid
-        dataon[i].cx = dataon[i].cy = 0;
-        int np;
-        for (np = 0; np < dataon[i].getNpuntos(); np++) {
-            Punto* pto = dataon[i].get(np);
-            dataon[i].cx += pto->x;
-            dataon[i].cy += pto->y;
+        datapoint.cx = 0;
+        datapoint.cy = 0;
+        const int np_end = datapoint.getNPoints();
+        for (int np = 0; np < np_end; np++) {
+            Point* pto = datapoint.get(np);
+            datapoint.cx += pto->x;
+            datapoint.cy += pto->y;
         }
-        dataon[i].cx /= np;
-        dataon[i].cy /= np;
+        datapoint.cx /= np_end;
+        datapoint.cy /= np_end;
     }
+
+    RX = 0;
+    RY = 0;
 
     // Render image representation
-    dataoff = render();
+    render();
 }
 
-void Sample::loadSCGInk(const char* str)
-{
-    FILE* fd = fopen(str, "r");
-    if (!fd) {
-        fprintf(stderr, "Error loading SCGInk file '%s'\n", str);
-        exit(1);
-    }
-
-    static char line[1024];
-    fgets(line, 1024, fd);
-    if (strcmp(line, "SCG_INK\n")) {
-        fprintf(stderr, "Error: input file format is not SCG_INK\n");
-        exit(-1);
-    }
-
-    int nstrokes, npuntos;
-    fscanf(fd, "%d", &nstrokes);
-    dataon.reserve(nstrokes);
-    for (int i = 0; i < nstrokes; i++) {
-        fscanf(fd, "%d", &npuntos);
-
-        dataon.emplace_back(npuntos, fd);
-    }
-
-    fclose(fd);
-}
-
-int Sample::get(int x, int y)
+int Samples::get(int x, int y)
 {
     return dataoff.img[y * dataoff.width + x];
 }
 
-Stroke& Sample::getStroke(int i)
+Stroke& Samples::getStroke(int i)
 {
     return dataon[i];
 }
 
-int Sample::dimX()
+int Samples::dimX()
 {
     return dataoff.width;
 }
 
-int Sample::dimY()
+int Samples::dimY()
 {
     return dataoff.height;
 }
 
-int Sample::nStrokes()
+int Samples::nStrokes()
 {
     return (int)dataon.size();
 }
 
-void Sample::render_img(const char* out)
+void Samples::render_img(const char* out)
 {
     FILE* frender = fopen(out, "w");
     if (!frender) {
@@ -151,16 +143,16 @@ void Sample::render_img(const char* out)
     fclose(frender);
 }
 
-void Sample::detRefSymbol()
+void Samples::detRefSymbol()
 {
-    std::vector<int> vmedx, vmedy;
+    vmedx.clear();
+    vmedy.clear();
+
     int nregs = 0, lAr;
     float mAr = 0;
     RX = 0, RY = 0;
 
     const int numStrk = nStrokes();
-    vmedx.reserve(numStrk);
-    vmedy.reserve(numStrk);
     // Compute reference symbol for normalization
     for (int i = 0; i < numStrk; i++) {
         int ancho = dataon[i].rs - dataon[i].rx + 1;
@@ -209,7 +201,7 @@ void Sample::detRefSymbol()
     RY = (RY + vmedy[vmedy.size() / 2] + lAr) / 3.0;
 }
 
-void Sample::setRegion(CellCYK& c, int nStk)
+void Samples::setRegion(CellCYK& c, int nStk)
 {
     c.ccc[nStk] = true;
 
@@ -219,7 +211,7 @@ void Sample::setRegion(CellCYK& c, int nStk)
     c.t = dataon[nStk].rt;
 }
 
-void Sample::setRegion(CellCYK& c, std::span<const int> LT)
+void Samples::setRegion(CellCYK& c, std::span<const int> LT)
 {
 
     c.x = c.y = INT_MAX;
@@ -236,7 +228,7 @@ void Sample::setRegion(CellCYK& c, std::span<const int> LT)
     }
 }
 
-void Sample::getAVGstroke_size(float* avgw, float* avgh)
+void Samples::getAVGstroke_size(float* avgw, float* avgh)
 {
     *avgw = *avgh = 0.0;
     for (int i = 0; i < (int)dataon.size(); i++) {
@@ -247,7 +239,7 @@ void Sample::getAVGstroke_size(float* avgw, float* avgh)
     *avgh /= (int)dataon.size();
 }
 
-void Sample::print()
+void Samples::print()
 {
     printf("Number of strokes: %d\n", nStrokes());
 
@@ -257,7 +249,7 @@ void Sample::print()
     // }
 }
 
-void Sample::linea(VectorImage& img, Punto* pa, Punto* pb, int stkid)
+void Samples::linea(VectorImage& img, Point* pa, Point* pb, int stkid)
 {
     const float dl = 3.125e-3;
     int dx = (int)pb->x - (int)pa->x;
@@ -276,7 +268,7 @@ void Sample::linea(VectorImage& img, Punto* pa, Punto* pb, int stkid)
     }
 }
 
-void Sample::linea_pbm(VectorImage& img, Punto* pa, Punto* pb, int stkid)
+void Samples::linea_pbm(VectorImage& img, Point* pa, Point* pb, int stkid)
 {
     const float dl = 3.125e-3;
     int dx = (int)pb->x - (int)pa->x;
@@ -290,15 +282,14 @@ void Sample::linea_pbm(VectorImage& img, Punto* pa, Punto* pb, int stkid)
     }
 }
 
-VectorImage Sample::render()
+void Samples::render()
 {
-
     int xMAX = -INT_MAX, yMAX = -INT_MAX, xMIN = INT_MAX, yMIN = INT_MAX;
 
-    for (int i = 0; i < nStrokes(); i++) {
-
-        for (int np = 0; np < dataon[i].getNpuntos(); np++) {
-            Punto* pto = dataon[i].get(np);
+    for (const auto& data_on_point : dataon) {
+        const int np_end = data_on_point.getNPoints();
+        for (int np = 0; np < np_end; np++) {
+            const Point* pto = data_on_point.get(np);
 
             if (pto->x > xMAX)
                 xMAX = pto->x;
@@ -328,7 +319,7 @@ VectorImage Sample::render()
     H += 10;
 
     // Create image
-    VectorImage img;
+    auto& img = dataoff;
     img.height = H;
     img.width = W;
     img.img.resize(W * H, 255);
@@ -336,13 +327,14 @@ VectorImage Sample::render()
     // Create the structure that stores to which stroke belongs each pixel
     pix_stk.height = H;
     pix_stk.width = W;
+    pix_stk.img.clear();
     pix_stk.img.resize(W * H, -1);
 
     // Render image
-    Punto pant, aux, *pto;
+    Point pant, aux, *pto;
     for (int i = 0; i < nStrokes(); i++) {
 
-        for (int np = 0; np < dataon[i].getNpuntos(); np++) {
+        for (int np = 0; np < dataon[i].getNPoints(); np++) {
             pto = dataon[i].get(np);
 
             aux.x = 5 + (W - 10) * (float)(pto->x - xMIN) / (xMAX - xMIN + 1);
@@ -365,11 +357,9 @@ VectorImage Sample::render()
     IMGyMIN = yMIN;
     IMGxMAX = xMAX;
     IMGyMAX = yMAX;
-
-    return img;
 }
 
-void Sample::renderStrokesPBM(std::span<const int> SL, VectorImage& img)
+void Samples::renderStrokesPBM(std::span<const int> SL, VectorImage& img)
 {
     // Parameters used to render images while training the RNN classifier
     const int REND_H = 40;
@@ -383,9 +373,9 @@ void Sample::renderStrokesPBM(std::span<const int> SL, VectorImage& img)
     // Calculate bounding box of the region defined by the points
     for (const auto it : SL) {
         const auto& datapt = dataon[it];
-        const auto npuntos = datapt.getNpuntos();
-        for (int i = 0; i < npuntos; i++) {
-            const Punto* p = datapt.get(i);
+        const auto nPoints = datapt.getNPoints();
+        for (int i = 0; i < nPoints; i++) {
+            const Point* p = datapt.get(i);
 
             if (p->x < xMin)
                 xMin = p->x;
@@ -422,9 +412,9 @@ void Sample::renderStrokesPBM(std::span<const int> SL, VectorImage& img)
 
     img.img.resize(img.height * img.width, 255);
 
-    Punto pant, aux;
+    Point pant, aux;
 
-    if (SL.size() == 1 && dataon[SL.front()].getNpuntos() == 1) {
+    if (SL.size() == 1 && dataon[SL.front()].getNPoints() == 1) {
         // A single point is represented with a full black image
         for (int i = OFFSET; i < H - OFFSET; i++)
             for (int j = OFFSET; j < W - OFFSET; j++)
@@ -432,9 +422,9 @@ void Sample::renderStrokesPBM(std::span<const int> SL, VectorImage& img)
     } else {
         for (const auto it : SL) {
             const auto& datapt = dataon[it];
-            const auto npuntos = datapt.getNpuntos();
-            for (int i = 0; i < npuntos; i++) {
-                const Punto* p = datapt.get(i);
+            const auto nPoints = datapt.getNPoints();
+            for (int i = 0; i < nPoints; i++) {
+                const Point* p = datapt.get(i);
 
                 aux.x = OFFSET + (W - 1) * (p->x - xMin) / (float)(xMax - xMin + 1);
                 aux.y = OFFSET + (H - 1) * (p->y - yMin) / (float)(yMax - yMin + 1);
@@ -444,7 +434,7 @@ void Sample::renderStrokesPBM(std::span<const int> SL, VectorImage& img)
                 // Draw a line between last point and current point
                 if (i >= 1)
                     linea_pbm(img, &pant, &aux, -1);
-                else if (i == 0 && npuntos == 1)
+                else if (i == 0 && nPoints == 1)
                     linea_pbm(img, &aux, &aux, -1);
 
                 // Update last point
@@ -479,7 +469,7 @@ void Sample::renderStrokesPBM(std::span<const int> SL, VectorImage& img)
     }
 }
 
-void Sample::getCentroids(CellCYK* cd, int* ce, int* as, int* ds)
+void Samples::getCentroids(CellCYK* cd, int* ce, int* as, int* ds)
 {
     int regy = INT_MAX, regt = -INT_MAX, N = 0;
     *ce = 0;
@@ -487,8 +477,8 @@ void Sample::getCentroids(CellCYK* cd, int* ce, int* as, int* ds)
     for (int i = 0; i < cd->nc; i++)
         if (cd->ccc[i]) {
 
-            for (int j = 0; j < dataon[i].getNpuntos(); j++) {
-                Punto* p = dataon[i].get(j);
+            for (int j = 0; j < dataon[i].getNPoints(); j++) {
+                Point* p = dataon[i].get(j);
 
                 if (dataon[i].ry < regy)
                     regy = dataon[i].ry;
@@ -506,9 +496,8 @@ void Sample::getCentroids(CellCYK* cd, int* ce, int* as, int* ds)
     *ds = (regy + *ce) / 2;
 }
 
-void Sample::compute_strokes_distances(int rx, int ry)
+void Samples::compute_strokes_distances(int rx, int ry)
 {
-
     // Create distances matrix NxN (strokes)
     stk_dis.width = nStrokes();
     stk_dis.height = nStrokes();
@@ -552,15 +541,15 @@ void Sample::compute_strokes_distances(int rx, int ry)
 #endif
 }
 
-float Sample::stroke_distance(int si, int sj)
+float Samples::stroke_distance(int si, int sj)
 {
-    Punto *pi, *pj, *min_i, *min_j;
+    Point *pi, *pj, *min_i, *min_j;
     float dmin = FLT_MAX;
 
-    for (int npi = 0; npi < dataon[si].getNpuntos(); npi++) {
+    for (int npi = 0; npi < dataon[si].getNPoints(); npi++) {
         pi = dataon[si].get(npi);
 
-        for (int npj = 0; npj < dataon[sj].getNpuntos(); npj++) {
+        for (int npj = 0; npj < dataon[sj].getNPoints(); npj++) {
             pj = dataon[sj].get(npj);
 
             float dis = (pi->x - pj->x) * (pi->x - pj->x) + (pi->y - pj->y) * (pi->y - pj->y);
@@ -579,7 +568,7 @@ float Sample::stroke_distance(int si, int sj)
     return dmin < FLT_MAX ? sqrt(dmin) : FLT_MAX;
 }
 
-float Sample::getDist(int si, int sj)
+float Samples::getDist(int si, int sj)
 {
     if (si < 0 || sj < 0 || si >= nStrokes() || sj >= nStrokes()) {
         fprintf(stderr, "ERROR: stroke id out of range in getDist(%d,%d)\n", si, sj);
@@ -591,10 +580,10 @@ float Sample::getDist(int si, int sj)
 // Go through the pixels from pi to pj checking that there is not a pixel that belongs
 // to a stroke that is not si or sj. If so, then sj is not visible from si
 
-bool Sample::not_visible(int si, int sj, Punto* pi, Punto* pj)
+bool Samples::not_visible(int si, int sj, Point* pi, Point* pj)
 {
 
-    Punto pa, pb;
+    Point pa, pb;
     // Coordinates in pixels of the rendered image
     pa.x = 5 + (dataoff.width - 10) * (float)(pi->x - IMGxMIN) / (IMGxMAX - IMGxMIN + 1);
     pa.y = 5 + (dataoff.height - 10) * (float)(pi->y - IMGyMIN) / (IMGyMAX - IMGyMIN + 1);
@@ -616,7 +605,7 @@ bool Sample::not_visible(int si, int sj, Punto* pi, Punto* pj)
     return false;
 }
 
-bool Sample::visibility(std::span<const int> strokes_list)
+bool Samples::visibility(std::span<const int> strokes_list)
 {
 
     std::map<int, bool> visited;
@@ -648,7 +637,7 @@ bool Sample::visibility(std::span<const int> strokes_list)
     return true;
 }
 
-float Sample::group_penalty(CellCYK* A, CellCYK* B)
+float Samples::group_penalty(CellCYK* A, CellCYK* B)
 {
 
     // Minimum or single-linkage clustering
@@ -663,7 +652,7 @@ float Sample::group_penalty(CellCYK* A, CellCYK* B)
     return dmin;
 }
 
-void Sample::get_close_strokes(int id, std::vector<int>& L, float dist_th)
+void Samples::get_close_strokes(int id, std::vector<int>& L, float dist_th)
 {
     std::vector<int> to_maybe_add(id);
     std::iota(to_maybe_add.begin(), to_maybe_add.end(), 0); // all currently possible

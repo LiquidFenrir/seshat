@@ -18,13 +18,15 @@
 #ifndef _PRODUCTION_
 #define _PRODUCTION_
 
-class Grammar;
-class Hypothesis;
-
 #include <cstdio>
 #include <memory>
 #include <string>
 #include <vector>
+
+namespace seshat {
+
+class Grammar;
+class InternalHypothesis;
 
 // Binary productions of the grammar (2D-PCFG)
 class ProductionB {
@@ -41,17 +43,17 @@ public:
     ProductionB(int s, int a, int b, float pr, const std::string& out);
     virtual ~ProductionB() = default;
 
-    float solape(Hypothesis* a, Hypothesis* b);
-    void printOut(Grammar* G, Hypothesis* H);
+    float solape(InternalHypothesis* a, InternalHypothesis* b);
+    void printOut(Grammar* G, InternalHypothesis* H);
     void setMerges(char c);
-    void mergeRegions(Hypothesis* a, Hypothesis* b, Hypothesis* s);
+    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
     bool check_out();
     const std::string& get_outstr();
 
     // Pure virtual functions
     virtual char tipo() = 0;
     virtual void print() = 0;
-    virtual void print_mathml(Grammar* G, Hypothesis* H, FILE* fout, int* nid) = 0;
+    virtual void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid) = 0;
 };
 
 // Production S -> A : B
@@ -63,8 +65,8 @@ public:
 
     void print();
     char tipo();
-    void mergeRegions(Hypothesis* a, Hypothesis* b, Hypothesis* s);
-    void print_mathml(Grammar* G, Hypothesis* H, FILE* fout, int* nid);
+    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
+    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A / B
@@ -76,8 +78,8 @@ public:
 
     void print();
     char tipo();
-    void mergeRegions(Hypothesis* a, Hypothesis* b, Hypothesis* s);
-    void print_mathml(Grammar* G, Hypothesis* H, FILE* fout, int* nid);
+    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
+    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A /u B
@@ -89,8 +91,8 @@ public:
 
     void print();
     char tipo();
-    void mergeRegions(Hypothesis* a, Hypothesis* b, Hypothesis* s);
-    void print_mathml(Grammar* G, Hypothesis* H, FILE* fout, int* nid);
+    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
+    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A /e B
@@ -102,8 +104,8 @@ public:
 
     void print();
     char tipo();
-    void mergeRegions(Hypothesis* a, Hypothesis* b, Hypothesis* s);
-    void print_mathml(Grammar* G, Hypothesis* H, FILE* fout, int* nid);
+    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
+    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A sse B
@@ -115,8 +117,8 @@ public:
 
     void print();
     char tipo();
-    void mergeRegions(Hypothesis* a, Hypothesis* b, Hypothesis* s);
-    void print_mathml(Grammar* G, Hypothesis* H, FILE* fout, int* nid);
+    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
+    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A ^ B
@@ -128,8 +130,8 @@ public:
 
     void print();
     char tipo();
-    void mergeRegions(Hypothesis* a, Hypothesis* b, Hypothesis* s);
-    void print_mathml(Grammar* G, Hypothesis* H, FILE* fout, int* nid);
+    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
+    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A _ B
@@ -141,8 +143,8 @@ public:
 
     void print();
     char tipo();
-    void mergeRegions(Hypothesis* a, Hypothesis* b, Hypothesis* s);
-    void print_mathml(Grammar* G, Hypothesis* H, FILE* fout, int* nid);
+    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
+    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A ins B
@@ -154,8 +156,8 @@ public:
 
     void print();
     char tipo();
-    void mergeRegions(Hypothesis* a, Hypothesis* b, Hypothesis* s);
-    void print_mathml(Grammar* G, Hypothesis* H, FILE* fout, int* nid);
+    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
+    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production: S -> A mroot B
@@ -167,8 +169,8 @@ public:
 
     void print();
     char tipo();
-    void mergeRegions(Hypothesis* a, Hypothesis* b, Hypothesis* s);
-    void print_mathml(Grammar* G, Hypothesis* H, FILE* fout, int* nid);
+    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
+    void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
 };
 
 // Production S -> term ( N clases )
@@ -189,10 +191,12 @@ public:
     void setClase(int k, float pr, const char* tex, char mlt);
     bool getClase(int k);
     float getPrior(int k);
-    char* getTeX(int k);
+    const char* getTeX(int k);
     char getMLtype(int k);
     int getNoTerm();
     void print();
 };
+
+}
 
 #endif

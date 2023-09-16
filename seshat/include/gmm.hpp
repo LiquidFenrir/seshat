@@ -22,8 +22,10 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
-#include <span>
 #include <rnnlib4seshat/MultiArray.hpp>
+#include <span>
+
+namespace seshat {
 
 class GMM {
     int C, D, G;
@@ -38,5 +40,7 @@ public:
 
     void posterior(std::span<const float> x, std::span<float> pr);
 };
+
+}
 
 #endif

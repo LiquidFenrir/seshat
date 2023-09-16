@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <array>
 #include <cassert>
 #include <cfloat>
@@ -22,6 +23,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <gmm.hpp>
+
+using namespace seshat;
 
 #define PI 3.14159265359
 
@@ -46,19 +49,19 @@ void GMM::loadModel(const char* str)
     for (auto& f_i : prior)
         fscanf(fd, "%f", &f_i);
 
-    invcov.reshape(std::array{C, G, D});
-    mean.reshape(std::array{C, G, D});
-    weight.reshape(std::array{C, G});
-    det.reshape(std::array{C, G}, 1.0f);
+    invcov.reshape(std::array{ C, G, D });
+    mean.reshape(std::array{ C, G, D });
+    weight.reshape(std::array{ C, G });
+    det.reshape(std::array{ C, G }, 1.0f);
 
     // Read a GMM for each class
-    std::array<int, 1> c_arr = {0};
+    std::array<int, 1> c_arr = { 0 };
     for (int& c = c_arr[0]; c < C; c++) {
 
         // Read diagonal covariances
         for (int i = 0; i < G; i++) {
-            auto& cur_det = det.get(std::array{c, i});
-            for (auto& ic_j : invcov[std::array{c, i}]) {
+            auto& cur_det = det.get(std::array{ c, i });
+            for (auto& ic_j : invcov[std::array{ c, i }]) {
                 fscanf(fd, "%f", &ic_j);
 
                 // Compute determinant of convariance matrix (diagonal)
@@ -96,11 +99,11 @@ float GMM::pdf(const int c, std::span<const float> v)
 
         float exponent = 0.0;
         for (int j = 0; j < D; j++)
-            exponent += (v[j] - mean.get(std::array{c, i, j})) * invcov.get(std::array{c, i, j}) * (v[j] - mean.get(std::array{c, i, j}));
+            exponent += (v[j] - mean.get(std::array{ c, i, j })) * invcov.get(std::array{ c, i, j }) * (v[j] - mean.get(std::array{ c, i, j }));
 
         exponent *= -0.5;
 
-        pr += weight.get(std::array{c, i}) * pow(2 * PI, -D / 2.0) * pow(det.get(std::array{c, i}), -0.5) * exp(exponent);
+        pr += weight.get(std::array{ c, i }) * pow(2 * PI, -D / 2.0) * pow(det.get(std::array{ c, i }), -0.5) * exp(exponent);
     }
 
     return prior[c] * pr;

@@ -35,7 +35,10 @@ covered by the following copyright and permission notice:
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <featureson.hpp>
+
+using namespace seshat;
 
 // frame methods
 frame::frame(PointR pt)
@@ -89,12 +92,12 @@ void sentenceF::calculate_features(const sentence& S)
 // sentenceF Private methods
 
 // Signal normalization
-std::vector<PointR> sentenceF::normalizaAspect(const std::vector<Point>& puntos)
+std::vector<PointR> sentenceF::normalizaAspect(const std::vector<Point>& Points)
 {
     double ymax = -100000, xmax = -100000, ymin = 100000, xmin = 100000;
 
     // Calculate x,y max and min
-    for (const auto& pt : puntos) {
+    for (const auto& pt : Points) {
         if (pt.y < ymin)
             ymin = pt.y;
         if (pt.y > ymax)
@@ -109,9 +112,9 @@ std::vector<PointR> sentenceF::normalizaAspect(const std::vector<Point>& puntos)
         ymax = ymin + 1;
 
     std::vector<PointR> trazoNorm;
-    trazoNorm.reserve(puntos.size());
+    trazoNorm.reserve(Points.size());
 
-    for (const auto& pt : puntos) {
+    for (const auto& pt : Points) {
         const float TAM = 100;
 
         auto& p = trazoNorm.emplace_back(TAM * ((pt.x - xmin) / (ymax - ymin)), TAM * (pt.y - ymin) / (ymax - ymin));

@@ -15,75 +15,38 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
 #include <stroke.hpp>
 #include <utility>
 
+using namespace seshat;
+
 bool esNum(char c)
 {
     return (c >= '0' && c <= '9') || c == '-' || c == '.';
 }
 
-Stroke::Stroke(int np)
+Stroke::Stroke()
 {
-    pseq.resize(np, Punto(-1, -1));
-
     cx = cy = 0;
     rx = ry = INT_MAX;
     rs = rt = -INT_MAX;
 }
 
-Stroke::Stroke(int np, FILE* fd)
-{
-    pseq.resize(np);
-
-    rx = ry = INT_MAX;
-    rs = rt = -INT_MAX;
-    for (int i = 0; i < (int)pseq.size(); i++) {
-        fscanf(fd, "%f %f", &pseq[i].x, &pseq[i].y);
-        if (pseq[i].x < rx)
-            rx = pseq[i].x;
-        if (pseq[i].y < ry)
-            ry = pseq[i].y;
-        if (pseq[i].x > rs)
-            rs = pseq[i].x;
-        if (pseq[i].y > rt)
-            rt = pseq[i].y;
-    }
-}
-
-Stroke::~Stroke()
-{
-}
-
-void Stroke::set(int idx, Punto* p)
-{
-    pseq[idx].x = p->x;
-    pseq[idx].y = p->y;
-
-    if (pseq[idx].x < rx)
-        rx = pseq[idx].x;
-    if (pseq[idx].y < ry)
-        ry = pseq[idx].y;
-    if (pseq[idx].x > rs)
-        rs = pseq[idx].x;
-    if (pseq[idx].y > rt)
-        rt = pseq[idx].y;
-}
-
-Punto* Stroke::get(int idx)
+Point* Stroke::get(int idx)
 {
     return &pseq[idx];
 }
 
-const Punto* Stroke::get(int idx) const
+const Point* Stroke::get(int idx) const
 {
     return &pseq[idx];
 }
 
-int Stroke::getNpuntos() const
+int Stroke::getNPoints() const
 {
     return (int)pseq.size();
 }
@@ -100,8 +63,8 @@ float Stroke::min_dist(Stroke* st)
 {
     float mind = FLT_MAX;
     for (int i = 0; i < (int)pseq.size(); i++) {
-        for (int j = 0; j < st->getNpuntos(); j++) {
-            Punto* p = st->get(j);
+        for (int j = 0; j < st->getNPoints(); j++) {
+            Point* p = st->get(j);
 
             float d = (pseq[i].x - p->x) * (pseq[i].x - p->x)
                 + (pseq[i].y - p->y) * (pseq[i].y - p->y);

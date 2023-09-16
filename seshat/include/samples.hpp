@@ -18,19 +18,19 @@
 #ifndef _SAMPLE_
 #define _SAMPLE_
 
-class SymRec;
-class TableCYK;
-
 #include "cellcyk.hpp"
-#include "grammar.hpp"
 #include "stroke.hpp"
-#include "symrec.hpp"
-#include "tablecyk.hpp"
 #include "vectorimage.hpp"
 #include <climits>
 #include <cstdio>
 #include <span>
 #include <vector>
+
+namespace seshat {
+
+class SymRec;
+class TableCYK;
+class math_expression;
 
 // Segmentation hypothesis
 struct SegmentHyp {
@@ -43,20 +43,24 @@ struct SegmentHyp {
     int cen;
 };
 
-class Sample {
+class Samples {
+    friend math_expression;
+
     std::vector<Stroke> dataon;
     VectorImagef stk_dis;
 
     VectorImage dataoff;
-    int X, Y;
     int IMGxMIN, IMGyMIN, IMGxMAX, IMGyMAX;
     VectorImage pix_stk;
+    std::vector<int> vmedx, vmedy;
 
-    void loadSCGInk(const char* str);
+    void linea(VectorImage& img, Point* pa, Point* pb, int stkid);
+    void linea_pbm(VectorImage& img, Point* pa, Point* pb, int stkid);
+    bool not_visible(int si, int sj, Point* pi, Point* pj);
 
-    void linea(VectorImage& img, Punto* pa, Punto* pb, int stkid);
-    void linea_pbm(VectorImage& img, Punto* pa, Punto* pb, int stkid);
-    bool not_visible(int si, int sj, Punto* pi, Punto* pj);
+    void clearAll();
+    void makeReady();
+    void render();
 
 public:
     // Normalized reference symbol size
@@ -66,8 +70,6 @@ public:
 
     int ox, oy, os, ot; // Online bounding box
     int bx, by, bs, bt; // Offline bounding box
-
-    Sample(const char* in);
 
     int dimX();
     int dimY();
@@ -90,12 +92,14 @@ public:
     void setRegion(CellCYK& c, int nComp);
     void setRegion(CellCYK& c, std::span<const int> LT);
 
-    VectorImage render();
     void renderStrokesPBM(std::span<const int> SL, VectorImage& img);
 
     void render_img(const char* out);
 
     void print();
 };
+
+}
+}
 
 #endif

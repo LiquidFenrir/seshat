@@ -18,13 +18,11 @@
 #ifndef _SPAREL_
 #define _SPAREL_
 
-class CellCYK;
+namespace seshat {
 
-#include "cellcyk.hpp"
-#include "gmm.hpp"
-#include "hypothesis.hpp"
-#include "sample.hpp"
-#include <cstdio>
+class InternalHypothesis;
+class GMM;
+class Samples;
 
 class SpaRel {
 public:
@@ -33,23 +31,25 @@ public:
 
 private:
     GMM& model;
-    Sample& mue;
+    Samples& mue;
     float probs[NRELS];
 
-    double compute_prob(Hypothesis* h1, Hypothesis* h2, int k);
+    double compute_prob(InternalHypothesis* h1, InternalHypothesis* h2, int k);
     void smooth(float* post);
 
 public:
-    SpaRel(GMM& gmm, Sample& m);
+    SpaRel(GMM& gmm, Samples& m);
 
-    void getFeas(Hypothesis* a, Hypothesis* b, float* sample, int ry);
+    void getFeas(InternalHypothesis* a, InternalHypothesis* b, float* sample, int ry);
 
-    double getHorProb(Hypothesis* ha, Hypothesis* hb);
-    double getSubProb(Hypothesis* ha, Hypothesis* hb);
-    double getSupProb(Hypothesis* ha, Hypothesis* hb);
-    double getVerProb(Hypothesis* ha, Hypothesis* hb, bool strict = false);
-    double getInsProb(Hypothesis* ha, Hypothesis* hb);
-    double getMrtProb(Hypothesis* ha, Hypothesis* hb);
+    double getHorProb(InternalHypothesis* ha, InternalHypothesis* hb);
+    double getSubProb(InternalHypothesis* ha, InternalHypothesis* hb);
+    double getSupProb(InternalHypothesis* ha, InternalHypothesis* hb);
+    double getVerProb(InternalHypothesis* ha, InternalHypothesis* hb, bool strict = false);
+    double getInsProb(InternalHypothesis* ha, InternalHypothesis* hb);
+    double getMrtProb(InternalHypothesis* ha, InternalHypothesis* hb);
 };
+
+}
 
 #endif

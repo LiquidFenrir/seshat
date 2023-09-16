@@ -15,9 +15,13 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <cstdlib>
 #include <cstring>
 #include <gparser.hpp>
+#include <grammar.hpp>
+
+using namespace seshat;
 
 #define SIZE 512
 

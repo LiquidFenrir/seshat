@@ -15,8 +15,20 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#include <cellcyk.hpp>
+#include <gmm.hpp>
+#include <grammar.hpp>
+#include <internal_hypothesis.hpp>
 #include <logspace.hpp>
 #include <meparser.hpp>
+#include <production.hpp>
+#include <samples.hpp>
+#include <seshat/hypothesis.hpp>
+#include <symrec.hpp>
+#include <tablecyk.hpp>
+
+using namespace seshat;
 
 // Symbol classifier N-Best
 #define NB 10
@@ -190,7 +202,7 @@ void meParser::loadSymRec(const char* config)
 }
 
 // CYK table initialization with the terminal symbols
-void meParser::initCYKterms(Sample& M, TableCYK& tcyk, int N, int K)
+void meParser::initCYKterms(Samples& M, TableCYK& tcyk, int N, int K)
 {
     int clase[NB];
     float pr[NB];
@@ -223,7 +235,7 @@ void meParser::initCYKterms(Sample& M, TableCYK& tcyk, int N, int K)
                 insertar = true;
 
                 // Create new symbol
-                cd->noterm[gotNoTerm] = std::make_unique<Hypothesis>(clase_k, prob, cd.get(), gotNoTerm);
+                cd->noterm[gotNoTerm] = std::make_unique<InternalHypothesis>(clase_k, prob, cd.get(), gotNoTerm);
                 cd->noterm[gotNoTerm]->pt = prod.get();
 
                 // Compute the vertical centroid according to the type of symbol
@@ -250,7 +262,7 @@ void meParser::initCYKterms(Sample& M, TableCYK& tcyk, int N, int K)
     }
 }
 
-void meParser::combineStrokes(Sample& M, TableCYK& tcyk, int N)
+void meParser::combineStrokes(Samples& M, TableCYK& tcyk, int N)
 {
     if (N <= 1)
         return;
@@ -262,9 +274,9 @@ void meParser::combineStrokes(Sample& M, TableCYK& tcyk, int N)
 
     // Set distance threshold
     float distance_th = segmentsTH;
-    std::vector<int> close_list;
-    std::vector<int> stks_list;
-    std::vector<int> stkvec;
+    close_list.clear();
+    stks_list.clear();
+    stkvec.clear();
 
     // For every single stroke
     for (int stkc1 = 1; stkc1 < N; stkc1++) {
@@ -333,7 +345,7 @@ void meParser::combineStrokes(Sample& M, TableCYK& tcyk, int N)
 
                             insertar = true;
 
-                            cd->noterm[prod->getNoTerm()] = std::make_unique<Hypothesis>(clase[k], prob, cd, prod->getNoTerm());
+                            cd->noterm[prod->getNoTerm()] = std::make_unique<InternalHypothesis>(clase[k], prob, cd, prod->getNoTerm());
                             cd->noterm[prod->getNoTerm()]->pt = prod.get();
 
                             int cen, type = sym_rec->symType(clase[k]);
@@ -363,9 +375,9 @@ void meParser::combineStrokes(Sample& M, TableCYK& tcyk, int N)
 }
 
 // Combine hypotheses A and B to create new hypothesis S using production 'S -> A B'
-CellCYK* meParser::fusion(Sample& M, ProductionB* pd, Hypothesis* A, Hypothesis* B, int N, double prob)
+CellCYK* meParser::fusion(Samples& M, ProductionB* pd, InternalHypothesis* A, InternalHypothesis* B, int N, double prob)
 {
-    CellCYK* S = NULL;
+    CellCYK* S = nullptr;
 
     if (!A->parent->compatible(B->parent) || pd->prior == -FLT_MAX)
         return S;
@@ -378,7 +390,7 @@ CellCYK* meParser::fusion(Sample& M, ProductionB* pd, Hypothesis* A, Hypothesis*
         grpen = M.group_penalty(A->parent, B->parent);
         // If distance is infinity -> not visible
         if (grpen >= M.INF_DIST)
-            return NULL;
+            return nullptr;
 
         // Compute penalty
         grpen = 1.0 / (1.0 + grpen);
@@ -409,7 +421,7 @@ CellCYK* meParser::fusion(Sample& M, ProductionB* pd, Hypothesis* A, Hypothesis*
         clase = sym_rec->keyClase(pd->get_outstr()); // will return -1 on non found anyway
 
     // Create hypothesis
-    S->noterm[ps] = std::make_unique<Hypothesis>(clase, prob, S, ps);
+    S->noterm[ps] = std::make_unique<InternalHypothesis>(clase, prob, S, ps);
 
     pd->mergeRegions(A, B, S->noterm[ps].get());
 
@@ -434,7 +446,7 @@ CellCYK* meParser::fusion(Sample& M, ProductionB* pd, Hypothesis* A, Hypothesis*
 /*************************************
 Parse Math Expression
 **************************************/
-void meParser::parse_me(Sample& M)
+std::vector<hypothesis> meParser::parse_me(Samples& M)
 {
     // Compute the normalized size of a symbol for sample M
     M.detRefSymbol();
@@ -752,7 +764,7 @@ void meParser::parse_me(Sample& M)
                     // Look for combining {x_subs} y {x^sups} in {x_subs^sups}
                     for (int pps = 0; pps < c1->nnt; pps++) {
 
-                        // If c1->noterm[pa] is a Hypothesis of a subscript (parent_son)
+                        // If c1->noterm[pa] is a InternalHypothesis of a subscript (parent_son)
                         if (c1->noterm[pps] && c1->noterm[pps]->prod && c1->noterm[pps]->prod->tipo() == 'B') {
 
                             logspace[b + c1->noterm[pps]->hi->parent->talla]->getS(c1, c1setS); // sup/sub-scripts union
@@ -790,7 +802,7 @@ void meParser::parse_me(Sample& M)
                                         cd->s = std::max(c1->s, c2->s);
                                         cd->t = std::max(c1->t, c2->t);
 
-                                        cd->noterm[ps] = std::make_unique<Hypothesis>(-1, prob, cd, ps);
+                                        cd->noterm[ps] = std::make_unique<InternalHypothesis>(-1, prob, cd, ps);
 
                                         cd->noterm[ps]->lcen = c1->noterm[pa]->lcen;
                                         cd->noterm[ps]->rcen = c1->noterm[pa]->rcen;
@@ -827,49 +839,70 @@ void meParser::parse_me(Sample& M)
         // Free memory
     }
 
-    // Get Most Likely Hypothesis
-    Hypothesis* mlh = tcyk.getMLH();
+    std::vector<hypothesis> out;
+    // Get Most Likely InternalHypothesis
+    for (int mlh_i = 0; mlh_i < TableCYK::NumHypotheses; ++mlh_i) {
+        InternalHypothesis* mlh = tcyk.getMLH(mlh_i);
 
-    if (!mlh) {
-        fprintf(stderr, "\nNo hypothesis found!!\n");
-        exit(1);
+        if (!mlh) {
+            fprintf(stderr, "\nNo hypothesis found!!\n");
+            exit(1);
+        }
+
+        if (mlh->parent->talla == 0)
+            break;
+
+        auto& hyp = out.emplace_back();
+        fillHypothesis(hyp, mlh, 0);
+        printf("hypothesis %d filled\n", mlh_i);
     }
 
-    printf("\nMost Likely Hypothesis (%d strokes)\n\n", mlh->parent->talla);
-
-    printf("LaTeX:\n");
-    print_latex(mlh);
+    return out;
 }
 
 /*************************************
 End Parsing Math Expression
 *************************************/
 
-void meParser::print_symrec(Hypothesis* H)
+int meParser::fillHypothesis(hypothesis& into, const InternalHypothesis* H, int id)
 {
+    int nid;
+
     if (!H->pt) {
-        print_symrec(H->hi);
-        print_symrec(H->hd);
+        // Binary production
+        //  const int a = H->prod->A;
+        //  const int b = H->prod->B;
+
+        const char* self_token = G->key2str(H->ntid);
+        const auto self_token_idx = into.tokens.size();
+        into.tokens.emplace_back(self_token);
+        printf("Added binary token %s at id %zd = %d?\n", self_token, self_token_idx, id);
+
+        // fprintf(fd, "%s%d -> %s%d [label=%c]\n", self_token, id, G->key2str(a), id+1, H->prod->tipo());
+
+        nid = fillHypothesis(into, H->hi, id + 1);
+        into.relations.emplace_back(self_token_idx, nid);
+        printf("Added relation A p %zd, c %d\n", self_token_idx, nid);
+
+        // fprintf(fd, "%s%d -> %s%d [label=%c]\n", self_token, id, G->key2str(b), nid, H->prod->tipo());
+
+        nid = fillHypothesis(into, H->hd, nid);
+        into.relations.emplace_back(self_token_idx, nid);
+        printf("Added relation B p %zd, c %d\n", self_token_idx, nid);
     } else {
-        std::string clatex = H->pt->getTeX(H->clase);
+        std::string aux = H->pt->getTeX(H->clase);
+        const auto self_token_idx = into.tokens.size();
+        into.tokens.emplace_back(aux);
+        printf("Added terminal token %s at id %zd = %d?\n", aux.c_str(), self_token_idx, id);
+        into.relations.emplace_back(id, self_token_idx);
+        printf("Added relation p %d, c (self) %zd\n", id, self_token_idx);
 
-        printf("%s {", clatex.c_str());
+        // Terminal production
+        //  fprintf(fd, "T%s%d [shape=box,label=\"%s\"]\n", aux.c_str(), id, H->pt->getTeX(H->clase));
+        //  fprintf(fd, "%s%d -> T%s%d\n", G->key2str(H->pt->getNoTerm()), id, aux.c_str(), id);
 
-        for (int i = 0; i < H->parent->nc; i++)
-            if (H->parent->ccc[i])
-                printf(" %d", i);
-        printf(" }\n");
+        nid = self_token_idx;
     }
-}
 
-void meParser::print_latex(Hypothesis* H)
-{
-    // printf("\\displaystyle ");
-    if (!H->pt)
-        H->prod->printOut(G.get(), H);
-    else {
-        std::string clatex = H->pt->getTeX(H->clase);
-        printf("%s", clatex.c_str());
-    }
-    printf("\n");
+    return nid;
 }

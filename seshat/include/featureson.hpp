@@ -39,12 +39,14 @@ covered by the following copyright and permission notice:
 #define FEATURES_H
 
 #include "online.hpp"
-#include <float.h>
+#include <cfloat>
+#include <climits>
+#include <cmath>
 #include <iomanip>
 #include <iostream>
-#include <limits.h>
-#include <math.h>
 #include <vector>
+
+namespace seshat {
 
 #define MAXNUMHATS 200
 #define OFFSET_INS 20
@@ -91,9 +93,11 @@ public:
     void calculate_features(const sentence& s);
 
 private:
-    std::vector<PointR> normalizaAspect(const std::vector<Point>& puntos);
+    std::vector<PointR> normalizaAspect(const std::vector<Point>& Points);
     void calculate_derivatives(const std::vector<PointR>& points, bool norm = true);
     void calculate_kurvature();
 };
+
+}
 
 #endif

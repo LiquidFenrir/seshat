@@ -43,6 +43,8 @@ covered by the following copyright and permission notice:
 #include <cmath>
 #include <vector>
 
+namespace seshat {
+
 // Real point
 class PointR {
     // True if this is the last point of a stroke
@@ -149,5 +151,7 @@ public:
     sentence no_repeats() const;
     sentence smoothed(int cont_size = 2) const;
 };
+
+}
 
 #endif

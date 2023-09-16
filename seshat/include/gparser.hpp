@@ -18,13 +18,13 @@
 #ifndef _G_PARSER_
 #define _G_PARSER_
 
-struct Grammar;
-
-#include "grammar.hpp"
 #include <cstdio>
-#include <cstdlib>
 #include <string>
 #include <vector>
+
+namespace seshat {
+
+struct Grammar;
 
 class gParser {
     Grammar* g;
@@ -38,5 +38,7 @@ public:
 
     void parse(FILE* fd);
 };
+
+}
 
 #endif

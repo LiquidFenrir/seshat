@@ -15,8 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <cmath>
 #include <segmentation.hpp>
+
+using namespace seshat;
 
 SegmentationModelGMM::SegmentationModelGMM(const char* mod)
 {
@@ -30,13 +33,12 @@ SegmentationModelGMM::SegmentationModelGMM(const char* mod)
     model.emplace(mod);
 }
 
-float SegmentationModelGMM::prob(CellCYK* cd, Sample* m)
+float SegmentationModelGMM::prob(CellCYK* cd, Samples* m)
 {
     int nps = 0;
     float dist = 0, delta = 0, sigma = 0, mind = 0, avgsize = 0;
-    std::vector<int> strokes_list;
 
-    strokes_list.reserve(cd->nc);
+    strokes_list.clear();
     for (int i = 0; i < cd->nc; i++)
         if (cd->ccc[i])
             strokes_list.push_back(i);

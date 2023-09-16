@@ -19,6 +19,8 @@
 #include <duration.hpp>
 #include <span>
 
+using namespace seshat;
+
 DurationModel::DurationModel(const char* str, int mxs, SymRec* sr)
 {
     FILE* fd = fopen(str, "r");
@@ -30,10 +32,7 @@ DurationModel::DurationModel(const char* str, int mxs, SymRec* sr)
     max_strokes = mxs;
     Nsyms = sr->getNClases();
 
-    duration_prob = std::make_unique<std::vector<float>[]>(Nsyms);
-    for (auto& dp : std::span(duration_prob.get(), Nsyms)) {
-        dp.resize(max_strokes, 0);
-    }
+    duration_prob.reshape(std::array{ Nsyms, max_strokes }, 0);
 
     loadModel(fd, sr);
 
@@ -48,11 +47,12 @@ void DurationModel::loadModel(FILE* fd, SymRec* sr)
     // Load data
     while (fscanf(fd, "%d %s %d", &count, str, &nums) == 3) {
         if (nums <= max_strokes)
-            duration_prob[sr->keyClase(str)][nums - 1] = count;
+            duration_prob.get(std::array{ sr->keyClase(str), nums - 1 }) = count;
     }
 
     // Compute probabilities
-    for (auto& dp : std::span(duration_prob.get(), Nsyms)) {
+    for (int i = 0; i < Nsyms; ++i) {
+        auto& dp = duration_prob[std::array{ i }];
         int total = 0;
 
         for (auto& dpf : dp) {
@@ -69,5 +69,5 @@ void DurationModel::loadModel(FILE* fd, SymRec* sr)
 
 float DurationModel::prob(int symclas, int size)
 {
-    return duration_prob[symclas][size - 1];
+    return duration_prob.get(std::array{ symclas, size - 1 });
 }

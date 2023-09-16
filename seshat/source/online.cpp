@@ -35,10 +35,13 @@ covered by the following copyright and permission notice:
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <algorithm>
 #include <numeric>
 #include <online.hpp>
 #include <ranges>
+
+using namespace seshat;
 
 //
 // "stroke" methods
@@ -109,15 +112,15 @@ sentence sentence::smoothed(int cont_size) const
     int sum_x, sum_y;
     for (const auto& curstroke : strokes) {
         auto& strokeNorm = sentNorm.strokes.emplace_back();
-        const std::vector<Point>& puntos = curstroke.points;
+        const std::vector<Point>& Points = curstroke.points;
         int np = curstroke.n_points;
         for (int p = 0; p < np; p++) {
             sum_x = 0;
             sum_y = 0;
             for (int c = p - cont_size; c <= p + cont_size; c++) {
                 const int pt_idx = std::clamp(c, 0, np);
-                sum_x += puntos[pt_idx].x;
-                sum_y += puntos[pt_idx].y;
+                sum_x += Points[pt_idx].x;
+                sum_y += Points[pt_idx].y;
             }
 
             strokeNorm.points.emplace_back(int(sum_x / (cont_size * 2 + 1)), int(sum_y / (cont_size * 2 + 1)));

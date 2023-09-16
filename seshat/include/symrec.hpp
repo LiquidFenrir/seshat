@@ -18,10 +18,6 @@
 #ifndef _SYMREC_
 #define _SYMREC_
 
-struct SegmentHyp;
-class Sample;
-
-#include "sample.hpp"
 #include "symfeatures.hpp"
 #include <cstdio>
 #include <cstring>
@@ -38,6 +34,11 @@ class Sample;
 #include <utility>
 #include <vector>
 
+namespace seshat {
+
+struct SegmentHyp;
+class Samples;
+
 class SymRec {
     std::optional<SymFeatures> FEAS;
     DataHeader header_on, header_off;
@@ -53,7 +54,7 @@ class SymRec {
 
     int C; // Number of classes
 
-    int classify(Sample& M, SegmentHyp& SegHyp, const int NB, int* vclase, float* vpr, int& as, int& ds);
+    int classify(Samples& M, SegmentHyp& SegHyp, const int NB, int* vclase, float* vpr, int& as, int& ds);
     void BLSTMclassification(Mdrnn* net, const DataSequence& seq, std::span<std::pair<float, int>>);
 
 public:
@@ -66,8 +67,10 @@ public:
     int getNClases();
     int symType(int k);
 
-    int clasificar(Sample& M, int ncomp, const int NB, int* vclase, float* vpr, int& as, int& ds);
-    int clasificar(Sample& M, std::span<const int> LT, const int NB, int* vclase, float* vpr, int& as, int& ds);
+    int clasificar(Samples& M, int ncomp, const int NB, int* vclase, float* vpr, int& as, int& ds);
+    int clasificar(Samples& M, std::span<const int> LT, const int NB, int* vclase, float* vpr, int& as, int& ds);
 };
+
+}
 
 #endif

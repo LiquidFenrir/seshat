@@ -38,6 +38,8 @@ covered by the following copyright and permission notice:
 #ifndef VECTORIMAGE_H
 #define VECTORIMAGE_H
 
+namespace seshat {
+
 #include <vector>
 
 template<typename T>
@@ -47,5 +49,7 @@ struct VectorImageT {
 };
 using VectorImage = VectorImageT<int>;
 using VectorImagef = VectorImageT<float>;
+
+}
 
 #endif

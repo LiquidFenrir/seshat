@@ -15,12 +15,15 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <cellcyk.hpp>
 #include <cstring>
 
+using namespace seshat;
+
 CellCYK::CellCYK(int n, int ncc)
 {
-    sig = NULL;
+    sig = nullptr;
     nnt = n;
     nc = ncc;
     talla = 0;

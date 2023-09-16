@@ -19,12 +19,16 @@
 #define _TABLECYK_
 
 #include "cellcyk.hpp"
-#include "hypothesis.hpp"
+#include "internal_hypothesis.hpp"
+#include <array>
 #include <cfloat>
 #include <climits>
 #include <cstdio>
-#include <list>
 #include <map>
+#include <optional>
+#include <vector>
+
+namespace seshat {
 
 // Structure to handle coordinates
 
@@ -52,26 +56,32 @@ struct coo {
 
 bool operator<(const coo& A, const coo& B);
 
+struct InternalOptHypothesis {
+    // InternalHypothesis that accounts for the target (input) math expression
+    std::optional<InternalHypothesis> Target;
+    // Percentage of strokes covered by the most likely hypothesis (target)
+    int pm_comps;
+};
 class TableCYK {
     std::vector<CellCYK*> T;
     std::vector<std::map<coo, CellCYK*>> TS;
     int N, K;
 
-    // Hypothesis that accounts for the target (input) math expression
-    Hypothesis Target;
-
-    // Percentage of strokes covered by the most likely hypothesis (target)
-    int pm_comps;
-
 public:
+    static inline constexpr int NumHypotheses = 7;
     TableCYK(int n, int k);
     ~TableCYK();
 
-    Hypothesis* getMLH();
+    InternalHypothesis* getMLH(int n);
     CellCYK* get(int n);
     int size(int n);
-    void updateTarget(const Hypothesis& H);
+    void updateTarget(const InternalHypothesis& H);
     void add(int n, CellCYK* celda, int noterm_id, bool* esinit);
+
+private:
+    std::array<InternalOptHypothesis, NumHypotheses> Targets;
 };
+
+}
 
 #endif

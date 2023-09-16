@@ -18,10 +18,12 @@
 #ifndef _CELLCYK_
 #define _CELLCYK_
 
-#include "hypothesis.hpp"
+#include "internal_hypothesis.hpp"
 #include <cstdio>
 #include <memory>
 #include <vector>
+
+namespace seshat {
 
 struct CellCYK {
     // Bounding box spatial region coordinates
@@ -30,7 +32,7 @@ struct CellCYK {
 
     // Hypotheses for every non-terminals
     int nnt;
-    std::vector<std::unique_ptr<Hypothesis>> noterm;
+    std::vector<std::unique_ptr<InternalHypothesis>> noterm;
 
     // Strokes covered in this cell
     int nc;
@@ -48,5 +50,7 @@ struct CellCYK {
     bool ccEqual(CellCYK* H);
     bool compatible(CellCYK* H);
 };
+
+}
 
 #endif

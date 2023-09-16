@@ -18,21 +18,25 @@
 #ifndef _MEPARSER_
 #define _MEPARSER_
 
-#include "cellcyk.hpp"
 #include "duration.hpp"
-#include "grammar.hpp"
-#include "hypothesis.hpp"
-#include "sample.hpp"
 #include "segmentation.hpp"
-#include "sparel.hpp"
-#include "symrec.hpp"
-#include "tablecyk.hpp"
-#include <algorithm>
-#include <cstdio>
-#include <cstdlib>
+#include <memory>
+#include <optional>
+#include <vector>
+
+namespace seshat {
+
+struct hypothesis;
+struct InternalHypothesis;
+struct CellCYK;
+struct TableCYK;
+struct ProductionB;
+struct GMM;
+struct SymRec;
+struct Grammar;
+struct Samples;
 
 class meParser {
-
     std::unique_ptr<Grammar> G;
 
     int max_strokes;
@@ -45,24 +49,27 @@ class meParser {
     std::optional<DurationModel> duration;
     std::optional<SegmentationModelGMM> segmentation;
     std::vector<CellCYK*> c1setH, c1setV, c1setU, c1setI, c1setM, c1setS;
+    std::vector<int> close_list;
+    std::vector<int> stks_list;
+    std::vector<int> stkvec;
 
     // Private methods
     void loadSymRec(const char* conf);
 
-    void initCYKterms(Sample& m, TableCYK& tcyk, int N, int K);
+    void initCYKterms(Samples& m, TableCYK& tcyk, int N, int K);
 
-    void combineStrokes(Sample& M, TableCYK& tcyk, int N);
-    CellCYK* fusion(Sample& M, ProductionB* pd, Hypothesis* A, Hypothesis* B, int N, double prob);
+    void combineStrokes(Samples& M, TableCYK& tcyk, int N);
+    CellCYK* fusion(Samples& M, ProductionB* pd, InternalHypothesis* A, InternalHypothesis* B, int N, double prob);
+
+    int fillHypothesis(hypothesis& into, const InternalHypothesis* H, int id);
 
 public:
     meParser(const char* conf);
 
     // Parse math expression
-    void parse_me(Sample& M);
-
-    // Output formatting methods
-    void print_symrec(Hypothesis* H);
-    void print_latex(Hypothesis* H);
+    std::vector<hypothesis> parse_me(Samples& M);
 };
+
+}
 
 #endif

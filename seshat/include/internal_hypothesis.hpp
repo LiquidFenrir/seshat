@@ -18,17 +18,19 @@
 #ifndef _HYPOTHESIS_
 #define _HYPOTHESIS_
 
+namespace seshat {
+
 class ProductionB;
 class ProductionT;
 
 struct CellCYK;
 
-struct Hypothesis {
+struct InternalHypothesis {
     int clase; // If the hypothesis encodes a terminal symbols this is the class id (-1 otherwise)
     double pr; // log-probability
 
     // References to left-child (hi) and right-child (hd) to create the derivation tree
-    Hypothesis *hi, *hd;
+    InternalHypothesis *hi, *hd;
 
     // The production used to create this hypothesis (either Binary or terminal)
     ProductionB* prod;
@@ -44,9 +46,11 @@ struct Hypothesis {
     int ntid; // Nonterminal ID in parent
 
     // Methods
-    Hypothesis(int c, double p, CellCYK* cd, int nt);
+    InternalHypothesis(int c, double p, CellCYK* cd, int nt);
 
-    void copy(const Hypothesis& SYM);
+    void copy(const InternalHypothesis& SYM);
 };
+
+}
 
 #endif

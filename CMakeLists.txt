@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 # Declare project containing a single eponymous executable
-project(seshat LANGUAGES CXX)
+project(math_input LANGUAGES CXX)
 add_executable(${PROJECT_NAME})
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
@@ -23,13 +23,13 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wno-type-limits
 )
 
-add_subdirectory(rnnlib4seshat)
+add_subdirectory(seshat)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     ${EXTRA_GPROF_FLAGS}
     ${USE_STATIC_LIB_FLAGS}
-    rnnlib4seshat
+    seshat
     m
 )
 
-add_subdirectory(seshat)
+add_subdirectory(math_input)

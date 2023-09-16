@@ -90,8 +90,7 @@ auto make_subrange_for(R&& r)
         return std::views::all(std::forward<R>(r));
 }
 template<class R>
-concept RangeLike = requires(R&& r)
-{
+concept RangeLike = requires(R&& r) {
     make_subrange_for(r);
 };
 

@@ -15,18 +15,24 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <gparser.hpp>
 #include <grammar.hpp>
 #include <map>
+#include <production.hpp>
 #include <sparel.hpp>
 #include <string>
+#include <symrec.hpp>
 #include <tablecyk.hpp>
 #include <vector>
+
+using namespace seshat;
 
 #define MIN_SPR_PR 0.01
 

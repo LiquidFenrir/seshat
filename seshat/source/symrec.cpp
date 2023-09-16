@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <algorithm>
 #include <cfloat>
 #include <climits>
@@ -22,8 +23,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <map>
+#include <samples.hpp>
 #include <symrec.hpp>
 #include <vectorimage.hpp>
+
+using namespace seshat;
 
 #define TSIZE 2048
 
@@ -242,13 +246,13 @@ int SymRec::symType(int k)
  * Classify *
  ************/
 
-int SymRec::clasificar(Sample& M, int ncomp, const int NB, int* vclase, float* vpr, int& as, int& ds)
+int SymRec::clasificar(Samples& M, int ncomp, const int NB, int* vclase, float* vpr, int& as, int& ds)
 {
     const int aux[1] = { ncomp };
     return clasificar(M, aux, NB, vclase, vpr, as, ds);
 }
 
-int SymRec::clasificar(Sample& M, std::span<const int> LT, const int NB, int* vclase, float* vpr, int& as, int& ds)
+int SymRec::clasificar(Samples& M, std::span<const int> LT, const int NB, int* vclase, float* vpr, int& as, int& ds)
 {
     SegmentHyp aux;
 
@@ -274,7 +278,7 @@ int SymRec::clasificar(Sample& M, std::span<const int> LT, const int NB, int* vc
     return classify(M, aux, NB, vclase, vpr, as, ds);
 }
 
-int SymRec::classify(Sample& M, SegmentHyp& SegHyp, const int NB, int* vclase, float* vpr, int& as, int& ds)
+int SymRec::classify(Samples& M, SegmentHyp& SegHyp, const int NB, int* vclase, float* vpr, int& as, int& ds)
 {
 
     int regy = INT_MAX, regt = INT_MIN, N = 0;
@@ -287,11 +291,11 @@ int SymRec::classify(Sample& M, SegmentHyp& SegHyp, const int NB, int* vclase, f
         regy = std::min(regy, cur_stroke.ry);
         regt = std::max(regt, cur_stroke.rt);
 
-        const int npuntos = cur_stroke.getNpuntos();
-        for (int j = 0; j < npuntos; ++j) {
+        const int nPoints = cur_stroke.getNPoints();
+        for (int j = 0; j < nPoints; ++j) {
             SegHyp.cen += cur_stroke.get(j)->y;
         }
-        N += npuntos;
+        N += nPoints;
     }
 
     SegHyp.cen /= N;

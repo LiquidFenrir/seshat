@@ -15,12 +15,15 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <featureson.hpp>
 #include <online.hpp>
 #include <rnnlib4seshat/RealType.hpp>
-#include <sample.hpp>
+#include <samples.hpp>
 #include <symfeatures.hpp>
 #include <symrec.hpp>
+
+using namespace seshat;
 
 SymFeatures::SymFeatures(const char* mav_on, const char* mav_off)
 {
@@ -54,17 +57,17 @@ SymFeatures::SymFeatures(const char* mav_on, const char* mav_off)
     fclose(fd);
 }
 
-std::unique_ptr<DataSequence> SymFeatures::getOnline(Sample& M, SegmentHyp& SegHyp)
+std::unique_ptr<DataSequence> SymFeatures::getOnline(Samples& M, SegmentHyp& SegHyp)
 {
     // Create and fill sequence of points
     sentence sent(SegHyp.stks.size());
 
     for (const auto it_idx : SegHyp.stks) {
         const auto& cur_stroke = M.getStroke(it_idx);
-        auto& st = sent.strokes.emplace_back(cur_stroke.getNpuntos(), 1); // means is pendown stroke
+        auto& st = sent.strokes.emplace_back(cur_stroke.getNPoints(), 1); // means is pendown stroke
 
         for (int j = 0; j < st.n_points; j++) {
-            const Punto* p = cur_stroke.get(j);
+            const Point* p = cur_stroke.get(j);
             st.points.emplace_back(p->x, p->y);
         }
     }

@@ -22,6 +22,8 @@
 #include <cstdio>
 #include <list>
 
+namespace seshat {
+
 class LogSpace {
     int N;
     int RX, RY;
@@ -43,5 +45,7 @@ public:
     void getM(CellCYK* c, std::vector<CellCYK*>& set);
     void getS(CellCYK* c, std::vector<CellCYK*>& set);
 };
+
+}
 
 #endif

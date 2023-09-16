@@ -18,12 +18,14 @@
 #ifndef _SYMFEATURES_
 #define _SYMFEATURES_
 
+#include <memory>
+
+namespace seshat {
+
 class DataSequence;
 class SegmentHyp;
-class Sample;
-
-#include "vectorimage.hpp"
-#include <memory>
+class Samples;
+class VectorImage;
 
 class SymFeatures {
     static inline constexpr int ON_FEAT = 7;
@@ -34,8 +36,10 @@ class SymFeatures {
 public:
     SymFeatures(const char* mav_on, const char* mav_off);
 
-    std::unique_ptr<DataSequence> getOnline(Sample& M, SegmentHyp& SegHyp);
+    std::unique_ptr<DataSequence> getOnline(Samples& M, SegmentHyp& SegHyp);
     std::unique_ptr<DataSequence> getOfflineFKI(VectorImage& img, int H, int W);
 };
+
+}
 
 #endif

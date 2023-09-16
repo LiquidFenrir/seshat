@@ -26,7 +26,6 @@ target_compile_options(rnnlib4seshat PRIVATE
 
 target_link_libraries(rnnlib4seshat PRIVATE
     ${EXTRA_GPROF_FLAGS}
-    ${USE_STATIC_LIB_FLAGS}
     m
 )
 

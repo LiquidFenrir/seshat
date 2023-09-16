@@ -15,33 +15,39 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <cfloat>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <gmm.hpp>
+#include <internal_hypothesis.hpp>
+#include <samples.hpp>
 #include <sparel.hpp>
+
+using namespace seshat;
 
 // Aux functions
 
-Hypothesis* leftmost(Hypothesis* h)
+InternalHypothesis* leftmost(InternalHypothesis* h)
 {
     if (h->pt)
         return h;
 
-    Hypothesis* izq = leftmost(h->hi);
-    Hypothesis* der = leftmost(h->hd);
+    InternalHypothesis* izq = leftmost(h->hi);
+    InternalHypothesis* der = leftmost(h->hd);
 
     return izq->parent->x < der->parent->x ? izq : der;
 }
 
-Hypothesis* rightmost(Hypothesis* h)
+InternalHypothesis* rightmost(InternalHypothesis* h)
 {
     if (h->pt)
         return h;
 
-    Hypothesis* izq = rightmost(h->hi);
-    Hypothesis* der = rightmost(h->hd);
+    InternalHypothesis* izq = rightmost(h->hi);
+    InternalHypothesis* der = rightmost(h->hd);
 
     return izq->parent->s > der->parent->s ? izq : der;
 }
@@ -68,11 +74,10 @@ float solape(CellCYK* a, CellCYK* b)
 // SpaRel methods
 //
 
-SpaRel::SpaRel(GMM& gmm, Sample& m)
+SpaRel::SpaRel(GMM& gmm, Samples& m)
     : model{ gmm }
     , mue{ m }
 {
-
 }
 
 void SpaRel::smooth(float* post)
@@ -81,7 +86,7 @@ void SpaRel::smooth(float* post)
         post[i] = (post[i] + 0.02) / (1.00 + NRELS * 0.02);
 }
 
-void SpaRel::getFeas(Hypothesis* a, Hypothesis* b, float* sample, int ry)
+void SpaRel::getFeas(InternalHypothesis* a, InternalHypothesis* b, float* sample, int ry)
 {
     // Normalization factor: combined height
     float F = std::max(a->parent->t, b->parent->t) - std::min(a->parent->y, b->parent->y) + 1;
@@ -97,15 +102,15 @@ void SpaRel::getFeas(Hypothesis* a, Hypothesis* b, float* sample, int ry)
     sample[8] = (b->parent->t - a->parent->t) / F;
 }
 
-double SpaRel::compute_prob(Hypothesis* h1, Hypothesis* h2, int k)
+double SpaRel::compute_prob(InternalHypothesis* h1, InternalHypothesis* h2, int k)
 {
 
     // Set probabilities according to spatial constraints
 
     if (k <= 2) {
         // Check left-to-right order constraint in Hor/Sub/Sup relationships
-        Hypothesis* rma = rightmost(h1);
-        Hypothesis* lmb = leftmost(h2);
+        InternalHypothesis* rma = rightmost(h1);
+        InternalHypothesis* lmb = leftmost(h2);
 
         if (lmb->parent->x < rma->parent->x || lmb->parent->s <= rma->parent->s)
             return 0.0;
@@ -127,19 +132,19 @@ double SpaRel::compute_prob(Hypothesis* h1, Hypothesis* h2, int k)
     return probs[k];
 }
 
-double SpaRel::getHorProb(Hypothesis* ha, Hypothesis* hb)
+double SpaRel::getHorProb(InternalHypothesis* ha, InternalHypothesis* hb)
 {
     return compute_prob(ha, hb, 0);
 }
-double SpaRel::getSubProb(Hypothesis* ha, Hypothesis* hb)
+double SpaRel::getSubProb(InternalHypothesis* ha, InternalHypothesis* hb)
 {
     return compute_prob(ha, hb, 1);
 }
-double SpaRel::getSupProb(Hypothesis* ha, Hypothesis* hb)
+double SpaRel::getSupProb(InternalHypothesis* ha, InternalHypothesis* hb)
 {
     return compute_prob(ha, hb, 2);
 }
-double SpaRel::getVerProb(Hypothesis* ha, Hypothesis* hb, bool strict)
+double SpaRel::getVerProb(InternalHypothesis* ha, InternalHypothesis* hb, bool strict)
 {
     // Pruning
     if (hb->parent->y < (ha->parent->y + ha->parent->t) / 2 || abs((ha->parent->x + ha->parent->s) / 2 - (hb->parent->x + hb->parent->s) / 2) > 2.5 * mue.RX || (hb->parent->x > ha->parent->s || hb->parent->s < ha->parent->x))
@@ -157,14 +162,14 @@ double SpaRel::getVerProb(Hypothesis* ha, Hypothesis* hb, bool strict)
     return (1.0 - penalty) * compute_prob(ha, hb, 3);
 }
 
-double SpaRel::getInsProb(Hypothesis* ha, Hypothesis* hb)
+double SpaRel::getInsProb(InternalHypothesis* ha, InternalHypothesis* hb)
 {
     if (solape(hb->parent, ha->parent) < 0.5 || hb->parent->x < ha->parent->x || hb->parent->y < ha->parent->y)
         return 0.0;
 
     return compute_prob(ha, hb, 4);
 }
-double SpaRel::getMrtProb(Hypothesis* ha, Hypothesis* hb)
+double SpaRel::getMrtProb(InternalHypothesis* ha, InternalHypothesis* hb)
 {
     return compute_prob(ha, hb, 5);
 }

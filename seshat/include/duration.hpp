@@ -23,10 +23,12 @@
 #include <memory>
 #include <vector>
 
+namespace seshat {
+
 class DurationModel {
     int max_strokes;
     int Nsyms;
-    std::unique_ptr<std::vector<float>[]> duration_prob;
+    MultiArray<float> duration_prob;
 
     void loadModel(FILE* fd, SymRec* sr);
 
@@ -35,5 +37,7 @@ public:
 
     float prob(int symclas, int size);
 };
+
+}
 
 #endif
