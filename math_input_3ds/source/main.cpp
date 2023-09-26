@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <ranges>
 #include <seshat/seshat.hpp>
 
 struct color_t {
@@ -38,12 +39,142 @@ static void fbDrawPixel(u8* fb, position_t position, color_t color)
     fb_ptr[1] = color.g;
     fb_ptr[2] = color.b;
 }
+static void fbDrawRectangle(u8* fb, position_t position, position_t dimensions, color_t color)
+{
+    for (int dx = 0; dx < dimensions.x; ++dx)
+        for (int dy = 0; dy < dimensions.y; ++dy)
+            fbDrawPixel(fb, position_t{ u16(position.x + dx), u16(position.y + dy) }, color);
+}
 static void fbDrawSquare(u8* fb, position_t position, unsigned size, color_t color)
 {
-    for (int dx = 0; dx < size; ++dx)
-        for (int dy = 0; dy < size; ++dy)
-            fbDrawPixel(fb, position_t{ u16(position.x + dx - size / 2), u16(position.y + dy - size / 2) }, color);
+    fbDrawRectangle(fb, {position.x - size / 2, position.y}, {size, size}, color);
 }
+static void fbDrawLine(u8* fb, position_t p1, position_t p2, unsigned size, color_t color)
+{
+    int x1 = p1.x;
+    int y1 = p1.y;
+    int x2 = p2.x;
+    int y2 = p2.y;
+    // https://github.com/dschmenk/Bresen-Span/blob/master/src/fastline.c
+    int dx2, dy2, err, sx, sy, ps;
+    int shorterr, shortlen, longerr, longlen, halflen;
+
+    auto hspan = [fb, size, color](int xbeg, int xend, int y) {
+        fbDrawRectangle(fb, {xbeg - size / 2, y}, {xend - (xbeg - size / 2) + size, size}, color);
+    };
+    auto vspan = [fb, size, color](int x, int ybeg, int yend) {
+        fbDrawRectangle(fb, {x, ybeg - size / 2}, {size, yend - (ybeg - size / 2) + size}, color);
+    };
+
+    sx = sy = 1;
+    if ((dx2 = (x2 - x1) * 2) < 0)
+    {
+        sx  = -1;
+        dx2 = -dx2;
+    }
+    if ((dy2 = (y2 - y1) * 2) < 0)
+    {
+        sy  = -1;
+        dy2 = -dy2;
+    }
+    if (dx2 >= dy2)
+    {
+        if (sx < 0)
+        {
+            ps = x1; x1 = x2; x2 = ps;
+            ps = y1; y1 = y2; y2 = ps;
+            sy = -sy;
+        }
+        if (dy2 == 0)
+        {
+            hspan(x1, x2, y1);
+            return;
+        }
+        ps  = x1;
+        err = dy2 - dx2 / 2;
+        while (err < 0) // Find first half-span length and error
+        {
+            err += dy2;
+            x1++;
+        }
+        longlen = (x1 - ps + 1) * 2; // Long-span length = half-span length * 2
+        longerr = err * 2;
+        if (longerr >= dy2)
+        {
+            longerr -= dy2;
+            longlen--;
+        }
+        shortlen = longlen - 1; // Short-span length = long-span length - 1
+        shorterr = longerr - dy2;
+        err     += shorterr; // Do a short-span step
+        while (x1 < x2)
+        {
+            hspan(ps, x1, y1);
+            y1 += sy;     // Move to next span
+            ps  = x1 + 1; // Start of next span = end of previous span + 1
+            if (err >= 0) // Short span
+            {
+                err += shorterr;
+                x1  += shortlen;
+            }
+            else          // Long span
+            {
+                err += longerr;
+                x1  += longlen;
+            }
+        }
+        hspan(ps, x2, y2); // Final span
+    }
+    else
+    {
+        if (sy < 0)
+        {
+            ps = x1; x1 = x2; x2 = ps;
+            ps = y1; y1 = y2; y2 = ps;
+            sx = -sx;
+        }
+        if (dx2 == 0)
+        {
+            vspan(x1, y1, y2);
+            return;
+        }
+        ps  = y1;
+        err = dx2 - dy2 / 2;
+        while (err < 0)
+        {
+            err += dx2;
+            y1++;
+        }
+        longlen = (y1 - ps + 1) * 2;
+        longerr = err * 2;
+        if (longerr >= dx2)
+        {
+            longerr -= dx2;
+            longlen--;
+        }
+        shortlen = longlen - 1;
+        shorterr = longerr - dx2;
+        err     += shorterr;
+        while (y1 < y2)
+        {
+            vspan(x1, ps, y1);
+            x1 += sx;
+            ps  = y1 + 1;
+            if (err >= 0) // Short span
+            {
+                err += shorterr;
+                y1  += shortlen;
+            }
+            else          // Long span
+            {
+                err += longerr;
+                y1  += longlen;
+            }
+        }
+        vspan(x2, ps, y2); // Final span
+    }
+}
+
 static void fbFill(u8* surf, color_t color)
 {
     for (int off = 0; off < 320 * 240; ++off) {
@@ -59,8 +190,8 @@ static void fbRedraw(u8* fb, const seshat::sample& s)
     const color_t drawcolor{ 0, 0, 0, 255 };
     fbFill(fb, fillcolor);
     for (const auto& strk : s.strokes) {
-        for (const auto& pt : strk.points) {
-            fbDrawSquare(fb, position_t{ u16(pt.x), u16(pt.y) }, 4, drawcolor);
+        for (const auto& [prev_pt, pt] : strk.points | std::views::adjacent<2>) {
+            fbDrawLine(fb, position_t{prev_pt.x, prev_pt.y}, position_t{ pt.x, pt.y }, 4, drawcolor);
         }
     }
 }
@@ -107,11 +238,11 @@ static void work3DS()
                 const auto prev_pt = s.strokes.back().points.back();
                 const auto dx = prev_pt.x - motion.px;
                 const auto dy = prev_pt.y - motion.py;
-                if ((dx * dx + dy * dy) > 3.0f) // add the point if far away enough
+                if ((dx * dx + dy * dy) >= 16.0f) // add the point if far away enough
                 {
                     s.total_points += 1;
                     const auto& pt = s.strokes.back().points.emplace_back(motion.px, motion.py);
-                    fbDrawSquare(fb, position_t{ pt.x, pt.y }, 4, color_t{ 0, 0, 0, 255 });
+                    fbDrawLine(fb, position_t{prev_pt.x, prev_pt.y}, position_t{ pt.x, pt.y }, 4, color_t{ 0, 0, 0, 255 });
                 }
             }
         } else if (kUp & KEY_TOUCH) {
@@ -180,13 +311,13 @@ int main(int argc, char* argv[])
     gfxInitDefault();
     consoleInit(GFX_TOP, nullptr);
     consoleDebugInit(debugDevice_SVC);
-
+    osSetSpeedupEnable(true);
     romfsInit();
 
     work3DS();
 
     romfsExit();
-
+    osSetSpeedupEnable(false);
     gfxExit();
     return 0;
 }
