@@ -19,6 +19,10 @@
 		{
 			"name": "math_input_cli",
 			"path": "math_input_cli"
+		},
+		{
+			"name": "math_input_3ds",
+			"path": "math_input_3ds",
 		}
 	],
 	"settings": {

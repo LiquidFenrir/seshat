@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "3DS",
+            "includePath": [
+                "D:/devkitpro/libctru/include",
+                "D:/devkitpro/portlibs/3ds/include",
+                "include",
+                "../seshat/public"
+            ],
+            "defines": [
+                "_DEBUG",
+                "__3DS__",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "D:/devkitpro/devkitARM/bin/arm-none-eabi-gcc.exe -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft",
+            "intelliSenseMode": "gcc-arm"
+        }
+    ],
+    "version": 4
+}
