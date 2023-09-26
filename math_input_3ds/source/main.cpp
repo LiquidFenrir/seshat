@@ -47,7 +47,7 @@ static void fbDrawRectangle(u8* fb, position_t position, position_t dimensions, 
 }
 static void fbDrawSquare(u8* fb, position_t position, unsigned size, color_t color)
 {
-    fbDrawRectangle(fb, {position.x - size / 2, position.y}, {size, size}, color);
+    fbDrawRectangle(fb, { position.x - size / 2, position.y - size / 2 }, { size, size }, color);
 }
 static void fbDrawLine(u8* fb, position_t p1, position_t p2, unsigned size, color_t color)
 {
@@ -60,37 +60,36 @@ static void fbDrawLine(u8* fb, position_t p1, position_t p2, unsigned size, colo
     int shorterr, shortlen, longerr, longlen, halflen;
 
     auto hspan = [fb, size, color](int xbeg, int xend, int y) {
-        fbDrawRectangle(fb, {xbeg - size / 2, y}, {xend - (xbeg - size / 2) + size, size}, color);
+        fbDrawRectangle(fb, { xbeg - size / 2, y }, { xend - (xbeg - size / 2) + size, size }, color);
     };
     auto vspan = [fb, size, color](int x, int ybeg, int yend) {
-        fbDrawRectangle(fb, {x, ybeg - size / 2}, {size, yend - (ybeg - size / 2) + size}, color);
+        fbDrawRectangle(fb, { x, ybeg - size / 2 }, { size, yend - (ybeg - size / 2) + size }, color);
     };
 
     sx = sy = 1;
-    if ((dx2 = (x2 - x1) * 2) < 0)
-    {
-        sx  = -1;
+    if ((dx2 = (x2 - x1) * 2) < 0) {
+        sx = -1;
         dx2 = -dx2;
     }
-    if ((dy2 = (y2 - y1) * 2) < 0)
-    {
-        sy  = -1;
+    if ((dy2 = (y2 - y1) * 2) < 0) {
+        sy = -1;
         dy2 = -dy2;
     }
-    if (dx2 >= dy2)
-    {
-        if (sx < 0)
-        {
-            ps = x1; x1 = x2; x2 = ps;
-            ps = y1; y1 = y2; y2 = ps;
+    if (dx2 >= dy2) {
+        if (sx < 0) {
+            ps = x1;
+            x1 = x2;
+            x2 = ps;
+            ps = y1;
+            y1 = y2;
+            y2 = ps;
             sy = -sy;
         }
-        if (dy2 == 0)
-        {
+        if (dy2 == 0) {
             hspan(x1, x2, y1);
             return;
         }
-        ps  = x1;
+        ps = x1;
         err = dy2 - dx2 / 2;
         while (err < 0) // Find first half-span length and error
         {
@@ -99,76 +98,69 @@ static void fbDrawLine(u8* fb, position_t p1, position_t p2, unsigned size, colo
         }
         longlen = (x1 - ps + 1) * 2; // Long-span length = half-span length * 2
         longerr = err * 2;
-        if (longerr >= dy2)
-        {
+        if (longerr >= dy2) {
             longerr -= dy2;
             longlen--;
         }
         shortlen = longlen - 1; // Short-span length = long-span length - 1
         shorterr = longerr - dy2;
-        err     += shorterr; // Do a short-span step
-        while (x1 < x2)
-        {
+        err += shorterr; // Do a short-span step
+        while (x1 < x2) {
             hspan(ps, x1, y1);
-            y1 += sy;     // Move to next span
-            ps  = x1 + 1; // Start of next span = end of previous span + 1
+            y1 += sy; // Move to next span
+            ps = x1 + 1; // Start of next span = end of previous span + 1
             if (err >= 0) // Short span
             {
                 err += shorterr;
-                x1  += shortlen;
-            }
-            else          // Long span
+                x1 += shortlen;
+            } else // Long span
             {
                 err += longerr;
-                x1  += longlen;
+                x1 += longlen;
             }
         }
         hspan(ps, x2, y2); // Final span
-    }
-    else
-    {
-        if (sy < 0)
-        {
-            ps = x1; x1 = x2; x2 = ps;
-            ps = y1; y1 = y2; y2 = ps;
+    } else {
+        if (sy < 0) {
+            ps = x1;
+            x1 = x2;
+            x2 = ps;
+            ps = y1;
+            y1 = y2;
+            y2 = ps;
             sx = -sx;
         }
-        if (dx2 == 0)
-        {
+        if (dx2 == 0) {
             vspan(x1, y1, y2);
             return;
         }
-        ps  = y1;
+        ps = y1;
         err = dx2 - dy2 / 2;
-        while (err < 0)
-        {
+        while (err < 0) {
             err += dx2;
             y1++;
         }
         longlen = (y1 - ps + 1) * 2;
         longerr = err * 2;
-        if (longerr >= dx2)
-        {
+        if (longerr >= dx2) {
             longerr -= dx2;
             longlen--;
         }
         shortlen = longlen - 1;
         shorterr = longerr - dx2;
-        err     += shorterr;
-        while (y1 < y2)
-        {
+        err += shorterr;
+        while (y1 < y2) {
             vspan(x1, ps, y1);
             x1 += sx;
-            ps  = y1 + 1;
+            ps = y1 + 1;
             if (err >= 0) // Short span
             {
                 err += shorterr;
-                y1  += shortlen;
-            }
-            else          // Long span
+                y1 += shortlen;
+            } else // Long span
             {
                 err += longerr;
-                y1  += longlen;
+                y1 += longlen;
             }
         }
         vspan(x2, ps, y2); // Final span
@@ -190,8 +182,13 @@ static void fbRedraw(u8* fb, const seshat::sample& s)
     const color_t drawcolor{ 0, 0, 0, 255 };
     fbFill(fb, fillcolor);
     for (const auto& strk : s.strokes) {
-        for (const auto& [prev_pt, pt] : strk.points | std::views::adjacent<2>) {
-            fbDrawLine(fb, position_t{prev_pt.x, prev_pt.y}, position_t{ pt.x, pt.y }, 4, drawcolor);
+        if (strk.points.size() == 1) {
+            const auto& pt = strk.points.front();
+            fbDrawSquare(fb, position_t{ pt.x, pt.y }, 4, drawcolor);
+        } else {
+            for (const auto& [prev_pt, pt] : strk.points | std::views::adjacent<2>) {
+                fbDrawLine(fb, position_t{ prev_pt.x, prev_pt.y }, position_t{ pt.x, pt.y }, 4, drawcolor);
+            }
         }
     }
 }
@@ -242,7 +239,7 @@ static void work3DS()
                 {
                     s.total_points += 1;
                     const auto& pt = s.strokes.back().points.emplace_back(motion.px, motion.py);
-                    fbDrawLine(fb, position_t{prev_pt.x, prev_pt.y}, position_t{ pt.x, pt.y }, 4, color_t{ 0, 0, 0, 255 });
+                    fbDrawLine(fb, position_t{ prev_pt.x, prev_pt.y }, position_t{ pt.x, pt.y }, 4, color_t{ 0, 0, 0, 255 });
                 }
             }
         } else if (kUp & KEY_TOUCH) {

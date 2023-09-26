@@ -94,30 +94,29 @@ static void surfaceDrawLine(SDL_Surface* surf, int x1, int y1, int x2, int y2, u
     };
 
     sx = sy = 1;
-    if ((dx2 = (x2 - x1) * 2) < 0)
-    {
-        sx  = -1;
+    if ((dx2 = (x2 - x1) * 2) < 0) {
+        sx = -1;
         dx2 = -dx2;
     }
-    if ((dy2 = (y2 - y1) * 2) < 0)
-    {
-        sy  = -1;
+    if ((dy2 = (y2 - y1) * 2) < 0) {
+        sy = -1;
         dy2 = -dy2;
     }
-    if (dx2 >= dy2)
-    {
-        if (sx < 0)
-        {
-            ps = x1; x1 = x2; x2 = ps;
-            ps = y1; y1 = y2; y2 = ps;
+    if (dx2 >= dy2) {
+        if (sx < 0) {
+            ps = x1;
+            x1 = x2;
+            x2 = ps;
+            ps = y1;
+            y1 = y2;
+            y2 = ps;
             sy = -sy;
         }
-        if (dy2 == 0)
-        {
+        if (dy2 == 0) {
             hspan(x1, x2, y1);
             return;
         }
-        ps  = x1;
+        ps = x1;
         err = dy2 - dx2 / 2;
         while (err < 0) // Find first half-span length and error
         {
@@ -126,76 +125,69 @@ static void surfaceDrawLine(SDL_Surface* surf, int x1, int y1, int x2, int y2, u
         }
         longlen = (x1 - ps + 1) * 2; // Long-span length = half-span length * 2
         longerr = err * 2;
-        if (longerr >= dy2)
-        {
+        if (longerr >= dy2) {
             longerr -= dy2;
             longlen--;
         }
         shortlen = longlen - 1; // Short-span length = long-span length - 1
         shorterr = longerr - dy2;
-        err     += shorterr; // Do a short-span step
-        while (x1 < x2)
-        {
+        err += shorterr; // Do a short-span step
+        while (x1 < x2) {
             hspan(ps, x1, y1);
-            y1 += sy;     // Move to next span
-            ps  = x1 + 1; // Start of next span = end of previous span + 1
+            y1 += sy; // Move to next span
+            ps = x1 + 1; // Start of next span = end of previous span + 1
             if (err >= 0) // Short span
             {
                 err += shorterr;
-                x1  += shortlen;
-            }
-            else          // Long span
+                x1 += shortlen;
+            } else // Long span
             {
                 err += longerr;
-                x1  += longlen;
+                x1 += longlen;
             }
         }
         hspan(ps, x2, y2); // Final span
-    }
-    else
-    {
-        if (sy < 0)
-        {
-            ps = x1; x1 = x2; x2 = ps;
-            ps = y1; y1 = y2; y2 = ps;
+    } else {
+        if (sy < 0) {
+            ps = x1;
+            x1 = x2;
+            x2 = ps;
+            ps = y1;
+            y1 = y2;
+            y2 = ps;
             sx = -sx;
         }
-        if (dx2 == 0)
-        {
+        if (dx2 == 0) {
             vspan(x1, y1, y2);
             return;
         }
-        ps  = y1;
+        ps = y1;
         err = dx2 - dy2 / 2;
-        while (err < 0)
-        {
+        while (err < 0) {
             err += dx2;
             y1++;
         }
         longlen = (y1 - ps + 1) * 2;
         longerr = err * 2;
-        if (longerr >= dx2)
-        {
+        if (longerr >= dx2) {
             longerr -= dx2;
             longlen--;
         }
         shortlen = longlen - 1;
         shorterr = longerr - dx2;
-        err     += shorterr;
-        while (y1 < y2)
-        {
+        err += shorterr;
+        while (y1 < y2) {
             vspan(x1, ps, y1);
             x1 += sx;
-            ps  = y1 + 1;
+            ps = y1 + 1;
             if (err >= 0) // Short span
             {
                 err += shorterr;
-                y1  += shortlen;
-            }
-            else          // Long span
+                y1 += shortlen;
+            } else // Long span
             {
                 err += longerr;
-                y1  += longlen;
+                y1 += longlen;
             }
         }
         vspan(x2, ps, y2); // Final span
@@ -214,8 +206,13 @@ static void surfaceRedraw(SDL_Surface* surf, const seshat::sample& s)
 {
     surfaceFill(surf, 0xffffffff);
     for (const auto& strk : s.strokes) {
-        for (const auto& [oldpt, newpt] : strk.points | std::views::adjacent<2>) {
-            surfaceDrawLine(surf, oldpt.x, oldpt.y, newpt.x, newpt.y, 4);
+        if (strk.points.size() == 1) {
+            const auto& pt = strk.points.front();
+            surfaceDrawSquare(surf, pt.x, pt.y, 4);
+        } else {
+            for (const auto& [oldpt, newpt] : strk.points | std::views::adjacent<2>) {
+                surfaceDrawLine(surf, oldpt.x, oldpt.y, newpt.x, newpt.y, 4);
+            }
         }
     }
 }
@@ -292,8 +289,7 @@ static void workSDL()
                         s.strokes.emplace_back();
                         const auto& pt = s.strokes.back().points.emplace_back(button.x - squareRect.x, button.y - squareRect.y);
                         surfaceDrawSquare(surf, pt.x, pt.y, 4);
-                    }
-                    else if (button.button == SDL_BUTTON_RIGHT && !drawing) // ACTION: REMOVE LAST STROKE
+                    } else if (button.button == SDL_BUTTON_RIGHT && !drawing) // ACTION: REMOVE LAST STROKE
                     {
                         if (!s.strokes.empty()) {
                             s.total_points -= s.strokes.back().points.size();
