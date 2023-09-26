@@ -38,6 +38,8 @@ covered by the following copyright and permission notice:
 #ifndef PATH_H
 #define PATH_H
 
+#include <algorithm>
+#include <array>
 #include <filesystem>
 #include <ranges>
 
@@ -46,7 +48,7 @@ namespace fs = std::filesystem;
 static inline void removeEndings(std::string& s)
 {
     static constexpr auto want_removed = std::array{ '\r', '\n' };
-    while (!s.empty() && std::ranges::any_of(want_removed, [&s](char c) { s.back() == c; }))
+    while (!s.empty() && std::ranges::any_of(want_removed, [&s](char c) { return s.back() == c; }))
         s.pop_back();
 }
 

@@ -86,7 +86,7 @@ std::unique_ptr<DataSequence> SymFeatures::getOnline(Samples& M, SegmentHyp& Seg
 
     // Check number of online features
     if (feat.frames[0].get_fr_dim() != ON_FEAT) {
-        fprintf(stderr, "Error: unexpected number of online features\n");
+        std::cerr << "Error: unexpected number of online features\n";
         throw std::runtime_error("Error: unexpected number of online features");
     }
 

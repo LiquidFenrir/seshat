@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <map>
 #include <numeric>
 #include <queue>
@@ -131,7 +132,7 @@ void Samples::render_img(const char* out)
 {
     FILE* frender = fopen(out, "w");
     if (!frender) {
-        fprintf(stderr, "WARNING: Error creating file '%s'\n", out);
+        std::cerr << "WARNING: Error creating file '" << out << "'\n";
         return;
     }
 
@@ -507,29 +508,6 @@ void Samples::compute_strokes_distances(int rx, int ry)
             stk_dis.img[j * stk_dis.width + i] = curval;
         }
     }
-
-#ifdef VERBOSE
-    fprintf(stderr, "===INI Strokes Dist LIST===\n");
-    for (int i = 0; i < nStrokes(); i++) {
-        for (int j = 0; j < nStrokes(); j++) {
-            if (i != j && stk_dis[i][j] < INF_DIST)
-                fprintf(stderr, "%d -> %d: d=%.2f\n", i, j, stk_dis[i][j]);
-        }
-        fprintf(stderr, "\n");
-    }
-    fprintf(stderr, "===END Strokes Dist LIST===\n\n");
-    fprintf(stderr, "===INI DISTANCE MATRIX===\n");
-    for (int i = 0; i < nStrokes(); i++) {
-        for (int j = 0; j < nStrokes(); j++) {
-            if (stk_dis[i][j] >= INF_DIST)
-                fprintf(stderr, "   *  ");
-            else
-                fprintf(stderr, " %5.2f", stk_dis[i][j]);
-        }
-        fprintf(stderr, "\n");
-    }
-    fprintf(stderr, "===END DISTANCE MATRIX===\n");
-#endif
 }
 
 float Samples::stroke_distance(int si, int sj)
@@ -562,7 +540,7 @@ float Samples::stroke_distance(int si, int sj)
 float Samples::getDist(int si, int sj)
 {
     if (si < 0 || sj < 0 || si >= nStrokes() || sj >= nStrokes()) {
-        fprintf(stderr, "ERROR: stroke id out of range in getDist(%d,%d)\n", si, sj);
+        std::cerr << "ERROR: stroke id out of range in getDist(" << si << "," << sj << ")\n";
         throw std::runtime_error("ERROR: stroke id out of range in getDist");
     }
     return stk_dis.img[si * stk_dis.width + sj];

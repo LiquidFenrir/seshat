@@ -76,7 +76,7 @@ public:
         case 6:
             return k;
         default:
-            fprintf(stderr, "Error: getFea(%d)\n", i);
+            std::cerr << "Error: getFea(" << i << ")\n";
             throw std::runtime_error("Error: getFea");
         }
     }

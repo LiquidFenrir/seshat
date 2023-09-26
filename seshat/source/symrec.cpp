@@ -216,7 +216,7 @@ int SymRec::keyClase(const std::string& str)
 {
     const auto it = cl2key.find(str);
     if (it == cl2key.end()) {
-        std::cerr << "WARNING: Class '%s' doesn't appear in symbols database\n", str.c_str());
+        // std::cerr << "WARNING: Class '" << str << "' doesn't appear in symbols database\n";
         return -1;
     }
     return it->second;

@@ -20,6 +20,7 @@
 #include <cstring>
 #include <gparser.hpp>
 #include <grammar.hpp>
+#include <iostream>
 
 using namespace seshat;
 
@@ -31,67 +32,36 @@ gParser::gParser(Grammar& gram, std::istream& is)
     parse(is);
 }
 
-/*
-std::vector<std::string> gParser::split(const char* str)
-{
-    char tokensaux[2 * SIZE];
-    int n = 0, i = 0, j = 0;
-
-    while (isFillChar(str[i]))
-        i++;
-
-    while (str[i]) {
-        if (str[i] == '\"') {
-            i++;
-            while (str[i] && str[i] != '\"') {
-                tokensaux[j] = str[i];
-                i++;
-                j++;
-            }
-            i++;
-        } else {
-            while (str[i] && !isFillChar(str[i])) {
-                tokensaux[j] = str[i];
-                i++;
-                j++;
-            }
-        }
-        tokensaux[j++] = 0;
-        n++;
-        while (str[i] && isFillChar(str[i]))
-            i++;
-    }
-
-    std::vector<std::string> toks;
-    toks.reserve(n);
-    for (i = 0, j = 0; i < n; i++) {
-        toks.emplace_back(&tokensaux[j]);
-        j += toks.back().size() + 1;
-    }
-
-    return toks;
-}
-*/
-
 void gParser::parse(std::istream& is)
 {
     std::string line;
 
     // Read nonterminal symbols
-    while (std::getline(is, line) && (removeEndings(line), true) && (line.empty() || line.front() == '#' || line != "START"))
+    while (std::getline(is, line) && (removeEndings(line), true) && line != "START") {
+        if (line.empty() || line.front() == '#')
+            continue;
+
         g.addNoTerminal(line);
+    }
 
     // Read start symbol(s) of the grammar
-    while (std::getline(is, line) && (removeEndings(line), true) && (line.empty() || line.front() == '#' || line != "PTERM"))
+    while (std::getline(is, line) && (removeEndings(line), true) && line != "PTERM") {
+        if (line.empty() || line.front() == '#')
+            continue;
+
         g.addInitSym(line);
+    }
 
     // Read terminal productions
     float pr = 0;
-    std::string tok1, tok2, aux;
-    while (std::getline(is, line) && (removeEndings(line), true) && (line.empty() || line.front() == '#' || line != "PTERM")) {
+    std::string toks[7];
+    while (std::getline(is, line) && (removeEndings(line), true) && line != "PBIN") {
+        if (line.empty() || line.front() == '#')
+            continue;
+
         std::istringstream liness(line);
-        liness >> pr >> tok1 >> tok2 >> aux;
-        g.addTerminal(pr, tok1, tok2, aux);
+        liness >> pr >> toks[0] >> toks[1] >> toks[2];
+        g.addTerminal(pr, toks[0], toks[1], toks[2]);
     }
 
     using F_t = void (Grammar::*)(float, const std::string&, const std::string&, const std::string&, const std::string&, const std::string&);
@@ -105,28 +75,33 @@ void gParser::parse(std::istream& is)
         { "Ins", &Grammar::addRuleIns },
         { "Mrt", &Grammar::addRuleMrt },
     };
-    // Read binary productions
-    while (nextLine(fd, linea)) {
-        std::vector<std::string> tokens = split(linea);
 
-        if (tokens.size() != 7) {
-            fprintf(stderr, "Error: Grammar not valid (PBIN)\n");
-            throw std::runtime_error("Error: Grammar not valid (PBIN)");
+    // Read binary productions
+    while (std::getline(is, line) && (removeEndings(line), true)) {
+        if (line.empty() || line.front() == '#')
+            continue;
+
+        std::istringstream liness(line);
+        for (auto& tok : toks) {
+            if (!(liness >> std::ws >> std::quoted(tok))) {
+                std::cerr << "Error: Grammar not valid (PBIN)\n";
+                throw std::runtime_error("Error: Grammar not valid (PBIN)");
+            }
         }
 
-        const auto& k = tokens[1];
+        const auto& k = toks[1];
         bool had = false;
         for (const auto& [s_v, hand] : handlers) {
             if (k == s_v) {
-                (g.*hand)(std::stof(tokens[0]), tokens[2], tokens[3], tokens[4], tokens[5], tokens[6]);
+                (g.*hand)(std::stof(toks[0]), toks[2], toks[3], toks[4], toks[5], toks[6]);
                 had = true;
                 break;
             }
         }
 
         if (!had) {
-            fprintf(stderr, "Error: Binary rule type '%s' not valid\n", tokens[1].c_str());
-            throw std::runtime_error("Error: Binary rule type");
+            std::cerr << "Error: Binary rule type '" << toks[1] << "' not valid\n";
+            throw std::runtime_error("Error: Binary rule type not valid");
         }
     }
 }

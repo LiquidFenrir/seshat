@@ -35,11 +35,10 @@ protected:
     std::string outStr;
     char merge_cen;
 
-protected:
+public:
     ProductionB(int s, int a, int b);
     ProductionB(int s, int a, int b, float pr, const std::string& out);
 
-public:
     int S;
     int A, B;
     float prior;

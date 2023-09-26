@@ -44,8 +44,8 @@ meParser::meParser(const fs::path& conf)
     std::string path;
 
     {
-        std::ifstream fconfig(conf) if (!fconfig)
-        {
+        std::ifstream fconfig(conf);
+        if (!fconfig) {
             std::cerr << "Error: loading config file '" << conf << "'\n";
             throw std::runtime_error("Error: loading config file");
         }
@@ -115,17 +115,17 @@ meParser::meParser(const fs::path& conf)
     }
 
     if (qfactor <= 0)
-        fprintf(stderr, "WARNING: SymbolSF = %f\n", qfactor);
+        std::cerr << "WARNING: SymbolSF = " << qfactor << "\n";
     if (ptfactor <= 0)
-        fprintf(stderr, "WARNING: ProductionTSF = %f\n", ptfactor);
+        std::cerr << "WARNING: ProductionTSF = " << ptfactor << "\n";
     if (pbfactor <= 0)
-        fprintf(stderr, "WARNING: ProductionBSF = %f\n", pbfactor);
+        std::cerr << "WARNING: ProductionBSF = " << pbfactor << "\n";
     if (rfactor <= 0)
-        fprintf(stderr, "WARNING: RelationSF = %f\n", rfactor);
+        std::cerr << "WARNING: RelationSF = " << rfactor << "\n";
     if (dfactor < 0)
-        fprintf(stderr, "WARNING: DurationSF = %f\n", dfactor);
+        std::cerr << "WARNING: DurationSF = " << dfactor << "\n";
     if (gfactor < 0)
-        fprintf(stderr, "WARNING: SegmentationSF = %f\n", gfactor);
+        std::cerr << "WARNING: SegmentationSF = " << gfactor << "\n";
 
     // Load symbol recognizer
     loadSymRec(conf);
@@ -214,13 +214,14 @@ void meParser::initCYKterms(Samples& M, TableCYK& tcyk, int N, int K)
                 cd->noterm[gotNoTerm]->pt = prod.get();
 
                 // Compute the vertical centroid according to the type of symbol
-                int cen, type = sym_rec->symType(clase_k);
-                if (type == 0)
-                    cen = cmy; // Normal
-                else if (type == 1)
-                    cen = asc; // Ascendant
-                else if (type == 2)
-                    cen = des; // Descendant
+                int cen;
+                auto type = sym_rec->symType(clase_k);
+                if (type == SymbolType::Normal)
+                    cen = cmy;
+                else if (type == SymbolType::Ascend)
+                    cen = asc;
+                else if (type == SymbolType::Descend)
+                    cen = des;
                 else
                     cen = (cd->t + cd->y) * 0.5; // Middle point
 
@@ -326,11 +327,11 @@ void meParser::combineStrokes(Samples& M, TableCYK& tcyk, int N)
                             int cen;
                             auto type = sym_rec->symType(clase[k]);
                             if (type == SymbolType::Normal)
-                                cen = cmy; // Normal
+                                cen = cmy;
                             else if (type == SymbolType::Ascend)
-                                cen = asc; // Ascendant
+                                cen = asc;
                             else if (type == SymbolType::Descend)
-                                cen = des; // Descendant
+                                cen = des;
                             else
                                 cen = (cd->t + cd->y) * 0.5; // Middle point
 

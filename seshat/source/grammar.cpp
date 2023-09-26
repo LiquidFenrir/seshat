@@ -70,7 +70,7 @@ Grammar::Grammar(const fs::path& path, SymRec* sr)
     // Save the symbol recognizer to convert between LaTeX and symbol id
     sym_rec = sr;
 
-    gParser GP(this, fd);
+    gParser GP(*this, fd);
 
     esInit = std::make_unique<bool[]>(noTerminales.size());
     std::fill_n(esInit.get(), noTerminales.size(), false);
@@ -109,7 +109,7 @@ void Grammar::addTerminal(float pr, const std::string& S, const std::string& T, 
             if (id >= 0) {
                 it->setClase(id, pr, tex, 'i');
             } else
-                fprintf(stderr, "ERROR: %s -> %s (id < 0)\n", S, T);
+                std::cerr << "ERROR: " << S << " -> " << T << " (id < 0)\n";
 
             create = false;
             break;
@@ -123,7 +123,7 @@ void Grammar::addTerminal(float pr, const std::string& S, const std::string& T, 
         if (id >= 0) {
             pt->setClase(id, pr, tex, 'i');
         } else
-            fprintf(stderr, "ERROR: %s -> %s (id < 0)\n", S, T);
+            std::cerr << "ERROR: " << S << " -> " << T << " (id < 0)\n";
 
         prodTerms.push_back(std::move(pt));
     }

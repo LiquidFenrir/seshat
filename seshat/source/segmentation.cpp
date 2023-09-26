@@ -26,7 +26,7 @@ SegmentationModelGMM::SegmentationModelGMM(const fs::path& mod)
 {
     std::ifstream fd(mod);
     if (!fd) {
-        fprintf(stderr, "Error loading segmentation model '%s'\n", mod.string().c_str());
+        std::cerr << "Error loading segmentation model '" << mod << "'\n";
         throw std::runtime_error("Error loading segmentation model");
     }
     model.emplace(fd);

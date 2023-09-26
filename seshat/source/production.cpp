@@ -153,7 +153,6 @@ void ProductionB::setMerges(char c)
 
 void ProductionB::mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s)
 {
-
     switch (merge_cen) {
     case 'A': // Data InternalHypothesis a
         s->lcen = a->lcen;
@@ -172,7 +171,7 @@ void ProductionB::mergeRegions(InternalHypothesis* a, InternalHypothesis* b, Int
         s->rcen = (a->rcen + b->rcen) / 2; // b->rcen;
         break;
     default:
-        fprintf(stderr, "Error: Unrecognized option '%c' in merge regions\n", merge_cen);
+        std::cerr << "Error: Unrecognized option '" << merge_cen << "' in merge regions\n";
         throw std::runtime_error("Error: Unrecognized option in merge regions");
     }
 }

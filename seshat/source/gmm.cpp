@@ -73,7 +73,7 @@ void GMM::loadModel(std::istream& is)
 
                 // Save the inverse of the convariance to save future computations
                 if (ic_j == 0) {
-                    fprintf(stderr, "Warning: covariance value equal to zero in GMM\n");
+                    std::cerr << "Warning: covariance value equal to zero in GMM\n";
                     ic_j = 1.0 / 1.0e-10;
                 } else
                     ic_j = 1.0 / ic_j;
