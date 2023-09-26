@@ -18,11 +18,12 @@
 #ifndef _DURATION_MODEL_
 #define _DURATION_MODEL_
 
+#include "path.hpp"
 #include "symrec.hpp"
 #include <cstdio>
 #include <memory>
-#include <vector>
 #include <rnnlib4seshat/MultiArray.hpp>
+#include <vector>
 
 namespace seshat {
 
@@ -31,10 +32,10 @@ class DurationModel {
     int Nsyms;
     MultiArray<float> duration_prob;
 
-    void loadModel(FILE* fd, SymRec* sr);
+    void loadModel(std::istream& is, SymRec* sr);
 
 public:
-    DurationModel(const char* str, int mxs, SymRec* sr);
+    DurationModel(const fs::path& path, int mxs, SymRec* sr);
 
     float prob(int symclas, int size);
 };

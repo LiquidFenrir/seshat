@@ -21,12 +21,12 @@
 
 using namespace seshat;
 
-DurationModel::DurationModel(const char* str, int mxs, SymRec* sr)
+DurationModel::DurationModel(const fs::path& path, int mxs, SymRec* sr)
 {
-    FILE* fd = fopen(str, "r");
+    std::ifstream fd(path);
     if (!fd) {
-        fprintf(stderr, "Error loading duration model '%s'\n", str);
-        exit(-1);
+        std::cerr << "Error loading duration model '" << path << "'\n";
+        throw std::runtime_error("Error loading duration model");
     }
 
     max_strokes = mxs;
@@ -35,17 +35,15 @@ DurationModel::DurationModel(const char* str, int mxs, SymRec* sr)
     duration_prob.reshape(std::array{ Nsyms, max_strokes }, 0);
 
     loadModel(fd, sr);
-
-    fclose(fd);
 }
 
-void DurationModel::loadModel(FILE* fd, SymRec* sr)
+void DurationModel::loadModel(std::istream& is, SymRec* sr)
 {
-    char str[64];
+    std::string str;
     int count, nums;
 
     // Load data
-    while (fscanf(fd, "%d %s %d", &count, str, &nums) == 3) {
+    while (is >> count >> str >> nums) {
         if (nums <= max_strokes)
             duration_prob.get(std::array{ sr->keyClase(str), nums - 1 }) = count;
     }

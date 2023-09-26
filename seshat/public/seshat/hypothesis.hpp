@@ -22,9 +22,18 @@
 #include <string>
 #include <vector>
 
+// #define SESHAT_HYPOTHESIS_TREE
+
 namespace seshat {
 
 struct hypothesis {
+    hypothesis() = default;
+    ~hypothesis() = default;
+
+    hypothesis(hypothesis&&) = default;
+    hypothesis& operator=(hypothesis&&) = default;
+
+#ifdef SESHAT_HYPOTHESIS_TREE
     struct token {
         std::string data;
     };
@@ -39,11 +48,6 @@ struct hypothesis {
     // spans point into `relations`
     std::vector<std::span<relation>> tree;
 
-    hypothesis() = default;
-    ~hypothesis() = default;
-
-    hypothesis(hypothesis&&) = default;
-    hypothesis& operator=(hypothesis&&) = default;
     // this container is trivially move-safe, but not copy-safe.
     hypothesis(const hypothesis&);
     hypothesis& operator=(const hypothesis&);
@@ -80,6 +84,9 @@ struct hypothesis {
      * id 4, y {} (no children, leaf)
      * id 5, 2 {} (no children, leaf)
      */
+#else
+    std::string repr;
+#endif
 };
 
 }

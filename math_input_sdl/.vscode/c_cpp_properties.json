@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "Default",
+            "includePath": [
+                "include",
+                "../seshat/public"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ]
+        }
+    ],
+    "version": 4
+}

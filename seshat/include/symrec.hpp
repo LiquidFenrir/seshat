@@ -18,6 +18,7 @@
 #ifndef _SYMREC_
 #define _SYMREC_
 
+#include "path.hpp"
 #include "symfeatures.hpp"
 #include <cstdio>
 #include <cstring>
@@ -46,7 +47,7 @@ class SymRec {
     float RNNalpha;
 
     // Symbol classes and types information
-    std::vector<int> type;
+    std::vector<SymbolType> type;
     std::map<std::string, int> cl2key;
     std::vector<std::string> key2cl;
 
@@ -56,14 +57,14 @@ class SymRec {
     void BLSTMclassification(Mdrnn* net, const DataSequence& seq, std::span<std::pair<float, int>>);
 
 public:
-    SymRec(const char* path);
+    SymRec(const fs::path& path);
     ~SymRec();
 
     char* strClase(int c);
     int keyClase(const std::string& str);
     bool checkClase(const std::string& str);
     int getNClases();
-    int symType(int k);
+    SymbolType symType(int k);
 
     int clasificar(Samples& M, int ncomp, const int NB, int* vclase, float* vpr, int& as, int& ds);
     int clasificar(Samples& M, std::span<const int> LT, const int NB, int* vclase, float* vpr, int& as, int& ds);

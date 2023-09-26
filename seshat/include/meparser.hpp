@@ -20,6 +20,7 @@
 
 #include "duration.hpp"
 #include "grammar.hpp"
+#include "path.hpp"
 #include "production.hpp"
 #include "samples.hpp"
 #include "segmentation.hpp"
@@ -49,23 +50,33 @@ class meParser {
     std::vector<int> close_list;
     std::vector<int> stks_list;
     std::vector<int> stkvec;
+    unsigned maxHypothesis;
 
     // Private methods
-    void loadSymRec(const char* conf);
+    void loadSymRec(const fs::path& conf);
 
     void initCYKterms(Samples& m, TableCYK& tcyk, int N, int K);
 
     void combineStrokes(Samples& M, TableCYK& tcyk, int N);
     CellCYK* fusion(Samples& M, ProductionB* pd, InternalHypothesis* A, InternalHypothesis* B, int N, double prob);
 
-    int fillHypothesis(hypothesis& into, const InternalHypothesis* H, int id);
-    void print_latex(InternalHypothesis *H);
+#ifdef SESHAT_HYPOTHESIS_TREE
+    // fill with tree representation of the input
+    int makeTree(hypothesis& into, const InternalHypothesis* H, int id);
+#else
+    // fill with LaTeX string
+    void makeLatex(hypothesis& into, const InternalHypothesis* H);
+#endif
+
+    void fillHypothesis(hypothesis& into, const InternalHypothesis* H);
 
 public:
-    meParser(const char* conf);
+    meParser(const fs::path& conf);
 
     // Parse math expression
-    std::vector<hypothesis> parse_me(Samples& M);
+    void parse_me(Samples& M, std::vector<hypothesis>& output);
+    void setMaxHypothesis(unsigned n);
+    unsigned getMaxHypothesis() const;
 };
 
 }

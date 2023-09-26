@@ -36,17 +36,13 @@ void swap(seshat::InternalOptHypothesis& a, seshat::InternalOptHypothesis& b)
 
 using namespace seshat;
 
-
 TableCYK::TableCYK(int n, int k)
     : T(n, nullptr)
     , TS(n)
     , N{ n }
     , K{ k }
 {
-    for (auto& hyp : Targets) {
-        hyp.Target.emplace(-1, -FLT_MAX, nullptr, -1);
-        hyp.pm_comps = 0;
-    }
+    SetNumHypotheses(1);
 }
 
 TableCYK::~TableCYK()
@@ -60,10 +56,27 @@ TableCYK::~TableCYK()
 
 InternalHypothesis* TableCYK::getMLH(int n)
 {
-    if (n >= NumHypotheses)
+    if (n >= (int)Targets.size())
+        return nullptr;
+
+    if (!Targets[n].Target)
         return nullptr;
 
     return &Targets[n].Target.value();
+}
+
+void TableCYK::SetNumHypotheses(int amount)
+{
+    Targets.clear();
+    Targets.resize(amount);
+    for (auto& hyp : Targets) {
+        hyp.Target.emplace(-1, -FLT_MAX, nullptr, -1);
+        hyp.pm_comps = 0;
+    }
+}
+int TableCYK::NumHypotheses() const
+{
+    return Targets.size();
 }
 
 CellCYK* TableCYK::get(int n)

@@ -175,7 +175,7 @@ PTERM
 0.00969452 OpBin \geq \geq
 0.00083694 OpBin \in \in
 0.00132515 OpBin \rightarrow \rightarrow
-0.03382619 OpBin comma COMMA
+0.03382619 OpBin comma .
 0.00055796 OpBin dots \cdots
 0.06456044 OpUn + +
 0.89697802 OpUn - -
@@ -184,9 +184,9 @@ PTERM
 0.00412088 OpUn \exists \exists
 0.56542057 CDots dots \cdots
 0.33333334 LDots dots \ldots
-1.00000000 Comma comma COMMA
+1.00000000 Comma comma .
 0.50000000 DecSep dot .
-0.50000000 DecSep comma COMMA
+0.50000000 DecSep comma .
 1.00000000 Prime \prime \prime
 1.00000000 Bar | |
 1.00000000 OpenPar lpar (

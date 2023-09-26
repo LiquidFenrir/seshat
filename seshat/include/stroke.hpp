@@ -43,7 +43,6 @@ public:
     Point* get(int idx);
     const Point* get(int idx) const;
     int getNPoints() const;
-    void print();
 
     float min_dist(Stroke* st);
 };

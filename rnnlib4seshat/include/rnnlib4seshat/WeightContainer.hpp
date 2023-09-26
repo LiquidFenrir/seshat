@@ -94,7 +94,7 @@ struct WeightContainer : public DataExporter {
         int numRandWts = 0;
         LOOP(real_t & w, weights)
         {
-            if (w == infinity) {
+            if (w == infinity_v) {
                 w = Random::uniform(range);
                 ++numRandWts;
             }
@@ -122,7 +122,7 @@ struct WeightContainer : public DataExporter {
     // MUST BE CALLED BEFORE WEIGHT CONTAINER IS USED
     void build()
     {
-        fill(weights, infinity);
+        fill(weights, infinity_v);
         derivatives.resize(weights.size());
         save_by_conns(weights, "weights");
         reset_derivs();

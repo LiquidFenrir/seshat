@@ -128,7 +128,7 @@ struct SeqBuffer : public MultiArray<T> {
     template<class T2>
     SeqBuffer(const SeqBuffer<T2>& sb)
     {
-        SeqBuffer<T>::operator=<T2>(sb);
+        SeqBuffer<T>::operator= <T2>(sb);
     }
 
     virtual ~SeqBuffer() = default;

@@ -194,8 +194,8 @@ void Samples::detRefSymbol()
     }
 
     // Compute median
-    sort(vmedx.begin(), vmedx.end());
-    sort(vmedy.begin(), vmedy.end());
+    std::sort(vmedx.begin(), vmedx.end());
+    std::sort(vmedy.begin(), vmedy.end());
 
     // Reference is the average of (mean,median,avg_area)
     RX = (RX + vmedx[vmedx.size() / 2] + lAr) / 3.0;
@@ -238,16 +238,6 @@ void Samples::getAVGstroke_size(float* avgw, float* avgh)
     }
     *avgw /= (int)dataon.size();
     *avgh /= (int)dataon.size();
-}
-
-void Samples::print()
-{
-    printf("Number of strokes: %d\n", nStrokes());
-
-    // for(int i=0; i<nStrokes(); i++) {
-    //   printf("Stroke %d: (%d,%d)-(%d,%d)\n", i, dataon[i].rx, dataon[i].ry,
-    // 	   dataon[i].rs, dataon[i].rt);
-    // }
 }
 
 void Samples::linea(VectorImage& img, Point* pa, Point* pb, int stkid)
@@ -573,7 +563,7 @@ float Samples::getDist(int si, int sj)
 {
     if (si < 0 || sj < 0 || si >= nStrokes() || sj >= nStrokes()) {
         fprintf(stderr, "ERROR: stroke id out of range in getDist(%d,%d)\n", si, sj);
-        exit(-1);
+        throw std::runtime_error("ERROR: stroke id out of range in getDist");
     }
     return stk_dis.img[si * stk_dis.width + sj];
 }

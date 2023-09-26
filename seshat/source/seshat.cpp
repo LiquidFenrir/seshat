@@ -30,7 +30,19 @@ math_expression::math_expression(const char* config_path)
 
 math_expression::~math_expression() = default;
 
+void math_expression::want_max_hypothesis(unsigned amount)
+{
+    parser->setMaxHypothesis(amount);
+}
+
 std::vector<hypothesis> math_expression::parse_sample(const sample& input)
+{
+    std::vector<hypothesis> output;
+    parse_sample(input, output);
+    return output;
+}
+
+void math_expression::parse_sample(const sample& input, std::vector<hypothesis>& output)
 {
     samples->clearAll();
 
@@ -53,5 +65,5 @@ std::vector<hypothesis> math_expression::parse_sample(const sample& input)
 
     samples->makeReady();
 
-    return parser->parse_me(*samples);
+    parser->parse_me(*samples, output);
 }

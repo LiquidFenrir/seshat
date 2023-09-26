@@ -18,6 +18,7 @@
 #ifndef _GRAMMAR_
 #define _GRAMMAR_
 
+#include "path.hpp"
 #include "production.hpp"
 #include <cstdio>
 #include <map>
@@ -40,12 +41,12 @@ struct Grammar {
     std::vector<std::unique_ptr<ProductionB>> prodsV, prodsVe, prodsIns, prodsMrt, prodsSSE;
     std::vector<std::unique_ptr<ProductionT>> prodTerms;
 
-    Grammar(const char* conf, SymRec* SR);
+    Grammar(const fs::path& conf, SymRec* SR);
 
     const char* key2str(int k);
-    void addInitSym(const char* str);
-    void addNoTerminal(const char* str);
-    void addTerminal(float pr, const char* S, const char* T, const char* tex);
+    void addInitSym(const std::string& str);
+    void addNoTerminal(const std::string& str);
+    void addTerminal(float pr, const std::string& S, const std::string& T, const std::string& tex);
 
     void addRuleH(float pr, const std::string& S, const std::string& A, const std::string& B, const std::string& out, const std::string& merge);
     void addRuleV(float pr, const std::string& S, const std::string& A, const std::string& B, const std::string& out, const std::string& merge);

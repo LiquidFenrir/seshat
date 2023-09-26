@@ -20,6 +20,7 @@
 
 using namespace seshat;
 
+#ifdef SESHAT_HYPOTHESIS_TREE
 hypothesis::hypothesis(const hypothesis& other)
 {
     *this = other;
@@ -46,3 +47,4 @@ hypothesis& hypothesis::operator=(const hypothesis& other)
 
     return *this;
 }
+#endif

@@ -165,7 +165,7 @@ typedef Log<real_t> prob_t;
 // global variables
 static const real_t realMax = std::numeric_limits<real_t>::max();
 static const real_t realMin = std::numeric_limits<real_t>::min();
-static const real_t infinity = std::numeric_limits<real_t>::infinity();
+static const real_t infinity_v = std::numeric_limits<real_t>::infinity();
 inline constexpr bool runningGradTest = false;
 inline constexpr bool verbose = false;
 

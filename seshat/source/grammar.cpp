@@ -39,46 +39,38 @@ using namespace seshat;
 
 void error(const char* msg)
 {
-    fprintf(stderr, "Grammar err[%s]\n", msg);
-    exit(-1);
+    static char tmp[1024];
+    sprintf(tmp, "Grammar err[%s]\n", msg);
+    fputs(tmp, stderr);
+    throw std::runtime_error(tmp);
 }
 
 void error(const char* msg, std::string_view str)
 {
-    static char linea[1024];
-    sprintf(linea, "Grammar err[%s]\n", msg);
-    fprintf(stderr, linea, (int)str.size(), str.data());
-    exit(-1);
+    static char tmp[1024], tmp2[1024];
+    sprintf(tmp, "Grammar err[%s]\n", msg);
+    sprintf(tmp2, tmp, (int)str.size(), str.data());
+    fputs(tmp2, stderr);
+    throw std::runtime_error(tmp2);
 }
 
 //
 // Grammar methods
 //
 
-Grammar::Grammar(const char* path, SymRec* sr)
+Grammar::Grammar(const fs::path& path, SymRec* sr)
 {
     // Load grammar file
-    FILE* fd = fopen(path, "r");
+    std::ifstream fd(path);
     if (!fd) {
-        fprintf(stderr, "Error loading grammar '%s'\n", path);
-        exit(-1);
+        std::cerr << "Error loading grammar '" << path << "'\n";
+        throw std::runtime_error("Error loading grammar");
     }
-
-    /*
-    // Get the path's prefix to determine relative locations
-    int i = strlen(path) - 1;
-    while (i >= 0 && path[i] != '/')
-        i--;
-
-    path[i + 1] = 0;
-    */
 
     // Save the symbol recognizer to convert between LaTeX and symbol id
     sym_rec = sr;
 
     gParser GP(this, fd);
-
-    fclose(fd);
 
     esInit = std::make_unique<bool[]>(noTerminales.size());
     std::fill_n(esInit.get(), noTerminales.size(), false);
@@ -87,7 +79,7 @@ Grammar::Grammar(const char* path, SymRec* sr)
         esInit[it] = true;
 }
 
-void Grammar::addInitSym(const char* str)
+void Grammar::addInitSym(const std::string& str)
 {
     const auto it = noTerminales.find(str);
     if (it == noTerminales.end())
@@ -96,13 +88,13 @@ void Grammar::addInitSym(const char* str)
     initsyms.push_back(it->second);
 }
 
-void Grammar::addNoTerminal(const char* str)
+void Grammar::addNoTerminal(const std::string& str)
 {
     int key = noTerminales.size();
     noTerminales[str] = key;
 }
 
-void Grammar::addTerminal(float pr, const char* S, const char* T, const char* tex)
+void Grammar::addTerminal(float pr, const std::string& S, const std::string& T, const std::string& tex)
 {
     const auto not_it = noTerminales.find(S);
     if (not_it == noTerminales.end())
@@ -149,10 +141,10 @@ void Grammar::addRuleH(float pr, const std::string& S, const std::string& A, con
     if (b_it == noTerminales.end())
         error("Rule: Non-terminal '%.*s' not defined.", B);
 
-    ProductionB* pd = new ProductionH(s_it->second, a_it->second, b_it->second, pr, out);
+    auto pd = std::make_unique<ProductionH>(s_it->second, a_it->second, b_it->second, pr, out);
 
     pd->setMerges(merge[0]);
-    prodsH.emplace_back(pd);
+    prodsH.push_back(std::move(pd));
 }
 
 void Grammar::addRuleV(float pr, const std::string& S, const std::string& A, const std::string& B, const std::string& out, const std::string& merge)
@@ -167,10 +159,10 @@ void Grammar::addRuleV(float pr, const std::string& S, const std::string& A, con
     if (b_it == noTerminales.end())
         error("Rule: Non-terminal '%.*s' not defined.", B);
 
-    ProductionB* pd = new ProductionV(s_it->second, a_it->second, b_it->second, pr, out);
+    auto pd = std::make_unique<ProductionV>(s_it->second, a_it->second, b_it->second, pr, out);
 
     pd->setMerges(merge[0]);
-    prodsV.emplace_back(pd);
+    prodsV.push_back(std::move(pd));
 }
 
 void Grammar::addRuleVe(float pr, const std::string& S, const std::string& A, const std::string& B, const std::string& out, const std::string& merge)
@@ -185,11 +177,10 @@ void Grammar::addRuleVe(float pr, const std::string& S, const std::string& A, co
     if (b_it == noTerminales.end())
         error("Rule: Non-terminal '%.*s' not defined.", B);
 
-    ProductionB* pd = new ProductionVe(s_it->second, a_it->second, b_it->second, pr, out);
+    auto pd = std::make_unique<ProductionVe>(s_it->second, a_it->second, b_it->second, pr, out);
 
     pd->setMerges(merge[0]);
-
-    prodsVe.emplace_back(pd);
+    prodsVe.push_back(std::move(pd));
 }
 
 void Grammar::addRuleSSE(float pr, const std::string& S, const std::string& A, const std::string& B, const std::string& out, const std::string& merge)
@@ -204,10 +195,10 @@ void Grammar::addRuleSSE(float pr, const std::string& S, const std::string& A, c
     if (b_it == noTerminales.end())
         error("Rule: Non-terminal '%.*s' not defined.", B);
 
-    ProductionB* pd = new ProductionSSE(s_it->second, a_it->second, b_it->second, pr, out);
-    pd->setMerges(merge[0]);
+    auto pd = std::make_unique<ProductionSSE>(s_it->second, a_it->second, b_it->second, pr, out);
 
-    prodsSSE.emplace_back(pd);
+    pd->setMerges(merge[0]);
+    prodsSSE.push_back(std::move(pd));
 }
 
 void Grammar::addRuleSup(float pr, const std::string& S, const std::string& A, const std::string& B, const std::string& out, const std::string& merge)
@@ -222,10 +213,10 @@ void Grammar::addRuleSup(float pr, const std::string& S, const std::string& A, c
     if (b_it == noTerminales.end())
         error("Rule: Non-terminal '%.*s' not defined.", B);
 
-    ProductionB* pd = new ProductionSup(s_it->second, a_it->second, b_it->second, pr, out);
-    pd->setMerges(merge[0]);
+    auto pd = std::make_unique<ProductionSup>(s_it->second, a_it->second, b_it->second, pr, out);
 
-    prodsSup.emplace_back(pd);
+    pd->setMerges(merge[0]);
+    prodsSup.push_back(std::move(pd));
 }
 
 void Grammar::addRuleSub(float pr, const std::string& S, const std::string& A, const std::string& B, const std::string& out, const std::string& merge)
@@ -240,11 +231,10 @@ void Grammar::addRuleSub(float pr, const std::string& S, const std::string& A, c
     if (b_it == noTerminales.end())
         error("Rule: Non-terminal '%.*s' not defined.", B);
 
-    ProductionB* pd = new ProductionSub(s_it->second, a_it->second, b_it->second, pr, out);
+    auto pd = std::make_unique<ProductionSub>(s_it->second, a_it->second, b_it->second, pr, out);
 
     pd->setMerges(merge[0]);
-
-    prodsSub.emplace_back(pd);
+    prodsSub.push_back(std::move(pd));
 }
 
 void Grammar::addRuleIns(float pr, const std::string& S, const std::string& A, const std::string& B, const std::string& out, const std::string& merge)
@@ -259,11 +249,10 @@ void Grammar::addRuleIns(float pr, const std::string& S, const std::string& A, c
     if (b_it == noTerminales.end())
         error("Rule: Non-terminal '%.*s' not defined.", B);
 
-    ProductionB* pd = new ProductionIns(s_it->second, a_it->second, b_it->second, pr, out);
+    auto pd = std::make_unique<ProductionIns>(s_it->second, a_it->second, b_it->second, pr, out);
 
     pd->setMerges(merge[0]);
-
-    prodsIns.emplace_back(pd);
+    prodsIns.push_back(std::move(pd));
 }
 
 void Grammar::addRuleMrt(float pr, const std::string& S, const std::string& A, const std::string& B, const std::string& out, const std::string& merge)
@@ -278,11 +267,10 @@ void Grammar::addRuleMrt(float pr, const std::string& S, const std::string& A, c
     if (b_it == noTerminales.end())
         error("Rule: Non-terminal '%.*s' not defined.", B);
 
-    ProductionB* pd = new ProductionMrt(s_it->second, a_it->second, b_it->second, pr, out);
+    auto pd = std::make_unique<ProductionMrt>(s_it->second, a_it->second, b_it->second, pr, out);
 
     pd->setMerges(merge[0]);
-
-    prodsMrt.emplace_back(pd);
+    prodsMrt.push_back(std::move(pd));
 }
 
 const char* Grammar::key2str(int k)

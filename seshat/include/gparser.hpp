@@ -27,16 +27,12 @@ namespace seshat {
 struct Grammar;
 
 class gParser {
-    Grammar* g;
+    Grammar& g;
 
-    bool isFillChar(char c);
-    std::vector<std::string> split(const char* str);
-    bool nextLine(FILE* fd, char* lin);
+    void parse(std::istream& is);
 
 public:
-    gParser(Grammar* gram, FILE* fd);
-
-    void parse(FILE* fd);
+    gParser(Grammar& gram, std::istream& is);
 };
 
 }

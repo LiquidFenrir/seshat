@@ -34,12 +34,15 @@ target_compile_options(seshat PRIVATE
     -Wno-sign-compare
     -Wno-unused-parameter
     -Wno-unused-function
+    -Wno-unused-variable
     -Wno-type-limits
+    -Wno-psabi
 )
 
 target_link_libraries(seshat PRIVATE
     ${EXTRA_GPROF_FLAGS}
     rnnlib4seshat
+    stdc++fs
     m
 )
 

@@ -22,6 +22,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <map>
 #include <rnnlib4seshat/MultilayerNet.hpp>
 #include <rnnlib4seshat/Rprop.hpp>
@@ -30,126 +31,120 @@
 #include <symrec.hpp>
 #include <vectorimage.hpp>
 
+namespace fs = std::filesystem;
 using namespace seshat;
 
 #define TSIZE 2048
 
-SymRec::SymRec(const char* config)
+SymRec::SymRec(const fs::path& config)
 {
-    FILE* fd = fopen(config, "r");
-    if (!fd) {
-        fprintf(stderr, "Error: loading config file '%s'\n", config);
-        exit(-1);
-    }
-
     // RNN classifier configuration
-    static char RNNon[TSIZE], RNNoff[TSIZE];
-    static char RNNmavON[TSIZE], RNNmavOFF[TSIZE];
+    std::string RNNon, RNNoff, RNNmavON, RNNmavOFF, path;
+    {
+        std::ifstream fd(config);
+        if (!fd) {
+            std::cerr << "Error: loading config file '" << config << "'\n";
+            throw std::runtime_error("Error: loading config file");
+        }
 
-    static char id[TSIZE], info[TSIZE], path[TSIZE];
+        RNNalpha = -1.0;
 
-    RNNon[0] = RNNoff[0] = RNNmavON[0] = RNNmavOFF[0] = 0;
-    path[0] = 0;
-    RNNalpha = -1.0;
+        std::string id, info;
+        while (fd) {
+            fd >> id >> std::ws;
+            removeEndings(id);
 
-    while (!feof(fd)) {
-        fscanf(fd, "%s", id); // Field id
-        fscanf(fd, "%s", info); // Info
+            std::pair<std::string_view, std::string&> which[] = {
+                { "RNNon", RNNon },
+                { "RNNoff", RNNoff },
+                { "RNNmavON", RNNmavON },
+                { "RNNmavOFF", RNNmavOFF },
+                { "SymbolTypes", path },
+            };
 
-        // Remove the last \n character
-        if (info[strlen(info) - 1] == '\n')
-            info[strlen(info) - 1] = '\0';
-
-        if (!strcmp(id, "RNNon"))
-            strcpy(RNNon, info);
-        else if (!strcmp(id, "RNNoff"))
-            strcpy(RNNoff, info);
-        else if (!strcmp(id, "RNNmavON"))
-            strcpy(RNNmavON, info);
-        else if (!strcmp(id, "RNNmavOFF"))
-            strcpy(RNNmavOFF, info);
-        else if (!strcmp(id, "RNNalpha"))
-            RNNalpha = atof(info);
-        else if (!strcmp(id, "SymbolTypes"))
-            strcpy(path, info);
-    }
-
-    if (RNNalpha <= 0.0 || RNNalpha >= 1.0) {
-        fprintf(stderr, "Error: loading config file '%s': must be 0 < RNNalpha < 1\n", config);
-        exit(-1);
-    }
-    if (RNNon[0] == 0) {
-        fprintf(stderr, "Error: loading RNNon in config file\n");
-        exit(-1);
-    }
-    if (RNNoff[0] == 0) {
-        fprintf(stderr, "Error: loading RNNoff in config file\n");
-        exit(-1);
-    }
-    if (RNNmavON[0] == 0) {
-        fprintf(stderr, "Error: loading RNNmavON in config file\n");
-        exit(-1);
-    }
-    if (RNNmavOFF[0] == 0) {
-        fprintf(stderr, "Error: loading RNNmavOFF in config file\n");
-        exit(-1);
-    }
-
-    // Close config file
-    fclose(fd);
-
-    // Load symbol types info
-    FILE* tp = fopen(path, "r");
-    if (!tp) {
-        fprintf(stderr, "Error: loading SymbolTypes file '%s'\n", path);
-        exit(-1);
-    }
-
-    // Number of classes
-    fscanf(tp, "%d", &C);
-    getc(tp);
-
-    key2cl.resize(C);
-    type.resize(C);
-    char clase[256], T = 0, linea[256]; // aux[256];
-
-    // Load classes and symbol types
-    int idclase = 0;
-    while (fgets(linea, 256, tp) != NULL) {
-        for (int i = 0; linea[i] && linea[i] != '\n'; i++) {
-            clase[i] = linea[i];
-            if (linea[i] == ' ') {
-                clase[i] = 0;
-                T = linea[i + 1];
-                break;
+            if (id == "RNNalpha") {
+                fd >> RNNalpha >> std::ws;
+            } else {
+                for (auto& [key, into] : which) {
+                    if (id == key) {
+                        fd >> into >> std::ws;
+                        removeEndings(into);
+                        break;
+                    }
+                }
             }
         }
 
+        if (RNNalpha <= 0.0 || RNNalpha >= 1.0) {
+            std::cerr << "Error: loading config file '" << config << "': must be 0 < RNNalpha < 1\n";
+            throw std::runtime_error("Error: loading RNNalpha in config file");
+        }
+        if (RNNon.empty()) {
+            std::cerr << "Error: loading RNNon in config file\n";
+            throw std::runtime_error("Error: loading RNNon in config file");
+        }
+        if (RNNoff.empty()) {
+            std::cerr << "Error: loading RNNoff in config file\n";
+            throw std::runtime_error("Error: loading RNNoff in config file");
+        }
+        if (RNNmavON.empty()) {
+            std::cerr << "Error: loading RNNmavON in config file\n";
+            throw std::runtime_error("Error: loading RNNmavON in config file");
+        }
+        if (RNNmavOFF.empty()) {
+            std::cerr << "Error: loading RNNmavOFF in config file\n";
+            throw std::runtime_error("Error: loading RNNmavOFF in config file");
+        }
+
+        // Close config file
+    }
+
+    // Load symbol types info
+    std::ifstream tp(config.parent_path() / path);
+    if (!tp) {
+        std::cerr << "Error: loading SymbolTypes file '" << path << "'\n";
+        throw std::runtime_error("Error: loading SymbolTypes file");
+    }
+
+    tp >> C;
+
+    key2cl.resize(C);
+    type.resize(C);
+
+    // Load classes and symbol types
+    char T = '\0';
+    std::string clase;
+    for (int idclase = 0; idclase < C && tp; ++idclase) {
+        tp >> clase >> std::ws >> T >> std::ws;
         key2cl[idclase] = clase;
         cl2key[clase] = idclase;
-        idclase++;
 
-        if (T == 'n')
-            type[cl2key[clase]] = 0; // Centroid
-        else if (T == 'a')
-            type[cl2key[clase]] = 1; // Ascender
-        else if (T == 'd')
-            type[cl2key[clase]] = 2; // Descender
-        else if (T == 'm')
-            type[cl2key[clase]] = 3; // Middle
-        else {
-            fprintf(stderr, "SymRec: Error reading symbol types\n");
-            exit(-1);
+        switch (T) {
+        case 'n':
+            type[idclase] = SymbolType::Normal;
+            break;
+        case 'a':
+            type[idclase] = SymbolType::Ascend;
+            break;
+        case 'd':
+            type[idclase] = SymbolType::Descend;
+            break;
+        case 'm':
+            type[idclase] = SymbolType::Middle;
+            break;
+        default:
+            std::cerr << "SymRec: Error reading symbol types: " << T << "\n";
+            throw std::runtime_error("vSymRec: Error reading symbol types");
         }
     }
 
     // Features extraction
-    FEAS.emplace(RNNmavON, RNNmavOFF);
+    FEAS.emplace(config.parent_path() / RNNmavON, config.parent_path() / RNNmavOFF);
 
     // Create and load BLSTM models
 
     // Online info
-    ConfigFile conf_on(RNNon);
+    ConfigFile conf_on((config.parent_path() / RNNon).string());
     header_on.targetLabels = conf_on.get_list<std::string>("targetLabels");
     header_on.inputSize = conf_on.get<int>("inputSize");
     header_on.outputSize = header_on.targetLabels.size();
@@ -171,20 +166,20 @@ SymRec::SymRec(const char* config)
         deh_on.load(conf_on, std::cout);
 
     // Offline info
-    ConfigFile conf_off(RNNoff);
+    ConfigFile conf_off((config.parent_path() / RNNoff).string());
 
     // Check if the targetLabels are the same for both online and offline RNN-BLSTM
     std::vector<std::string> aux = conf_off.get_list<std::string>("targetLabels");
     if (aux.size() != header_on.targetLabels.size()) {
-        fprintf(stderr, "Error: Target labels of online and offline symbol classifiers do not match\n");
-        exit(-1);
+        std::cerr << "Error: Target labels of online and offline symbol classifiers do not match\n";
+        throw std::runtime_error("Error: Target labels of online and offline symbol classifiers do not match");
     }
 
     if (!std::equal(aux.begin(), aux.end(), header_on.targetLabels.begin(), [](const auto& a, const auto& b) {
             return a.compare(b) == 0;
         })) {
-        fprintf(stderr, "Error: Target labels of online and offline symbol classifiers do not match\n");
-        exit(-1);
+        std::cerr << "Error: Target labels of online and offline symbol classifiers do not match\n";
+        throw std::runtime_error("Error: Target labels of online and offline symbol classifiers do not match");
     }
 
     header_off.targetLabels = conf_off.get_list<std::string>("targetLabels");
@@ -221,7 +216,7 @@ int SymRec::keyClase(const std::string& str)
 {
     const auto it = cl2key.find(str);
     if (it == cl2key.end()) {
-        // fprintf(stderr, "WARNING: Class '%s' doesn't appear in symbols database\n", str.c_str());
+        std::cerr << "WARNING: Class '%s' doesn't appear in symbols database\n", str.c_str());
         return -1;
     }
     return it->second;
@@ -240,7 +235,7 @@ int SymRec::getNClases()
 }
 
 // Returns the type of symbol of class k
-int SymRec::symType(int k)
+SymbolType SymRec::symType(int k)
 {
     return type[k];
 }
@@ -414,7 +409,7 @@ void SymRec::BLSTMclassification(Mdrnn* net, const DataSequence& seq, std::span<
 
     // Sort classification result by its probability
     std::span<std::pair<float, int>> prob_class_span(prob_class.get(), NCLA);
-    sort(prob_class_span.begin(), prob_class_span.end(), std::greater<std::pair<float, int>>());
+    std::sort(prob_class_span.begin(), prob_class_span.end(), std::greater<std::pair<float, int>>());
 
     // Copy n-best to output vector
     std::copy_n(prob_class_span.begin(), claspr.size(), claspr.begin());

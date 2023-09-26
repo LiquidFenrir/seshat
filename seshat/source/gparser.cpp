@@ -25,26 +25,13 @@ using namespace seshat;
 
 #define SIZE 512
 
-gParser::gParser(Grammar* gram, FILE* fd)
+gParser::gParser(Grammar& gram, std::istream& is)
+    : g(gram)
 {
-    g = gram;
-
-    parse(fd);
+    parse(is);
 }
 
-bool gParser::isFillChar(char c)
-{
-    switch (c) {
-    case ' ':
-    case '\t':
-    case '\n':
-    case '\r':
-        return true;
-    default:
-        return false;
-    }
-}
-
+/*
 std::vector<std::string> gParser::split(const char* str)
 {
     char tokensaux[2 * SIZE];
@@ -84,40 +71,27 @@ std::vector<std::string> gParser::split(const char* str)
 
     return toks;
 }
+*/
 
-bool gParser::nextLine(FILE* fd, char* lin)
+void gParser::parse(std::istream& is)
 {
-    do {
-        if (fgets(lin, SIZE, fd) == NULL)
-            return false;
-    } while (lin[0] == '#' || strlen(lin) <= 1);
-
-    return true;
-}
-
-void gParser::parse(FILE* fd)
-{
-    static char linea[SIZE], tok1[SIZE], tok2[SIZE], aux[SIZE];
+    std::string line;
 
     // Read nonterminal symbols
-    while (nextLine(fd, linea) && strcmp(linea, "START\n")) {
-        sscanf(linea, "%s", tok1);
-        g->addNoTerminal(tok1);
-    }
+    while (std::getline(is, line) && (removeEndings(line), true) && (line.empty() || line.front() == '#' || line != "START"))
+        g.addNoTerminal(line);
 
     // Read start symbol(s) of the grammar
-    while (nextLine(fd, linea) && strcmp(linea, "PTERM\n")) {
-        sscanf(linea, "%s", tok1);
-        g->addInitSym(tok1);
-    }
+    while (std::getline(is, line) && (removeEndings(line), true) && (line.empty() || line.front() == '#' || line != "PTERM"))
+        g.addInitSym(line);
 
     // Read terminal productions
-    while (nextLine(fd, linea) && strcmp(linea, "PBIN\n")) {
-        float pr;
-
-        sscanf(linea, "%f %s %s %s", &pr, tok1, tok2, aux);
-
-        g->addTerminal(pr, tok1, tok2, aux);
+    float pr = 0;
+    std::string tok1, tok2, aux;
+    while (std::getline(is, line) && (removeEndings(line), true) && (line.empty() || line.front() == '#' || line != "PTERM")) {
+        std::istringstream liness(line);
+        liness >> pr >> tok1 >> tok2 >> aux;
+        g.addTerminal(pr, tok1, tok2, aux);
     }
 
     using F_t = void (Grammar::*)(float, const std::string&, const std::string&, const std::string&, const std::string&, const std::string&);
@@ -137,22 +111,22 @@ void gParser::parse(FILE* fd)
 
         if (tokens.size() != 7) {
             fprintf(stderr, "Error: Grammar not valid (PBIN)\n");
-            exit(-1);
+            throw std::runtime_error("Error: Grammar not valid (PBIN)");
         }
 
         const auto& k = tokens[1];
         bool had = false;
         for (const auto& [s_v, hand] : handlers) {
             if (k == s_v) {
-                (g->*hand)(std::stof(tokens[0]), tokens[2].c_str(), tokens[3].c_str(), tokens[4].c_str(), tokens[5].c_str(), tokens[6].c_str());
+                (g.*hand)(std::stof(tokens[0]), tokens[2], tokens[3], tokens[4], tokens[5], tokens[6]);
                 had = true;
                 break;
             }
         }
 
         if (!had) {
-            fprintf(stderr, "Error: Binary rule type '%s' nor valid\n", tokens[1].c_str());
-            exit(-1);
+            fprintf(stderr, "Error: Binary rule type '%s' not valid\n", tokens[1].c_str());
+            throw std::runtime_error("Error: Binary rule type");
         }
     }
 }

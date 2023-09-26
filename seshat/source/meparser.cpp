@@ -28,17 +28,9 @@ using namespace seshat;
 // Symbol classifier N-Best
 #define NB 10
 
-meParser::meParser(const char* conf)
+meParser::meParser(const fs::path& conf)
 {
-    FILE* fconfig = fopen(conf, "r");
-    if (!fconfig) {
-        fprintf(stderr, "Error: loading config file '%s'\n", conf);
-        exit(-1);
-    }
-
     // Read configuration file
-    static char auxstr[1024], path[1024];
-
     clusterF = -1;
     segmentsTH = -1;
     max_strokes = -1;
@@ -48,79 +40,78 @@ meParser::meParser(const char* conf)
     dfactor = -1;
     gfactor = -1;
     rfactor = -1;
-    path[0] = 0;
+    maxHypothesis = 1;
+    std::string path;
 
-    fscanf(fconfig, "%s", auxstr);
-    while (!feof(fconfig)) {
-        if (!strcmp(auxstr, "GRAMMAR"))
-            fscanf(fconfig, "%s", path); // Grammar path
-        else if (!strcmp(auxstr, "MaxStrokes")) {
-            fscanf(fconfig, "%s", auxstr); // Info
-            max_strokes = atoi(auxstr);
-        } else if (!strcmp(auxstr, "SpatialRels")) {
-            fscanf(fconfig, "%s", auxstr);
-            gmm_spr = std::make_unique<GMM>(auxstr);
-        } else if (!strcmp(auxstr, "InsPenalty")) {
-            fscanf(fconfig, "%s", auxstr);
-            InsPen = atof(auxstr);
-        } else if (!strcmp(auxstr, "ClusterF")) {
-            fscanf(fconfig, "%s", auxstr);
-            clusterF = atof(auxstr);
-        } else if (!strcmp(auxstr, "SegmentsTH")) {
-            fscanf(fconfig, "%s", auxstr);
-            segmentsTH = atof(auxstr);
-        } else if (!strcmp(auxstr, "ProductionTSF")) {
-            fscanf(fconfig, "%s", auxstr);
-            ptfactor = atof(auxstr);
-        } else if (!strcmp(auxstr, "ProductionBSF")) {
-            fscanf(fconfig, "%s", auxstr);
-            pbfactor = atof(auxstr);
-        } else if (!strcmp(auxstr, "RelationSF")) {
-            fscanf(fconfig, "%s", auxstr);
-            rfactor = atof(auxstr);
-        } else if (!strcmp(auxstr, "SymbolSF")) {
-            fscanf(fconfig, "%s", auxstr);
-            qfactor = atof(auxstr);
-        } else if (!strcmp(auxstr, "DurationSF")) {
-            fscanf(fconfig, "%s", auxstr);
-            dfactor = atof(auxstr);
-        } else if (!strcmp(auxstr, "SegmentationSF")) {
-            fscanf(fconfig, "%s", auxstr);
-            gfactor = atof(auxstr);
-        } else
-            fscanf(fconfig, "%s", auxstr); // Info
+    {
+        std::ifstream fconfig(conf) if (!fconfig)
+        {
+            std::cerr << "Error: loading config file '" << conf << "'\n";
+            throw std::runtime_error("Error: loading config file");
+        }
 
-        fscanf(fconfig, "%s", auxstr); // Next field id
+        std::string auxstr;
+        while (fconfig >> auxstr >> std::ws) {
+            if (auxstr == "GRAMMAR") { // Grammar path
+                fconfig >> path >> std::ws;
+                removeEndings(path);
+            } else if (auxstr == "MaxStrokes") {
+                fconfig >> max_strokes >> std::ws; // Info
+            } else if (auxstr == "SpatialRels") {
+                fconfig >> auxstr >> std::ws;
+                removeEndings(auxstr);
+                gmm_spr = std::make_unique<GMM>(conf.parent_path() / auxstr);
+            } else if (auxstr == "InsPenalty") {
+                fconfig >> InsPen >> std::ws;
+            } else if (auxstr == "ClusterF") {
+                fconfig >> clusterF >> std::ws;
+            } else if (auxstr == "SegmentsTH") {
+                fconfig >> segmentsTH >> std::ws;
+            } else if (auxstr == "ProductionTSF") {
+                fconfig >> ptfactor >> std::ws;
+            } else if (auxstr == "ProductionBSF") {
+                fconfig >> pbfactor >> std::ws;
+            } else if (auxstr == "RelationSF") {
+                fconfig >> rfactor >> std::ws;
+            } else if (auxstr == "SymbolSF") {
+                fconfig >> qfactor >> std::ws;
+            } else if (auxstr == "DurationSF") {
+                fconfig >> dfactor >> std::ws;
+            } else if (auxstr == "SegmentationSF") {
+                fconfig >> gfactor >> std::ws;
+            } else
+                fconfig >> auxstr >> std::ws; // Info
+        }
     }
 
-    if (path[0] == 0) {
-        fprintf(stderr, "Error: GRAMMAR field not found in config file '%s'\n", conf);
-        exit(-1);
+    if (path.empty()) {
+        std::cerr << "Error: GRAMMAR field not found in config file '" << conf << "'\n";
+        throw std::runtime_error("Error: GRAMMAR field not found in config file");
     }
 
     if (!gmm_spr) {
-        fprintf(stderr, "Error: Loading GMM model in config file '%s'\n", conf);
-        exit(-1);
+        std::cerr << "Error: Loading GMM model in config file '" << conf << "'\n";
+        throw std::runtime_error("Error: Loading GMM model in config file");
     }
 
     if (max_strokes <= 0 || max_strokes > 10) {
-        fprintf(stderr, "Error: Wrong MaxStrokes value in config file '%s'\n", conf);
-        exit(-1);
+        std::cerr << "Error: Wrong MaxStrokes value in config file '" << conf << "'\n";
+        throw std::runtime_error("Error: Wrong MaxStrokes value in config file");
     }
 
     if (clusterF < 0) {
-        fprintf(stderr, "Error: Wrong ClusterF value in config file '%s'\n", conf);
-        exit(-1);
+        std::cerr << "Error: Wrong ClusterF value in config file '" << conf << "'\n";
+        throw std::runtime_error("Error: Wrong ClusterF value in config file");
     }
 
     if (segmentsTH <= 0) {
-        fprintf(stderr, "Error: Wrong SegmentsTH value in config file '%s'\n", conf);
-        exit(-1);
+        std::cerr << "Error: Wrong SegmentsTH value in config file '" << conf << "'\n";
+        throw std::runtime_error("Error: Wrong SegmentsTH value in config file");
     }
 
     if (InsPen <= 0) {
-        fprintf(stderr, "Error: Wrong InsPenalty value in config file '%s'\n", conf);
-        exit(-1);
+        std::cerr << "Error: Wrong InsPenalty value in config file '" << conf << "'\n";
+        throw std::runtime_error("Error: Wrong InsPenalty value in config file");
     }
 
     if (qfactor <= 0)
@@ -136,64 +127,53 @@ meParser::meParser(const char* conf)
     if (gfactor < 0)
         fprintf(stderr, "WARNING: SegmentationSF = %f\n", gfactor);
 
-    // Read grammar path
-    fscanf(fconfig, "%s", path);
-
-    // Remove the last \n character
-    if (path[strlen(path) - 1] == '\n')
-        path[strlen(path) - 1] = '\0';
-
-    fclose(fconfig);
-
     // Load symbol recognizer
     loadSymRec(conf);
 
     // Load grammar
-    G = std::make_unique<Grammar>(path, sym_rec.get());
+    G = std::make_unique<Grammar>(conf.parent_path() / path, sym_rec.get());
 }
 
-void meParser::loadSymRec(const char* config)
+void meParser::loadSymRec(const fs::path& config)
 {
-    FILE* fd = fopen(config, "r");
-    if (!fd) {
-        fprintf(stderr, "Error: loading config file '%s'\n", config);
-        exit(-1);
+    std::string dur_path, seg_path;
+    {
+        std::ifstream fd(config);
+        if (!fd) {
+            std::cerr << "Error: loading config file '" << config << "'\n";
+            throw std::runtime_error("Error: loading config file");
+        }
+
+        // Read symbol recognition information from config file
+        std::string auxstr;
+        // Next field id
+        while (fd >> auxstr >> std::ws) {
+            if (auxstr == "Duration")
+                fd >> dur_path >> std::ws;
+            else if (auxstr == "Segmentation")
+                fd >> seg_path >> std::ws;
+            else
+                fd >> auxstr >> std::ws; // Info
+        }
+
+        if (dur_path.empty()) {
+            std::cerr << "Error: Duration field not found in config file '" << config << "'\n";
+            throw std::runtime_error("Error: Duration field not found in config file");
+        }
+        if (seg_path.empty()) {
+            std::cerr << "Error: Segmentation field not found in config file '" << config << "'\n";
+            throw std::runtime_error("Error: Segmentation field not found in config file");
+        }
+
+        // Close configure
     }
-
-    // Read symbol recognition information from config file
-    static char auxstr[1024], dur_path[1024], seg_path[1024];
-    dur_path[0] = seg_path[0] = 0;
-
-    fscanf(fd, "%s", auxstr);
-    while (!feof(fd)) {
-        if (!strcmp(auxstr, "Duration"))
-            fscanf(fd, "%s", dur_path);
-        else if (!strcmp(auxstr, "Segmentation"))
-            fscanf(fd, "%s", seg_path);
-        else
-            fscanf(fd, "%s", auxstr); // Info
-
-        fscanf(fd, "%s", auxstr); // Next field id
-    }
-
-    if (dur_path[0] == 0) {
-        fprintf(stderr, "Error: Duration field not found in config file '%s'\n", config);
-        exit(-1);
-    }
-    if (seg_path[0] == 0) {
-        fprintf(stderr, "Error: Segmentation field not found in config file '%s'\n", config);
-        exit(-1);
-    }
-
-    // Close configure
-    fclose(fd);
 
     // Load symbol recognizer
     sym_rec = std::make_unique<SymRec>(config);
 
     // Load duration and segmentation model
-    duration.emplace(dur_path, max_strokes, sym_rec.get());
-    segmentation.emplace(seg_path);
+    duration.emplace(config.parent_path() / dur_path, max_strokes, sym_rec.get());
+    segmentation.emplace(config.parent_path() / seg_path);
 }
 
 // CYK table initialization with the terminal symbols
@@ -343,12 +323,13 @@ void meParser::combineStrokes(Samples& M, TableCYK& tcyk, int N)
                             cd->noterm[prod->getNoTerm()] = std::make_unique<InternalHypothesis>(clase[k], prob, cd, prod->getNoTerm());
                             cd->noterm[prod->getNoTerm()]->pt = prod.get();
 
-                            int cen, type = sym_rec->symType(clase[k]);
-                            if (type == 0)
+                            int cen;
+                            auto type = sym_rec->symType(clase[k]);
+                            if (type == SymbolType::Normal)
                                 cen = cmy; // Normal
-                            else if (type == 1)
+                            else if (type == SymbolType::Ascend)
                                 cen = asc; // Ascendant
-                            else if (type == 2)
+                            else if (type == SymbolType::Descend)
                                 cen = des; // Descendant
                             else
                                 cen = (cd->t + cd->y) * 0.5; // Middle point
@@ -438,10 +419,19 @@ CellCYK* meParser::fusion(Samples& M, ProductionB* pd, InternalHypothesis* A, In
     return S;
 }
 
+void meParser::setMaxHypothesis(unsigned n)
+{
+    maxHypothesis = n;
+}
+unsigned meParser::getMaxHypothesis() const
+{
+    return maxHypothesis;
+}
+
 /*************************************
 Parse Math Expression
 **************************************/
-std::vector<hypothesis> meParser::parse_me(Samples& M)
+void meParser::parse_me(Samples& M, std::vector<hypothesis>& out)
 {
     // Compute the normalized size of a symbol for sample M
     M.detRefSymbol();
@@ -451,6 +441,7 @@ std::vector<hypothesis> meParser::parse_me(Samples& M)
 
     // Cocke-Younger-Kasami (CYK) algorithm for 2D-SCFG
     TableCYK tcyk(N, K);
+    tcyk.SetNumHypotheses(maxHypothesis);
 
     // printf("CYK table initialization:\n");
     initCYKterms(M, tcyk, N, K);
@@ -489,12 +480,12 @@ std::vector<hypothesis> meParser::parse_me(Samples& M)
 
                     // Get the subset of regions close to c1 according to different spatial relations
                     {
-                    const auto& logspace_b = logspace[b];
-                    logspace_b->getH(c1, c1setH); // Horizontal (right)
-                    logspace_b->getV(c1, c1setV); // Vertical (down)
-                    logspace_b->getU(c1, c1setU); // Vertical (up)
-                    logspace_b->getI(c1, c1setI); // Inside (sqrt)
-                    logspace_b->getM(c1, c1setM); // mroot (sqrt[i])
+                        const auto& logspace_b = logspace[b];
+                        logspace_b->getH(c1, c1setH); // Horizontal (right)
+                        logspace_b->getV(c1, c1setV); // Vertical (down)
+                        logspace_b->getU(c1, c1setU); // Vertical (up)
+                        logspace_b->getI(c1, c1setI); // Inside (sqrt)
+                        logspace_b->getM(c1, c1setM); // mroot (sqrt[i])
                     }
 
                     for (const auto& c2 : c1setH) {
@@ -837,100 +828,112 @@ std::vector<hypothesis> meParser::parse_me(Samples& M)
         // Free memory
     }
 
-    std::vector<hypothesis> out;
     // Get Most Likely InternalHypothesis
-    for (int mlh_i = 0; mlh_i < TableCYK::NumHypotheses; ++mlh_i) {
+    for (int mlh_i = 0; mlh_i < tcyk.NumHypotheses(); ++mlh_i) {
         InternalHypothesis* mlh = tcyk.getMLH(mlh_i);
 
-        if (!mlh) {
-            fprintf(stderr, "\nNo hypothesis found!!\n");
-            exit(1);
-        }
+        if (!mlh)
+            break;
 
         if (mlh->parent->talla == 0)
             break;
 
-        print_latex(mlh);
-
         auto& hyp = out.emplace_back();
-        fillHypothesis(hyp, mlh, 0);
+        fillHypothesis(hyp, mlh);
         printf("hypothesis %d filled\n", mlh_i);
-
-        std::stable_sort(hyp.relations.begin(), hyp.relations.end(), [](const auto& a, const auto& b) {
-            return a.parent_id < b.parent_id;
-        });
-
-        const auto sz = hyp.tokens.size();
-        hyp.tree.resize(sz);
-        auto start_it = hyp.relations.begin();
-        const auto end_it = hyp.relations.end();
-        for(std::size_t i = 0; i < sz; ++i)
-        {
-            auto cur_it = start_it;
-            while(cur_it != end_it && cur_it->parent_id == i)
-            {
-                ++cur_it;
-            }
-            hyp.tree[i] = std::span(std::exchange(start_it, cur_it), cur_it);
-        }
     }
-
-    return out;
 }
 
 /*************************************
 End Parsing Math Expression
 *************************************/
 
-int meParser::fillHypothesis(hypothesis& into, const InternalHypothesis* H, int id)
+void meParser::fillHypothesis(hypothesis& into, const InternalHypothesis* H)
 {
-    int nid;
+#ifdef SESHAT_HYPOTHESIS_TREE
+    makeTree(into, H);
+
+    std::stable_sort(into.relations.begin(), into.relations.end(), [](const auto& a, const auto& b) {
+        return a.parent_id < b.parent_id;
+    });
+
+    const auto sz = into.tokens.size();
+    into.tree.resize(sz);
+    auto start_it = into.relations.begin();
+    const auto end_it = into.relations.end();
+    for (std::size_t i = 0; i < sz; ++i) {
+        auto cur_it = start_it;
+        while (cur_it != end_it && cur_it->parent_id == i) {
+            ++cur_it;
+        }
+        into.tree[i] = std::span(std::exchange(start_it, cur_it), cur_it);
+    }
+#else
+    makeLatex(into, H);
+#endif
+}
+#ifdef SESHAT_HYPOTHESIS_TREE
+int meParser::makeTree(hypothesis& into, const InternalHypothesis* H, int id)
+{
+    /*
+    if (!H->pt) {
+        const auto self_token_idx = into.tokens.size();
+        const char* self_token = G->key2str(H->ntid);
+        const char* token_A = G->key2str(H->prod->A);
+        const char* token_B = G->key2str(H->prod->B);
+        into.tokens.emplace_back(self_token);
+        printf("binary token %s at id %zd\n", self_token, self_token_idx);
+        printf("what is %s\n", token_A);
+        printf("what is %s\n", token_B);
+
+        const int a = makeTree(into, H->hi, self_token_idx);
+        into.relations.emplace_back(self_token_idx, a);
+        printf("relation A p %zd, c %d\n", self_token_idx, a);
+
+        const int b = makeTree(into, H->hd, self_token_idx);
+        into.relations.emplace_back(self_token_idx, b);
+
+        printf("relation B p %zd, c %d\n", self_token_idx, b);
+        return self_token_idx;
+    } else {
+        std::string aux = H->pt->getTeX(H->clase);
+        into.tokens[id].data = aux;
+        printf("terminal token %s replace at id %zd\n", aux.c_str(), id);
+        return id;
+    }
+    */
+
+    const int self_id = into.relations.size();
+    into.relations.emplace_back();
 
     if (!H->pt) {
         // Binary production
-        //  const int a = H->prod->A;
-        //  const int b = H->prod->B;
+        printf("Node%d [label=\"%s\"]\n", self_id, G->key2str(H->ntid));
 
-        const char* self_token = G->key2str(H->ntid);
-        const auto self_token_idx = into.tokens.size();
-        into.tokens.emplace_back(self_token);
-        // printf("Added binary token %s at id %zd = %d?\n", self_token, self_token_idx, id);
+        const int subid_a = into.relations.size();
+        printf("Node%d -> Node%d [label=\"left\"]\n", self_id, subid_a);
+        makeTree(into, H->hi, self_id);
 
-        // fprintf(fd, "%s%d -> %s%d [label=%c]\n", self_token, id, G->key2str(a), id+1, H->prod->tipo());
-
-        nid = fillHypothesis(into, H->hi, id + 1);
-        into.relations.emplace_back(self_token_idx, nid);
-        // printf("Added relation A p %zd, c %d\n", self_token_idx, nid);
-
-        // fprintf(fd, "%s%d -> %s%d [label=%c]\n", self_token, id, G->key2str(b), nid, H->prod->tipo());
-
-        nid = fillHypothesis(into, H->hd, nid);
-        into.relations.emplace_back(self_token_idx, nid);
-        // printf("Added relation B p %zd, c %d\n", self_token_idx, nid);
+        const int subid_b = into.relations.size();
+        printf("Node%d -> Node%d [label=\"right\"]\n", self_id, subid_b);
+        makeTree(into, H->hd, self_id);
     } else {
-        std::string aux = H->pt->getTeX(H->clase);
-        const auto self_token_idx = into.tokens.size();
-        into.tokens.emplace_back(aux);
-        // printf("Added terminal token %s at id %zd = %d?\n", aux.c_str(), self_token_idx, id);
-        into.relations.emplace_back(id, self_token_idx);
-        // printf("Added relation p %d, c (self) %zd\n", id, self_token_idx);
-
         // Terminal production
-        //  fprintf(fd, "T%s%d [shape=box,label=\"%s\"]\n", aux.c_str(), id, H->pt->getTeX(H->clase));
-        //  fprintf(fd, "%s%d -> T%s%d\n", G->key2str(H->pt->getNoTerm()), id, aux.c_str(), id);
-
-        nid = self_token_idx;
+        printf("Node%d [shape=box,label=\"%s\"]\n", self_id, H->pt->getTeX(H->clase));
     }
 
-    return nid;
+    return self_id;
 }
-
-void meParser::print_latex(InternalHypothesis *H) {
-    if( !H->pt )
-        H->prod->printOut( G.get(), H );
-    else {
-        std::string clatex = H->pt->getTeX( H->clase );
-        printf("%s", clatex.c_str() );
+#else
+// fill with LaTeX string
+void meParser::makeLatex(hypothesis& into, const InternalHypothesis* H)
+{
+    if (!H->pt) {
+        std::ostringstream os;
+        H->prod->printOut(os, *G, H);
+        into.repr = os.str();
+    } else {
+        into.repr = H->pt->getTeX(H->clase);
     }
-    printf("\n");
 }
+#endif

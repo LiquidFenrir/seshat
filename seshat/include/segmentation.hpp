@@ -19,6 +19,7 @@
 #define _SEGMENTATION_MODEL_
 
 #include "gmm.hpp"
+#include "path.hpp"
 #include <cstdio>
 #include <cstdlib>
 #include <optional>
@@ -33,7 +34,7 @@ class SegmentationModelGMM {
     std::optional<GMM> model;
 
 public:
-    SegmentationModelGMM(const char* mod);
+    SegmentationModelGMM(const fs::path& mod);
 
     float prob(CellCYK* cd, Samples* m);
 };

@@ -25,36 +25,36 @@
 
 using namespace seshat;
 
-SymFeatures::SymFeatures(const char* mav_on, const char* mav_off)
+SymFeatures::SymFeatures(const fs::path& mav_on, const fs::path& mav_off)
 {
     // Load means and stds normalization
-    FILE* fd = fopen(mav_on, "r");
-    if (!fd) {
-        fprintf(stderr, "Error loading online mav file: %s\n", mav_on);
-        exit(-1);
+    {
+        std::ifstream fd(mav_on);
+        if (!fd) {
+            std::cerr << "Error loading online mav file: " << mav_on << "\n";
+            throw std::runtime_error("Error loading online mav file");
+        }
+
+        // Read values online
+        for (auto& val : means_on)
+            fd >> val;
+        for (auto& val : stds_on)
+            fd >> val;
     }
 
-    // Read values online
-    for (int i = 0; i < ON_FEAT; i++)
-        fscanf(fd, "%lf", &means_on[i]);
-    for (int i = 0; i < ON_FEAT; i++)
-        fscanf(fd, "%lf", &stds_on[i]);
+    {
+        std::ifstream fd(mav_off);
+        if (!fd) {
+            std::cerr << "Error loading offline mav file: " << mav_off << "\n";
+            throw std::runtime_error("Error loading offline mav file");
+        }
 
-    fclose(fd);
-
-    fd = fopen(mav_off, "r");
-    if (!fd) {
-        fprintf(stderr, "Error loading offline mav file: %s\n", mav_off);
-        exit(-1);
+        // Read values offline
+        for (auto& val : means_off)
+            fd >> val;
+        for (auto& val : stds_off)
+            fd >> val;
     }
-
-    // Read values offline
-    for (int i = 0; i < OFF_FEAT; i++)
-        fscanf(fd, "%lf", &means_off[i]);
-    for (int i = 0; i < OFF_FEAT; i++)
-        fscanf(fd, "%lf", &stds_off[i]);
-
-    fclose(fd);
 }
 
 std::unique_ptr<DataSequence> SymFeatures::getOnline(Samples& M, SegmentHyp& SegHyp)
@@ -87,7 +87,7 @@ std::unique_ptr<DataSequence> SymFeatures::getOnline(Samples& M, SegmentHyp& Seg
     // Check number of online features
     if (feat.frames[0].get_fr_dim() != ON_FEAT) {
         fprintf(stderr, "Error: unexpected number of online features\n");
-        exit(-1);
+        throw std::runtime_error("Error: unexpected number of online features");
     }
 
     // Create sequence

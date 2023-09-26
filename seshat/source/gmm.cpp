@@ -28,26 +28,30 @@ using namespace seshat;
 
 #define PI 3.14159265359
 
-GMM::GMM(const char* model)
+GMM::GMM(const fs::path& model)
 {
-    loadModel(model);
+    std::ifstream fd(model);
+    if (!fd) {
+        std::cerr << "Error loading GMM  model file '" << model << "'\n";
+        throw std::runtime_error("Error loading GMM  model file");
+    }
+    loadModel(fd);
 }
 
-void GMM::loadModel(const char* str)
+GMM::GMM(std::istream& is)
 {
-    FILE* fd = fopen(str, "r");
-    if (!fd) {
-        fprintf(stderr, "Error loading GMM model file '%s'\n", str);
-        exit(-1);
-    }
+    loadModel(is);
+}
 
+void GMM::loadModel(std::istream& is)
+{
     // Read parameters
-    fscanf(fd, "%d %d %d", &C, &D, &G);
+    is >> C >> D >> G;
 
     // Read prior probabilities
     prior.resize(C);
     for (auto& f_i : prior)
-        fscanf(fd, "%f", &f_i);
+        is >> f_i;
 
     invcov.reshape(std::array{ C, G, D });
     mean.reshape(std::array{ C, G, D });
@@ -62,7 +66,7 @@ void GMM::loadModel(const char* str)
         for (int i = 0; i < G; i++) {
             auto& cur_det = det.get(std::array{ c, i });
             for (auto& ic_j : invcov[std::array{ c, i }]) {
-                fscanf(fd, "%f", &ic_j);
+                is >> ic_j;
 
                 // Compute determinant of convariance matrix (diagonal)
                 cur_det *= ic_j;
@@ -78,15 +82,13 @@ void GMM::loadModel(const char* str)
 
         // Read means
         for (auto& m_i : mean[c_arr]) {
-            fscanf(fd, "%f", &m_i);
+            is >> m_i;
         }
 
         // Read mixture weights
         for (auto& w_i : weight[c_arr])
-            fscanf(fd, "%f", &w_i);
+            is >> w_i;
     }
-
-    fclose(fd);
 }
 
 // Probability density function

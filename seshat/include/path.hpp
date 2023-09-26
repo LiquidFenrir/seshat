@@ -35,67 +35,19 @@ covered by the following copyright and permission notice:
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef FEATURES_H
-#define FEATURES_H
+#ifndef PATH_H
+#define PATH_H
 
-#include "online.hpp"
-#include <cfloat>
-#include <climits>
-#include <cmath>
-#include <iomanip>
-#include <iostream>
-#include <vector>
+#include <filesystem>
+#include <ranges>
 
-namespace seshat {
+namespace fs = std::filesystem;
 
-#define MAXNUMHATS 200
-#define OFFSET_INS 20
-
-class frame {
-public:
-    double x, y, dx, dy, ax, ay, k;
-    frame(sent_point_real pt);
-
-    int get_fr_dim();
-
-    double getFea(int i)
-    {
-        switch (i) {
-        case 0:
-            return x;
-        case 1:
-            return y;
-        case 2:
-            return dx;
-        case 3:
-            return dy;
-        case 4:
-            return ax;
-        case 5:
-            return ay;
-        case 6:
-            return k;
-        default:
-            fprintf(stderr, "Error: getFea(%d)\n", i);
-            throw std::runtime_error("Error: getFea");
-        }
-    }
-};
-
-class sentenceF {
-public:
-    std::vector<frame> frames;
-
-    bool data_plot(std::ostream& fd);
-
-    void calculate_features(const sentence& s);
-
-private:
-    std::vector<sent_point_real> normalizaAspect(const std::vector<sent_point>& Points);
-    void calculate_derivatives(const std::vector<sent_point_real>& points, bool norm = true);
-    void calculate_kurvature();
-};
-
+static inline void removeEndings(std::string& s)
+{
+    static constexpr auto want_removed = std::array{ '\r', '\n' };
+    while (!s.empty() && std::ranges::any_of(want_removed, [&s](char c) { s.back() == c; }))
+        s.pop_back();
 }
 
 #endif

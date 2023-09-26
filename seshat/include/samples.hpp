@@ -95,8 +95,6 @@ public:
     void renderStrokesPBM(std::span<const int> SL, VectorImage& img);
 
     void render_img(const char* out);
-
-    void print();
 };
 
 }

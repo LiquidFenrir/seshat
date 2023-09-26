@@ -18,6 +18,7 @@
 #ifndef __GMM__
 #define __GMM__
 
+#include "path.hpp"
 #include <cfloat>
 #include <cmath>
 #include <cstdio>
@@ -32,11 +33,12 @@ class GMM {
     MultiArray<float> invcov, mean, weight, det;
     std::vector<float> prior;
 
-    void loadModel(const char* str);
+    void loadModel(std::istream& is);
     float pdf(const int c, std::span<const float> v);
 
 public:
-    GMM(const char* model);
+    GMM(const fs::path& model);
+    GMM(std::istream& is);
 
     void posterior(std::span<const float> x, std::span<float> pr);
 };

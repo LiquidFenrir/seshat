@@ -21,7 +21,9 @@ target_compile_options(rnnlib4seshat PRIVATE
     -Wno-sign-compare
     -Wno-unused-parameter
     -Wno-unused-function
+    -Wno-unused-variable
     -Wno-type-limits
+    -Wno-psabi
 )
 
 target_link_libraries(rnnlib4seshat PRIVATE

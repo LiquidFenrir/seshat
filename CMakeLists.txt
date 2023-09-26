@@ -13,6 +13,12 @@ if(WANT_LIBC_STATIC)
     set(USE_STATIC_LIB_FLAGS -static)
 endif()
 
+add_subdirectory(rnnlib4seshat)
+# required by the following
+add_subdirectory(seshat)
+
+add_subdirectory(math_input_${WANT_MATHINPUT_VER})
+
 # Options for code generation
 target_compile_options(${PROJECT_NAME} PRIVATE
     ${EXTRA_GPROF_FLAGS}
@@ -20,12 +26,10 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wno-sign-compare
     -Wno-unused-parameter
     -Wno-unused-function
+    -Wno-unused-variable
     -Wno-type-limits
+    -Wno-psabi
 )
-
-add_subdirectory(rnnlib4seshat)
-# required by the following
-add_subdirectory(seshat)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     ${EXTRA_GPROF_FLAGS}
@@ -33,5 +37,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     seshat
     m
 )
-
-add_subdirectory(math_input)

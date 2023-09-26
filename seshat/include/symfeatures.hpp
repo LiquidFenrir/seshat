@@ -18,14 +18,23 @@
 #ifndef _SYMFEATURES_
 #define _SYMFEATURES_
 
+#include "path.hpp"
 #include <memory>
 #include <rnnlib4seshat/DataSequence.hpp>
+#include <string>
 #include <vectorimage.hpp>
 
 namespace seshat {
 
 class SegmentHyp;
 class Samples;
+
+enum class SymbolType {
+    Normal,
+    Ascend,
+    Descend,
+    Middle,
+};
 
 class SymFeatures {
     static inline constexpr int ON_FEAT = 7;
@@ -34,7 +43,7 @@ class SymFeatures {
     double stds_on[ON_FEAT], stds_off[OFF_FEAT];
 
 public:
-    SymFeatures(const char* mav_on, const char* mav_off);
+    SymFeatures(const fs::path& mav_on, const fs::path& mav_off);
 
     std::unique_ptr<DataSequence> getOnline(Samples& M, SegmentHyp& SegHyp);
     std::unique_ptr<DataSequence> getOfflineFKI(VectorImage& img, int H, int W);

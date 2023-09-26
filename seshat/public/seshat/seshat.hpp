@@ -30,7 +30,7 @@ struct sample {
         std::vector<point> points;
     };
     std::vector<stroke> strokes;
-    std::size_t total_points{0};
+    std::size_t total_points{ 0 };
 };
 
 // do not use these, forward declarations for the inner workings
@@ -46,7 +46,10 @@ public:
     explicit math_expression(const char* config_path = "Config/CONFIG");
     ~math_expression();
 
+    void want_max_hypothesis(unsigned amount);
+
     std::vector<hypothesis> parse_sample(const sample&);
+    void parse_sample(const sample&, std::vector<hypothesis>&);
 };
 
 }

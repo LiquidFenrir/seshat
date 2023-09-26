@@ -15,20 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with SESHAT.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <SDL.h>
 #include <chrono>
 #include <cstdio>
 #include <cstring>
 #include <iostream>
 #include <seshat/seshat.hpp>
-#include <SDL.h>
-
-struct FILEDeleter {
-    void operator()(FILE* fd)
-    {
-        fclose(fd);
-    }
-};
-using FILEPtr = std::unique_ptr<FILE, FILEDeleter>;
 
 struct WindowDeleter {
     void operator()(SDL_Window* ptr)
@@ -46,40 +38,29 @@ struct RendererDeleter {
 };
 using RendererPtr = std::unique_ptr<SDL_Renderer, RendererDeleter>;
 
-static seshat::sample loadSCGInk(const char* path)
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
+
+#ifdef SESHAT_HYPOTHESIS_TREE
+static void printTree(const seshat::hypothesis& hyp, const std::size_t idx = 0, const std::string& prefix = "", bool haveAnyLeft = false)
 {
-    seshat::sample out;
+    printf("%s", prefix.c_str());
+    printf("%s", (haveAnyLeft ? "├──" : "└──"));
 
-    FILEPtr fd_holder(fopen(path, "r"));
-    auto fd = fd_holder.get();
-    if (!fd) {
-        fprintf(stderr, "Error loading SCGInk file '%s'\n", path);
-        return out;
+    const auto& node = hyp.tokens[idx];
+    // print the value of the node
+    fputc(' ', stdout);
+    fwrite(node.data.data(), 1, node.data.size(), stdout);
+    fputc('\n', stdout);
+
+    std::size_t i = 0;
+    const auto children = hyp.tree[idx];
+    const auto nextprefix = prefix + (haveAnyLeft ? "│   " : "    ");
+    for (const auto child : children) {
+        printTree(hyp, child.child_id, nextprefix, ++i != children.size());
     }
-
-    char line[256];
-    fgets(line, 256, fd);
-    if (strcmp(line, "SCG_INK\n")) {
-        fprintf(stderr, "Error: input file format is not SCG_INK\n");
-        return out;
-    }
-
-    int nstrokes, npoints;
-    fscanf(fd, "%d", &nstrokes);
-    out.strokes.resize(nstrokes);
-    for (auto& out_stroke : out.strokes) {
-        fscanf(fd, "%d", &npoints);
-        out_stroke.points.resize(npoints);
-        for (auto& out_point : out_stroke.points) {
-            fscanf(fd, "%f %f", &out_point.x, &out_point.y);
-        }
-    }
-
-    return out;
 }
-
-#define SCREEN_WIDTH    800
-#define SCREEN_HEIGHT   600
+#endif
 
 static void surfaceDrawSquare(SDL_Surface* surf, unsigned x, unsigned y, unsigned size)
 {
@@ -105,10 +86,8 @@ static void surfaceFill(SDL_Surface* surf, uint32_t fillwith)
 static void surfaceRedraw(SDL_Surface* surf, const seshat::sample& s)
 {
     surfaceFill(surf, 0xffffffff);
-    for(const auto& strk : s.strokes)
-    {
-        for(const auto& pt : strk.points)
-        {
+    for (const auto& strk : s.strokes) {
+        for (const auto& pt : strk.points) {
             surfaceDrawSquare(surf, pt.x, pt.y, 5);
         }
     }
@@ -117,29 +96,27 @@ static void surfaceRedraw(SDL_Surface* surf, const seshat::sample& s)
 static void workSDL()
 {
     // Create window
-    WindowPtr window_ptr{SDL_CreateWindow("seshat math input panel",
-                                          SDL_WINDOWPOS_UNDEFINED,
-                                          SDL_WINDOWPOS_UNDEFINED,
-                                          SCREEN_WIDTH, SCREEN_HEIGHT,
-                                          SDL_WINDOW_SHOWN)};
+    WindowPtr window_ptr{ SDL_CreateWindow("seshat math input panel",
+                                           SDL_WINDOWPOS_UNDEFINED,
+                                           SDL_WINDOWPOS_UNDEFINED,
+                                           SCREEN_WIDTH, SCREEN_HEIGHT,
+                                           SDL_WINDOW_SHOWN) };
     const auto window = window_ptr.get();
-    if(!window)
-    {
+    if (!window) {
         std::cout << "Window could not be created!" << std::endl
                   << "SDL_Error: " << SDL_GetError() << std::endl;
         return;
     }
-    
+
     // Create renderer
-    RendererPtr renderer_ptr{SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED| SDL_RENDERER_PRESENTVSYNC)};
+    RendererPtr renderer_ptr{ SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC) };
     const auto renderer = renderer_ptr.get();
-    if(!renderer)
-    {
+    if (!renderer) {
         std::cout << "Renderer could not be created!" << std::endl
-                    << "SDL_Error: " << SDL_GetError() << std::endl;
+                  << "SDL_Error: " << SDL_GetError() << std::endl;
         return;
     }
-    
+
     // Declare rect of square
     SDL_Rect squareRect;
 
@@ -151,7 +128,6 @@ static void workSDL()
     squareRect.x = SCREEN_WIDTH / 2 - squareRect.w / 2;
     squareRect.y = SCREEN_HEIGHT / 2 - squareRect.h / 2;
 
-
     // Event loop exit flag
     bool quit = false;
     auto time_of_last_up = std::chrono::system_clock::now();
@@ -161,40 +137,37 @@ static void workSDL()
     seshat::math_expression recog;
 
     auto surf = SDL_CreateRGBSurface(0, squareRect.w, squareRect.h, 32,
-                                        0x00FF0000,
-                                        0x0000FF00,
-                                        0x000000FF,
-                                        0xFF000000);
+                                     0x00FF0000,
+                                     0x0000FF00,
+                                     0x000000FF,
+                                     0xFF000000);
     auto sdlTexture = SDL_CreateTexture(renderer,
-                               SDL_PIXELFORMAT_ARGB8888,
-                               SDL_TEXTUREACCESS_STREAMING,
-                               squareRect.w, squareRect.h);
+                                        SDL_PIXELFORMAT_ARGB8888,
+                                        SDL_TEXTUREACCESS_STREAMING,
+                                        squareRect.w, squareRect.h);
 
     surfaceFill(surf, 0xffffffff);
     // Event loop
-    while(!quit)
-    {
+    while (!quit) {
         SDL_Event e;
 
         while (SDL_PollEvent(&e)) {
-            switch(e.type) {
+            switch (e.type) {
             case SDL_MOUSEBUTTONDOWN: {
                 const auto& button = e.button;
-                if(button.x >= squareRect.x && button.x < (squareRect.x + squareRect.w)
-                && button.y >= squareRect.y && button.y < (squareRect.y + squareRect.h))
-                {
-                    if(button.button == SDL_BUTTON_LEFT && !drawing) // ACTION: BEGIN STROKE
+                if (button.x >= squareRect.x && button.x < (squareRect.x + squareRect.w)
+                    && button.y >= squareRect.y && button.y < (squareRect.y + squareRect.h)) {
+                    if (button.button == SDL_BUTTON_LEFT && !drawing) // ACTION: BEGIN STROKE
                     {
                         drawing = true;
                         handled_last_draw = true;
+                        s.total_points += 1;
                         s.strokes.emplace_back();
                         const auto& pt = s.strokes.back().points.emplace_back(button.x - squareRect.x, button.y - squareRect.y);
                         surfaceDrawSquare(surf, pt.x, pt.y, 5);
-                    }
-                    else if(button.button == SDL_BUTTON_RIGHT && !drawing) // ACTION: REMOVE LAST STROKE
+                    } else if (button.button == SDL_BUTTON_RIGHT && !drawing) // ACTION: REMOVE LAST STROKE
                     {
-                        if(!s.strokes.empty())
-                        {
+                        if (!s.strokes.empty()) {
                             s.total_points -= s.strokes.back().points.size();
                             s.strokes.pop_back();
                             time_of_last_up = std::chrono::system_clock::now();
@@ -207,10 +180,9 @@ static void workSDL()
             }
             case SDL_MOUSEMOTION: {
                 const auto& motion = e.motion;
-                if(drawing)
-                {
-                    if(motion.x >= squareRect.x && motion.x < (squareRect.x + squareRect.w)
-                    && motion.y >= squareRect.y && motion.y < (squareRect.y + squareRect.h)) // ACTION: ADD NEW POINT TO LAST STROKE
+                if (drawing) {
+                    if (motion.x >= squareRect.x && motion.x < (squareRect.x + squareRect.w)
+                        && motion.y >= squareRect.y && motion.y < (squareRect.y + squareRect.h)) // ACTION: ADD NEW POINT TO LAST STROKE
                     {
                         s.total_points += 1;
                         const auto& pt = s.strokes.back().points.emplace_back(motion.x - squareRect.x, motion.y - squareRect.y);
@@ -221,7 +193,7 @@ static void workSDL()
             }
             case SDL_MOUSEBUTTONUP: {
                 const auto& button = e.button;
-                if(button.button == SDL_BUTTON_LEFT && drawing) // ACTION: END STROKE
+                if (button.button == SDL_BUTTON_LEFT && drawing) // ACTION: END STROKE
                 {
                     time_of_last_up = std::chrono::system_clock::now();
                     drawing = false;
@@ -231,7 +203,7 @@ static void workSDL()
             }
             case SDL_KEYDOWN: {
                 const auto& key = e.key;
-                if(!drawing && key.keysym.sym == SDLK_ESCAPE) // ACTION: REMOVE ALL STROKES
+                if (!drawing && key.keysym.sym == SDLK_ESCAPE) // ACTION: REMOVE ALL STROKES
                 {
                     s.total_points = 0;
                     s.strokes.clear();
@@ -247,13 +219,21 @@ static void workSDL()
         }
 
         const auto time_since_last_release = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - time_of_last_up);
-        if(!drawing && !handled_last_draw && time_since_last_release.count() >= 1000 && !s.strokes.empty())
-        {
+        if (!drawing && !handled_last_draw && time_since_last_release.count() >= 1000 && !s.strokes.empty()) {
             handled_last_draw = true;
 
             printf("Parsing %zd strokes with %zd total points\n", s.strokes.size(), s.total_points);
             auto hyps = recog.parse_sample(s);
             printf("Found %zd hypothesis\n", hyps.size());
+            for (const auto& hyp : hyps) {
+#ifdef SESHAT_HYPOTHESIS_TREE
+                if (hyp.tokens.empty())
+                    continue;
+                printTree(hyp);
+#else
+                printf("%s\n", hyp.repr.c_str());
+#endif
+            }
         }
         // Initialize renderer color red for the background
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
@@ -278,15 +258,8 @@ int main(int argc, char* argv[])
     // Because some of the feature extraction code uses std::cout/std::cin
     std::ios_base::sync_with_stdio(true);
 
-    // Load sample and system configuration
-    // seshat::sample s = loadSCGInk("SampleMathExps/ex.scgink");
-    // seshat::math_expression recog;
-    // auto hyps = recog.parse_sample(s);
-    // printf("Found %zd hypothesis\n", hyps.size());
-
     // Initialize SDL
-    if(SDL_Init(SDL_INIT_VIDEO) < 0)
-    {
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cout << "SDL could not be initialized!" << std::endl
                   << "SDL_Error: " << SDL_GetError() << std::endl;
         return -1;

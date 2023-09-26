@@ -20,6 +20,7 @@
 
 #include <cstdio>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -34,150 +35,96 @@ protected:
     std::string outStr;
     char merge_cen;
 
+protected:
+    ProductionB(int s, int a, int b);
+    ProductionB(int s, int a, int b, float pr, const std::string& out);
+
 public:
     int S;
     int A, B;
     float prior;
 
-    ProductionB(int s, int a, int b);
-    ProductionB(int s, int a, int b, float pr, const std::string& out);
     virtual ~ProductionB() = default;
 
     float solape(InternalHypothesis* a, InternalHypothesis* b);
-    void printOut(Grammar* G, InternalHypothesis* H);
+    void printOut(std::ostream& os, Grammar& G, const InternalHypothesis* H);
     void setMerges(char c);
     void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
     bool check_out();
-    const std::string& get_outstr();
+    const std::string& get_outstr() const;
 
     // Pure virtual functions
-    virtual char tipo() = 0;
-    // virtual void print() = 0;
-    // virtual void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid) = 0;
+    virtual char tipo() const = 0;
 };
 
 // Production S -> A : B
-class ProductionH : public ProductionB {
+struct ProductionH : public ProductionB {
+    using ProductionB::ProductionB;
 
-public:
-    ProductionH(int s, int a, int b);
-    ProductionH(int s, int a, int b, float pr, const std::string& out);
-
-    void print();
-    char tipo();
-    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    char tipo() const override;
 };
 
 // Production: S -> A / B
-class ProductionV : public ProductionB {
+struct ProductionV : public ProductionB {
+    using ProductionB::ProductionB;
 
-public:
-    ProductionV(int s, int a, int b);
-    ProductionV(int s, int a, int b, float pr, const std::string& out);
-
-    void print();
-    char tipo();
-    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    char tipo() const override;
 };
 
 // Production: S -> A /u B
-class ProductionU : public ProductionB {
+struct ProductionU : public ProductionB {
+    using ProductionB::ProductionB;
 
-public:
-    ProductionU(int s, int a, int b);
-    ProductionU(int s, int a, int b, float pr, const std::string& out);
-
-    void print();
-    char tipo();
-    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    char tipo() const override;
 };
 
 // Production: S -> A /e B
-class ProductionVe : public ProductionB {
+struct ProductionVe : public ProductionB {
+    using ProductionB::ProductionB;
 
-public:
-    ProductionVe(int s, int a, int b);
-    ProductionVe(int s, int a, int b, float pr, const std::string& out);
-
-    void print();
-    char tipo();
-    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    char tipo() const override;
 };
 
 // Production: S -> A sse B
-class ProductionSSE : public ProductionB {
+struct ProductionSSE : public ProductionB {
+    using ProductionB::ProductionB;
 
-public:
-    ProductionSSE(int s, int a, int b);
-    ProductionSSE(int s, int a, int b, float pr, const std::string& out);
-
-    void print();
-    char tipo();
-    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    char tipo() const override;
 };
 
 // Production: S -> A ^ B
-class ProductionSup : public ProductionB {
+struct ProductionSup : public ProductionB {
+    using ProductionB::ProductionB;
 
-public:
-    ProductionSup(int s, int a, int b);
-    ProductionSup(int s, int a, int b, float pr, const std::string& out);
-
-    void print();
-    char tipo();
-    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    char tipo() const override;
 };
 
 // Production: S -> A _ B
-class ProductionSub : public ProductionB {
+struct ProductionSub : public ProductionB {
+    using ProductionB::ProductionB;
 
-public:
-    ProductionSub(int s, int a, int b);
-    ProductionSub(int s, int a, int b, float pr, const std::string& out);
-
-    void print();
-    char tipo();
-    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    char tipo() const override;
 };
 
 // Production: S -> A ins B
-class ProductionIns : public ProductionB {
+struct ProductionIns : public ProductionB {
+    using ProductionB::ProductionB;
 
-public:
-    ProductionIns(int s, int a, int b);
-    ProductionIns(int s, int a, int b, float pr, const std::string& out);
-
-    void print();
-    char tipo();
-    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    char tipo() const override;
 };
 
 // Production: S -> A mroot B
-class ProductionMrt : public ProductionB {
+struct ProductionMrt : public ProductionB {
+    using ProductionB::ProductionB;
 
-public:
-    ProductionMrt(int s, int a, int b);
-    ProductionMrt(int s, int a, int b, float pr, const std::string& out);
-
-    void print();
-    char tipo();
-    void mergeRegions(InternalHypothesis* a, InternalHypothesis* b, InternalHypothesis* s);
-    // void print_mathml(Grammar* G, InternalHypothesis* H, FILE* fout, int* nid);
+    char tipo() const override;
 };
 
 // Production S -> term ( N clases )
-class ProductionT {
+struct ProductionT {
     int S;
     struct InternalData {
-        std::unique_ptr<char[]> texStr{};
+        std::string texStr{};
         float probs{ 0 };
         bool clases{ false };
         char mltype{ 'z' };
@@ -188,13 +135,12 @@ class ProductionT {
 public:
     ProductionT(int s, int nclases);
 
-    void setClase(int k, float pr, const char* tex, char mlt);
-    bool getClase(int k);
-    float getPrior(int k);
-    const char* getTeX(int k);
-    char getMLtype(int k);
-    int getNoTerm();
-    void print();
+    void setClase(int k, float pr, const std::string& tex, char mlt);
+    bool getClase(int k) const;
+    float getPrior(int k) const;
+    const char* getTeX(int k) const;
+    char getMLtype(int k) const;
+    int getNoTerm() const;
 };
 
 }

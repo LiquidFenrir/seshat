@@ -72,12 +72,11 @@ struct coo {
     }
 };
 
-
 struct InternalOptHypothesis {
     // InternalHypothesis that accounts for the target (input) math expression
-    std::optional<InternalHypothesis> Target;
+    std::optional<InternalHypothesis> Target{ std::nullopt };
     // Percentage of strokes covered by the most likely hypothesis (target)
-    int pm_comps;
+    int pm_comps{ 0 };
 };
 class TableCYK {
     std::vector<CellCYK*> T;
@@ -85,10 +84,11 @@ class TableCYK {
     int N, K;
 
 public:
-    static inline constexpr int NumHypotheses = 3;
     TableCYK(int n, int k);
     ~TableCYK();
 
+    void SetNumHypotheses(int amount);
+    int NumHypotheses() const;
     InternalHypothesis* getMLH(int n);
     CellCYK* get(int n);
     int size(int n);
@@ -96,7 +96,7 @@ public:
     void add(int n, CellCYK* celda, int noterm_id, bool* esinit);
 
 private:
-    std::array<InternalOptHypothesis, NumHypotheses> Targets;
+    std::vector<InternalOptHypothesis> Targets;
 };
 
 }

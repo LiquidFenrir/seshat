@@ -22,16 +22,14 @@
 
 using namespace seshat;
 
-SegmentationModelGMM::SegmentationModelGMM(const char* mod)
+SegmentationModelGMM::SegmentationModelGMM(const fs::path& mod)
 {
-    FILE* fd = fopen(mod, "r");
+    std::ifstream fd(mod);
     if (!fd) {
-        fprintf(stderr, "Error loading segmentation model '%s'\n", mod);
-        exit(-1);
+        fprintf(stderr, "Error loading segmentation model '%s'\n", mod.string().c_str());
+        throw std::runtime_error("Error loading segmentation model");
     }
-    fclose(fd);
-
-    model.emplace(mod);
+    model.emplace(fd);
 }
 
 float SegmentationModelGMM::prob(CellCYK* cd, Samples* m)

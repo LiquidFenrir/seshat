@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "Default",
+            "includePath": [
+                "include",
+                "public",
+                "../rnnlib4seshat/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ]
+        }
+    ],
+    "version": 4
+}
