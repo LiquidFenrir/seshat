@@ -48,8 +48,6 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #include "SeqBuffer.hpp"
 #include "WeightContainer.hpp"
 
-extern const bool verbose;
-
 struct Layer : public DataExporter {
     // typedefs
     // typedef multi_array<real_t, 3> array3d;

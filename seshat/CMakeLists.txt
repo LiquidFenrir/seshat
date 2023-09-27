@@ -23,34 +23,51 @@ set(SESHAT_LIB_SRCS
     source/symrec.cpp
     source/tablecyk.cpp
 )
-
-add_library(seshat STATIC ${SESHAT_LIB_SRCS})
-
-target_compile_features(seshat PRIVATE cxx_std_23)
-
-target_compile_options(seshat PRIVATE
-    ${EXTRA_GPROF_FLAGS}
-    -Wall -Wextra
-    -Wno-sign-compare
-    -Wno-unused-parameter
-    -Wno-unused-function
-    -Wno-unused-variable
-    -Wno-type-limits
-    -Wno-psabi
+# find include -type f | grep "\.hpp$" | clip
+set(SESHAT_LIB_HEADERS
+    include/cellcyk.hpp
+    include/duration.hpp
+    include/featureson.hpp
+    include/gmm.hpp
+    include/gparser.hpp
+    include/grammar.hpp
+    include/internal_hypothesis.hpp
+    include/logspace.hpp
+    include/meparser.hpp
+    include/online.hpp
+    include/path.hpp
+    include/production.hpp
+    include/samples.hpp
+    include/segmentation.hpp
+    include/sparel.hpp
+    include/stroke.hpp
+    include/symfeatures.hpp
+    include/symrec.hpp
+    include/tablecyk.hpp
+    include/vectorimage.hpp
+)
+# find public -type f | grep "\.hpp$" | clip
+set(SESHAT_LIB_INTERFACES
+    public/seshat/hypothesis.hpp
+    public/seshat/point.hpp
+    public/seshat/seshat.hpp
 )
 
-target_link_libraries(seshat PRIVATE
-    ${EXTRA_GPROF_FLAGS}
-    rnnlib4seshat
-    stdc++fs
-    m
+add_library(seshat_lib_seshat STATIC
+    ${SESHAT_LIB_SRCS}
+    ${SESHAT_LIB_HEADERS}
+    ${SESHAT_LIB_INTERFACES}
 )
+add_library(seshat::seshat ALIAS seshat_lib_seshat)
 
-target_include_directories(seshat PRIVATE
-    include
+seshat_add_library_target_options(seshat_lib_seshat)
+
+target_link_libraries(seshat_lib_seshat PRIVATE
+    seshat::rnnlib4seshat
 )
-
-target_include_directories(seshat PUBLIC
-    public
+target_include_directories(seshat_lib_seshat
+    PRIVATE
+        include
+    PUBLIC
+        public
 )
-

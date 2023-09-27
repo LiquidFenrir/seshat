@@ -12,4 +12,4 @@ fi
 export USING_CMAKE="/opt/devkitpro/portlibs/3ds/bin/arm-none-eabi-cmake"
 export BUILDDIR_SUFFIX="-3ds"
 
-./do_compile_inner.sh "$CUR_BUILD_TYPE" $CUR_EXTRA_ARGS -DCMAKE_DEPENDS_USE_COMPILER=FALSE
+./do_compile_inner.sh "$CUR_BUILD_TYPE" $CUR_EXTRA_ARGS -DCMAKE_DEPENDS_USE_COMPILER=FALSE -DSESHAT_BUILD_EXAMPLE="3ds"

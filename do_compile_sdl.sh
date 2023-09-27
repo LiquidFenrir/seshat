@@ -12,6 +12,5 @@ fi
 export CC=gcc
 export CXX=g++
 export USING_CMAKE="cmake"
-export BUILDDIR_SUFFIX="-sdl"
 
-./do_compile_inner.sh "$CUR_BUILD_TYPE" $CUR_EXTRA_ARGS -DWANT_MATHINPUT_VER="sdl"
+./do_compile_inner.sh "$CUR_BUILD_TYPE" $CUR_EXTRA_ARGS -DSESHAT_BUILD_EXAMPLE="sdl"

@@ -48,8 +48,6 @@ along with RNNLIB.  If not, see <http://www.gnu.org/licenses/>.*/
 #include "Optimiser.hpp"
 #include "RealType.hpp"
 
-extern const bool verbose;
-
 struct SteepestDescent : public DataExporter, public Optimiser {
     // data
     std::ostream& out;
