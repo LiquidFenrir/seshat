@@ -7,6 +7,7 @@ add_executable(math_input_cli
     source/main.cpp
 )
 
+# link in the seshat library, and set up common warnings
 seshat_add_example_target_options(math_input_cli)
 
 target_include_directories(math_input_cli PRIVATE

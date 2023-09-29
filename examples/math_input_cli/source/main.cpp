@@ -61,7 +61,8 @@ int main(int argc, char* argv[])
     std::ios_base::sync_with_stdio(true);
 
     if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <path to .scgink file>";
+        std::cerr << "Usage: " << argv[0] << " <path to .scgink file>" << std::endl;
+        std::cerr << "Note: run in a directory with a file available at ./Config/CONFIG" << std::endl;
     }
 
     // Load sample and system configuration

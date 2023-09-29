@@ -1,7 +1,12 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.20) # cxx_std_23
 
-# Declare project containing a single eponymous executable
 project(seshat LANGUAGES CXX)
+
+option(SESHAT_BUILD_EXAMPLES "Build seshat examples" OFF)
+option(SESHAT_WHICH_EXAMPLES "Which seshat examples to build" OFF)
+if(SESHAT_WHICH_EXAMPLES AND NOT SESHAT_BUILD_EXAMPLES)
+    set(SESHAT_BUILD_EXAMPLES ON)
+endif()
 
 macro(seshat_add_target_options NAME)
     target_compile_features(${NAME} PRIVATE cxx_std_23)
@@ -21,46 +26,27 @@ endmacro()
 
 macro(seshat_add_library_target_options NAME)
     seshat_add_target_options(${NAME})
-    if(NOT SESHAT_BUILD_INPLACE)
-        set_target_properties(${NAME} PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-            ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-        )
-    endif()
 endmacro()
 macro(seshat_add_example_target_options NAME)
     seshat_add_target_options(${NAME})
-    if(NOT SESHAT_BUILD_INPLACE)
-        set_target_properties(${NAME} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-        )
-    endif()
     target_link_libraries(${NAME} PRIVATE
         seshat::seshat
     )
 endmacro()
-
-if(NOT DEFINED SESHAT_BUILD_EXAMPLES)
-    if(DEFINED SESHAT_BUILD_EXAMPLE) # specific wanted example(s)
-        set(SESHAT_BUILD_EXAMPLES ON)
-    else()
-        set(SESHAT_BUILD_EXAMPLES OFF)
-    endif()
-endif()
 
 add_subdirectory(rnnlib4seshat)
 # required by the following
 add_subdirectory(seshat)
 
 if(SESHAT_BUILD_EXAMPLES)
-    if(NOT DEFINED SESHAT_BUILD_EXAMPLE)
+    if(NOT SESHAT_WHICH_EXAMPLES)
         if(NINTENDO_3DS) # arm-none-eabi-cmake
             set(SESHAT_WANT_EXAMPLE 3ds)
         else()
             set(SESHAT_WANT_EXAMPLE cli sdl)
         endif()
     else()
-        set(SESHAT_WANT_EXAMPLE ${SESHAT_BUILD_EXAMPLE})
+        set(SESHAT_WANT_EXAMPLE ${SESHAT_WHICH_EXAMPLES})
     endif()
 
     foreach(example ${SESHAT_WANT_EXAMPLE})

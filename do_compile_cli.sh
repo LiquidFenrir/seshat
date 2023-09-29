@@ -13,4 +13,4 @@ export CC=gcc
 export CXX=g++
 export USING_CMAKE="cmake"
 
-./do_compile_inner.sh "$CUR_BUILD_TYPE" $CUR_EXTRA_ARGS -DSESHAT_BUILD_EXAMPLE="cli"
+./do_compile_inner.sh "$CUR_BUILD_TYPE" $CUR_EXTRA_ARGS -DSESHAT_WHICH_EXAMPLES="cli"
